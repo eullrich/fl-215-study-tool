@@ -8,7 +8,7 @@ from pathlib import Path
 from app.config import LEGACY_DIR
 from app.database import Base, engine, async_session
 from app.models.content import Chapter, Flashcard, QuizQuestion
-from app.models.scheduling import CardSchedule, QuizQuestionState
+from app.models.scheduling import CardSchedule, QuizQuestionState, StudyCounter
 from app.models.study import StudySession, CardReview  # noqa: F401 — ensure table created
 
 CHAPTERS = {
@@ -121,6 +121,9 @@ async def seed(reset: bool = False):
             print(f"  Ch{ch_num}: {len(cards)} flashcards, {len(questions)} quiz questions")
 
         await session.flush()
+
+        # Initialize global study counter
+        session.add(StudyCounter(id=1, position=0))
 
         # Initialize card schedules for all flashcards
         from sqlalchemy import select

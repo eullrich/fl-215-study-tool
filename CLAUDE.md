@@ -22,7 +22,7 @@ python -m data.seed_content
 
 **Template rendering**: Uses `templates.TemplateResponse(request, name, context)` (new Starlette API). The `_render()` helper in `pages.py` wraps this.
 
-**Spaced repetition** lives in `api_study.py` (`BOX_INTERVALS` dict + `/rate` endpoint). Leitner boxes 0-4 with compressed intervals (5min→30min→4hr→1day). SM-2 ease factor personalizes timing per card.
+**Spaced repetition** lives in `api_study.py` (`BOX_CARD_INTERVALS` dict + `/rate` endpoint). Uses occurrence-based spacing (intervening cards, not clock time). Leitner boxes 0-4 with card intervals (3→7→18→45 cards). SM-2 ease factor personalizes spacing per card. Global position counter in `StudyCounter` table tracks review progress.
 
 **Quiz state**: In-memory `_quiz_state` dict in `api_quiz.py` — single-user, no persistence between server restarts. Exam simulation (`/exam`) uses Alpine.js client-side with JSON API.
 
@@ -39,4 +39,4 @@ python -m data.seed_content
 
 ## Deployment
 
-Render.com via `render.yaml`. Persistent disk (1GB) at `/opt/render/project/src/data` for SQLite. `DATA_DIR` env var points there. Auto-deploys from GitHub push.
+Render.com via `render.yaml`. Persistent disk (1GB) at `/opt/render/project/src/db_data` for SQLite. `DATA_DIR` env var points there. Auto-deploys from GitHub push.

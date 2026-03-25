@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
@@ -10,6 +8,7 @@ from app.config import BASE_DIR
 from app.database import get_db
 from app.models.content import Chapter, Flashcard, QuizQuestion
 from app.models.scheduling import CardSchedule, QuizQuestionState
+from app.routers.api_study import get_position
 
 router = APIRouter()
 templates = Jinja2Templates(directory=BASE_DIR / "app" / "templates")
@@ -31,6 +30,8 @@ async def dashboard(request: Request, db: AsyncSession = Depends(get_db)):
     )
     chapters = chapters_result.scalars().all()
 
+    current_pos = await get_position(db)
+
     chapter_stats = []
     total_due = 0
     total_mastered = 0
@@ -41,7 +42,8 @@ async def dashboard(request: Request, db: AsyncSession = Depends(get_db)):
             select(func.count()).select_from(CardSchedule)
             .join(Flashcard).where(
                 Flashcard.chapter_id == ch.id,
-                CardSchedule.next_review_at <= datetime.utcnow()
+                CardSchedule.review_after_position <= current_pos,
+                CardSchedule.total_reviews > 0,
             )
         )).scalar() or 0
 
@@ -101,13 +103,16 @@ async def study_launcher(request: Request, db: AsyncSession = Depends(get_db)):
     chapters_result = await db.execute(select(Chapter).order_by(Chapter.id))
     chapters = chapters_result.scalars().all()
 
+    current_pos = await get_position(db)
+
     chapter_info = []
     for ch in chapters:
         due = (await db.execute(
             select(func.count()).select_from(CardSchedule)
             .join(Flashcard).where(
                 Flashcard.chapter_id == ch.id,
-                CardSchedule.next_review_at <= datetime.utcnow()
+                CardSchedule.review_after_position <= current_pos,
+                CardSchedule.total_reviews > 0,
             )
         )).scalar() or 0
         total = (await db.execute(
