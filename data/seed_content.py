@@ -68,11 +68,12 @@ def extract_js_array(html: str, var_name: str) -> list[dict]:
     return results
 
 
-async def seed():
+async def seed(reset: bool = False):
     """Seed the database from legacy HTML files."""
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
-        await conn.run_sync(Base.metadata.create_all)
+    if reset:
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.drop_all)
+            await conn.run_sync(Base.metadata.create_all)
 
     async with async_session() as session:
         total_cards = 0
@@ -138,4 +139,4 @@ async def seed():
 
 
 if __name__ == "__main__":
-    asyncio.run(seed())
+    asyncio.run(seed(reset=True))
