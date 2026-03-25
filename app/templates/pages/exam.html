@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block title %}Exam Simulation | FL 2-15{% endblock %}
+
+{% block content %}
+<div id="exam-container" x-data="examApp()" x-init="init()">
+  <!-- Pre-exam screen -->
+  <template x-if="!started && !finished">
+    <div>
+      <div class="page-header">
+        <h1>Exam Simulation</h1>
+        <p>Mirrors the real FL 2-15 exam</p>
+      </div>
+      <div class="card" style="padding: 28px;">
+        <div class="card-title" style="margin-bottom: 16px;">Exam Rules</div>
+        <div style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.7;">
+          <p><strong style="color: var(--text);">165 questions</strong> — multiple choice</p>
+          <p><strong style="color: var(--text);">2 hours 45 minutes</strong> — countdown timer</p>
+          <p><strong style="color: var(--text);">70% to pass</strong> — 116 correct answers</p>
+          <p><strong style="color: var(--text);">No feedback</strong> — answers shown at the end only</p>
+          <p style="margin-top: 12px; color: var(--text-dim);">Questions are drawn proportionally from all 5 chapters.</p>
+        </div>
+        <button class="btn btn-primary btn-block mt-6" @click="startExam()">Start Exam</button>
+      </div>
+    </div>
+  </template>
+
+  <!-- During exam -->
+  <template x-if="started && !finished">
+    <div>
+      <div class="exam-timer">
+        <span class="text-sm text-muted">Q <span x-text="currentIdx + 1"></span> / <span x-text="questions.length"></span></span>
+        <span class="timer-display" :class="{ 'timer-warn': timeLeft < 1800, 'timer-danger': timeLeft < 600 }" x-text="formatTime(timeLeft)"></span>
+        <button class="btn btn-sm btn-ghost" @click="finishExam()">Finish</button>
+      </div>
+
+      <div class="q-card">
+        <div class="q-section" x-text="questions[currentIdx].section"></div>
+        <div class="q-text" x-text="questions[currentIdx].question"></div>
+        <div class="q-opts">
+          <template x-for="(opt, oi) in questions[currentIdx].options" :key="oi">
+            <div class="q-opt" :class="{ selected: answers[currentIdx] === oi }" @click="answers[currentIdx] = oi">
+              <span class="q-opt-letter" x-text="['A','B','C','D'][oi]"></span>
+              <span class="q-opt-text" x-text="opt"></span>
+            </div>
+          </template>
+        </div>
+      </div>
+
+      <div class="flex gap-3" style="gap: 8px;">
+        <button class="btn btn-ghost" style="flex:1;" @click="currentIdx = Math.max(0, currentIdx - 1)" :disabled="currentIdx === 0">Prev</button>
+        <button class="btn btn-primary" style="flex:1;" @click="currentIdx = Math.min(questions.length - 1, currentIdx + 1)" x-show="currentIdx < questions.length - 1">Next</button>
+        <button class="btn btn-warning" style="flex:1;" @click="finishExam()" x-show="currentIdx === questions.length - 1">Submit</button>
+      </div>
+      <p class="text-center text-xs text-dim mt-4" x-text="Object.keys(answers).length + ' of ' + questions.length + ' answered'"></p>
+    </div>
+  </template>
+
+  <!-- Results -->
+  <template x-if="finished">
+    <div>
+      <div class="card results-card">
+        <div class="results-score" :style="'color:' + (score >= 70 ? 'var(--success-light)' : 'var(--danger-light)')">
+          <span x-text="score"></span>%
+        </div>
+        <div class="results-detail" x-text="correctCount + ' correct out of ' + questions.length"></div>
+        <div class="results-status" :style="'background:' + (score >= 70 ? 'var(--success)' + '33' : 'var(--danger)' + '33') + '; color:' + (score >= 70 ? 'var(--success-light)' : 'var(--danger-light)')">
+          <span x-text="score >= 70 ? 'PASS' : 'FAIL'"></span>
+        </div>
+        <p class="text-sm text-dim mt-4">Pass threshold: 70% (116/165)</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="margin-bottom: 12px;">Review Mistakes</div>
+        <template x-for="(q, qi) in questions" :key="qi">
+          <div x-show="answers[qi] !== undefined && answers[qi] !== q.correct_index" class="q-card" style="padding: 16px;">
+            <div class="q-section" x-text="q.section"></div>
+            <div class="q-text" style="font-size: 0.85rem;" x-text="q.question"></div>
+            <p style="font-size: 0.8rem; color: var(--danger-light); margin-bottom: 4px;">Your answer: <span x-text="q.options[answers[qi]]"></span></p>
+            <p style="font-size: 0.8rem; color: var(--success-light);">Correct: <span x-text="q.options[q.correct_index]"></span></p>
+            <div class="q-explanation" x-text="q.explanation"></div>
+          </div>
+        </template>
+      </div>
+
+      <a href="/exam" class="btn btn-primary btn-block mt-4">Retake Exam</a>
+      <a href="/dashboard" class="btn btn-ghost btn-block mt-4" style="margin-top: 8px;">Back to Dashboard</a>
+    </div>
+  </template>
+</div>
+
+<script>
+function examApp() {
+  return {
+    started: false,
+    finished: false,
+    questions: [],
+    answers: {},
+    currentIdx: 0,
+    timeLeft: 9900, // 2h 45m
+    timer: null,
+    score: 0,
+    correctCount: 0,
+
+    async init() {},
+
+    async startExam() {
+      const res = await fetch('/api/quiz/exam/start');
+      const data = await res.json();
+      this.questions = data.questions;
+      this.answers = {};
+      this.currentIdx = 0;
+      this.timeLeft = 9900;
+      this.started = true;
+      this.timer = setInterval(() => {
+        this.timeLeft--;
+        if (this.timeLeft <= 0) this.finishExam();
+      }, 1000);
+    },
+
+    async finishExam() {
+      if (this.timer) clearInterval(this.timer);
+      this.correctCount = 0;
+      for (let i = 0; i < this.questions.length; i++) {
+        if (this.answers[i] === this.questions[i].correct_index) this.correctCount++;
+      }
+      this.score = Math.round(this.correctCount / this.questions.length * 100);
+      this.finished = true;
+
+      // Save results to server
+      await fetch('/api/quiz/exam/finish', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          total: this.questions.length,
+          correct: this.correctCount,
+          answers: this.answers,
+          question_ids: this.questions.map(q => q.id),
+        })
+      });
+    },
+
+    formatTime(s) {
+      const h = Math.floor(s / 3600);
+      const m = Math.floor((s % 3600) / 60);
+      const sec = s % 60;
+      if (h > 0) return h + ':' + String(m).padStart(2, '0') + ':' + String(sec).padStart(2, '0');
+      return m + ':' + String(sec).padStart(2, '0');
+    }
+  };
+}
+</script>
+{% endblock %}

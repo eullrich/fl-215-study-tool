@@ -1,0 +1,18 @@
+[project]
+name = "fl-215-study-tool"
+version = "0.1.0"
+description = "Mobile-first study tool for the Florida 2-15 insurance licensing exam"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.30.0",
+    "jinja2>=3.1.0",
+    "sqlalchemy>=2.0.0",
+    "aiosqlite>=0.20.0",
+    "pydantic>=2.0.0",
+    "python-multipart>=0.0.9",
+]
+
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.backends._legacy:_Backend"

@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 5 – Life Insurance Policy Provisions, Riders & Exclusions</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: #0d1b2a; color: #e0e6f0; min-height: 100vh; }
+  header { background: #112240; padding: 18px 28px; border-bottom: 2px solid #1e3a5f; }
+  header h1 { font-size: 1.4rem; color: #7eb8f7; }
+  header p { font-size: 0.85rem; color: #8899aa; margin-top: 4px; }
+  .tabs { display: flex; background: #0d1b2a; border-bottom: 2px solid #1e3a5f; }
+  .tab { padding: 13px 30px; cursor: pointer; font-size: 0.95rem; color: #7a90a8; border-bottom: 3px solid transparent; transition: all 0.2s; }
+  .tab.active { color: #7eb8f7; border-bottom-color: #7eb8f7; background: #112240; }
+  .tab:hover:not(.active) { color: #b0c8e8; background: #132030; }
+  .panel { display: none; padding: 30px 24px; max-width: 860px; margin: 0 auto; }
+  .panel.active { display: block; }
+
+  /* FLASHCARDS */
+  .fc-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+  .fc-counter { font-size: 0.9rem; color: #7a90a8; }
+  .fc-section-label { font-size: 0.8rem; color: #5a9fd4; background: #112240; padding: 3px 10px; border-radius: 12px; }
+  .card-wrap { perspective: 1000px; height: 240px; margin-bottom: 22px; cursor: pointer; }
+  .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.5s; transform-style: preserve-3d; }
+  .card-wrap.flipped .card-inner { transform: rotateY(180deg); }
+  .card-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 12px; display: flex; align-items: center; justify-content: center; padding: 28px; text-align: center; }
+  .card-front { background: linear-gradient(135deg, #112240, #1a3560); border: 1px solid #2a4a7a; }
+  .card-back { background: linear-gradient(135deg, #0e2840, #163050); border: 1px solid #2a5a9a; transform: rotateY(180deg); }
+  .card-front .card-text { font-size: 1.2rem; font-weight: 600; color: #c8ddf5; line-height: 1.5; }
+  .card-back .card-text { font-size: 1rem; color: #a8cce8; line-height: 1.65; }
+  .hint { font-size: 0.78rem; color: #4a6a8a; margin-top: 10px; }
+  .fc-controls { display: flex; gap: 12px; justify-content: center; align-items: center; margin-top: 14px; }
+  .btn { padding: 9px 22px; border: none; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.2s; }
+  .btn-primary { background: #1e5a9e; color: #e0eeff; }
+  .btn-primary:hover { background: #2672c0; }
+  .btn-secondary { background: #1a3050; color: #8ab4d8; border: 1px solid #2a4a70; }
+  .btn-secondary:hover { background: #223860; }
+  .btn-shuffle { background: #1a4060; color: #7ab8e0; border: 1px solid #2a5080; font-size: 0.82rem; padding: 7px 16px; }
+  .btn-shuffle:hover { background: #225070; }
+
+  /* QUIZ */
+  .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
+  .quiz-score-box { background: #112240; border: 1px solid #1e3a5f; border-radius: 8px; padding: 8px 18px; font-size: 0.88rem; color: #7eb8f7; }
+  .q-block { background: #112240; border: 1px solid #1e3a5f; border-radius: 10px; padding: 20px 22px; margin-bottom: 16px; }
+  .q-section { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: #5a8ab0; margin-bottom: 8px; }
+  .q-text { font-size: 0.97rem; color: #c8ddf5; margin-bottom: 14px; line-height: 1.55; }
+  .opt { display: flex; align-items: flex-start; gap: 10px; padding: 9px 12px; margin-bottom: 7px; border-radius: 7px; cursor: pointer; border: 1px solid #1e3a5f; transition: all 0.18s; font-size: 0.9rem; color: #a0bcd8; }
+  .opt:hover { border-color: #3a6a9a; background: #14304a; }
+  .opt.selected { border-color: #3a7acc; background: #132d4d; color: #c8ddf5; }
+  .opt.correct { border-color: #2a8a4a; background: #0e2e1e; color: #80d4a0; }
+  .opt.wrong { border-color: #8a3030; background: #2e1010; color: #d48080; }
+  .opt-letter { font-weight: 700; color: #5a8ab0; min-width: 18px; }
+  .explanation { margin-top: 12px; padding: 10px 14px; background: #0e2030; border-left: 3px solid #3a7acc; border-radius: 0 6px 6px 0; font-size: 0.86rem; color: #80aac8; line-height: 1.55; display: none; }
+  .explanation.show { display: block; }
+  .quiz-footer { display: flex; gap: 14px; justify-content: center; margin-top: 24px; padding-bottom: 40px; }
+  .result-banner { text-align: center; padding: 20px; background: #112240; border-radius: 10px; margin-bottom: 24px; border: 1px solid #1e3a5f; display: none; }
+  .result-banner.show { display: block; }
+  .result-score { font-size: 2.2rem; font-weight: 700; color: #7eb8f7; }
+  .result-msg { font-size: 0.95rem; color: #8899aa; margin-top: 6px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Chapter 5 — Life Insurance Policy Provisions, Riders &amp; Exclusions</h1>
+  <p>50 flashcards &nbsp;|&nbsp; 42 practice questions</p>
+</header>
+<div class="tabs">
+  <div class="tab active" onclick="showTab('cards')">Flashcards</div>
+  <div class="tab" onclick="showTab('quiz')">Practice Test</div>
+</div>
+
+<!-- FLASHCARDS -->
+<div id="cards" class="panel active">
+  <div class="fc-meta">
+    <div class="fc-section-label" id="fc-section"></div>
+    <div class="fc-counter" id="fc-counter"></div>
+  </div>
+  <div class="card-wrap" id="cardWrap" onclick="flipCard()">
+    <div class="card-inner" id="cardInner">
+      <div class="card-face card-front"><div class="card-text" id="cardQ"></div></div>
+      <div class="card-face card-back"><div class="card-text" id="cardA"></div></div>
+    </div>
+  </div>
+  <div class="hint" style="text-align:center">Click card to flip</div>
+  <div class="fc-controls">
+    <button class="btn btn-secondary" onclick="prevCard()">← Prev</button>
+    <button class="btn btn-primary" onclick="nextCard()">Next →</button>
+    <button class="btn btn-shuffle" onclick="shuffleCards()">⇄ Shuffle</button>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div id="quiz" class="panel">
+  <div class="quiz-header">
+    <div style="font-size:1rem;color:#7eb8f7;font-weight:600">Practice Test</div>
+    <div class="quiz-score-box" id="scoreBox">Score: —</div>
+  </div>
+  <div class="result-banner" id="resultBanner">
+    <div class="result-score" id="resultScore"></div>
+    <div class="result-msg" id="resultMsg"></div>
+  </div>
+  <div id="quizContainer"></div>
+  <div class="quiz-footer">
+    <button class="btn btn-primary" onclick="submitQuiz()">Submit Quiz</button>
+    <button class="btn btn-secondary" onclick="resetQuiz()">Reset</button>
+  </div>
+</div>
+
+<script>
+const cards = [
+  // --- LO1: Standard Provisions ---
+  { s: "Standard Provisions", q: "What is the Insuring Clause?", a: "The company's promise to pay the death benefit upon the insured's death. Appears on the FIRST PAGE of the policy." },
+  { s: "Standard Provisions", q: "What is the Consideration Clause?", a: "The policyowner's consideration consists of three things: the APPLICATION, the PREMIUM, and TRUTHFUL STATEMENTS." },
+  { s: "Standard Provisions", q: "What does the Incontestable Clause provide?", a: "After TWO years, the insurer CANNOT contest the validity of the policy — except for three specific exceptions: impersonation, no insurable interest, and intent to murder." },
+  { s: "Standard Provisions", q: "What are the THREE exceptions to the Incontestable Clause?", a: "1) Impersonation (someone else took the medical exam); 2) No insurable interest at inception; 3) Intent to murder the insured." },
+  { s: "Standard Provisions", q: "What happens if an insured misstated their age or sex on an application?", a: "The policy is NOT voided. The death benefit is ADJUSTED to reflect what the correct premium would have purchased at the correct age/sex." },
+  { s: "Standard Provisions", q: "What does the Owner's Provision state?", a: "The policyOWNER has ALL rights contained in the policy (not the insured, not the beneficiary)." },
+  { s: "Standard Provisions", q: "What is an Assignment Provision?", a: "Allows the owner to TRANSFER policy rights to another person. Two types: absolute (full transfer) and conditional (e.g., as collateral for a loan)." },
+  { s: "Standard Provisions", q: "What is the Free-Look Provision?", a: "The owner can return the policy within a specified period (usually 10 days) for a FULL REFUND — no questions asked." },
+  { s: "Standard Provisions", q: "What is Premium Mode? Which is least costly? Most costly?", a: "Defines premium payment frequency. Annual mode = LEAST costly. Monthly mode = MOST costly (more processing fees)." },
+  { s: "Standard Provisions", q: "What is the Grace Period provision?", a: "Usually 30 days after the premium due date. Coverage CONTINUES during the grace period even if the premium is unpaid." },
+  { s: "Standard Provisions", q: "What is the Reinstatement provision?", a: "Allows a lapsed policy to be reinstated within THREE YEARS. Requires: back premiums + interest AND proof of insurability. Starts a NEW contestable period but NOT a new suicide period." },
+
+  // --- LO2: Cash Value Provisions ---
+  { s: "Cash Value Provisions", q: "What is the Excess Interest Provision?", a: "If the insurer's investment returns EXCEED the guaranteed rate, the excess is credited to the cash value — it grows FASTER than guaranteed." },
+  { s: "Cash Value Provisions", q: "When are non-forfeiture options required?", a: "After the policy has been in force for THREE YEARS (cash value has accumulated)." },
+  { s: "Cash Value Provisions", q: "What is the Cash Surrender non-forfeiture option?", a: "Owner surrenders the policy for an immediate CASH PAYMENT of the cash value MINUS any outstanding policy loans. Coverage ends." },
+  { s: "Cash Value Provisions", q: "What is the Reduced Paid-Up non-forfeiture option?", a: "Uses accumulated cash value to buy a SMALLER PERMANENT policy with NO more premiums due. Coverage continues at a reduced face amount." },
+  { s: "Cash Value Provisions", q: "What is the Extended Term non-forfeiture option?", a: "Uses cash value to buy TERM insurance equal to the ORIGINAL FACE AMOUNT for as long as the cash value will purchase. This is the DEFAULT non-forfeiture option." },
+  { s: "Cash Value Provisions", q: "Which non-forfeiture option is the DEFAULT?", a: "Extended Term Option — automatically applied if the policyowner stops paying premiums and makes no election." },
+  { s: "Cash Value Provisions", q: "What is a Policy Loan?", a: "Owner may borrow against the cash value at any time. The loan is NOT called (no repayment deadline), but any unpaid balance REDUCES the death benefit." },
+  { s: "Cash Value Provisions", q: "What is the Automatic Premium Loan (APL) provision?", a: "An OPTIONAL provision that automatically uses available cash value to pay a missed premium — preventing unintentional lapse." },
+
+  // --- LO3: Policy Proceeds ---
+  { s: "Policy Proceeds", q: "What is the primary/principal settlement option for life insurance death benefits?", a: "A LUMP SUM payment — the default method of paying the death benefit." },
+  { s: "Policy Proceeds", q: "What is a Spendthrift Clause?", a: "Protects the death benefit from the beneficiary's CREDITORS. Only applies to non-lump sum settlement options (installment payments)." },
+  { s: "Policy Proceeds", q: "What are Accelerated Death Benefits?", a: "Allows a TERMINALLY ILL insured to receive a portion of the death benefit WHILE STILL LIVING. The remaining benefit (if any) is paid at death." },
+  { s: "Policy Proceeds", q: "What is a Long-Term Care Rider?", a: "Provides benefits if the insured requires long-term care. May REDUCE the death benefit as benefits are paid out." },
+
+  // --- LO4: Dividend Options (CRAPPO) ---
+  { s: "Dividend Options (CRAPPO)", q: "What does CRAPPO stand for?", a: "C – Cash; R – Reduction of premium; A – Accumulate at interest; P – Paid-up additions; P – Paid-up policy; O – One-year term." },
+  { s: "Dividend Options (CRAPPO)", q: "Are life insurance dividends taxable?", a: "NO — dividends are considered a RETURN OF PREMIUM and are tax-exempt. However, INTEREST earned on dividends held in the Accumulate at Interest option IS taxable." },
+  { s: "Dividend Options (CRAPPO)", q: "Dividend Option: Cash", a: "Direct cash payment to the policyowner. TAX-EXEMPT (return of premium)." },
+  { s: "Dividend Options (CRAPPO)", q: "Dividend Option: Reduction of Premium", a: "Dividend is applied to reduce (offset) the NEXT PREMIUM PAYMENT. Owner pays less out-of-pocket." },
+  { s: "Dividend Options (CRAPPO)", q: "Dividend Option: Accumulate at Interest", a: "Insurer holds dividends in a separate account earning interest. Dividends = tax-exempt; INTEREST EARNED = TAXABLE." },
+  { s: "Dividend Options (CRAPPO)", q: "Dividend Option: Paid-Up Additions", a: "Dividend purchases ADDITIONAL PERMANENT insurance WITHOUT proving insurability. Increases overall death benefit." },
+  { s: "Dividend Options (CRAPPO)", q: "Dividend Option: Paid-Up Policy", a: "Dividends are used to make additional premium payments, paying up the policy SOONER than scheduled." },
+  { s: "Dividend Options (CRAPPO)", q: "Dividend Option: One-Year Term", a: "Dividend purchases one year of additional TERM insurance. Can be used to cover the amount of a policy loan." },
+
+  // --- LO5: Riders ---
+  { s: "Riders", q: "What is the Waiver of Premium rider?", a: "Waives (eliminates) premium payments if the insured becomes TOTALLY DISABLED. Has a 6-MONTH WAITING PERIOD before benefits begin." },
+  { s: "Riders", q: "What is the Disability Income Benefit rider?", a: "Pays a MONTHLY INCOME (usually 1% of face amount) if the insured becomes disabled. Different from Waiver of Premium — this provides INCOME, not just waived premiums." },
+  { s: "Riders", q: "What is the Accidental Death Benefit (Double Indemnity) rider?", a: "Pays an ADDITIONAL death benefit (typically double the face amount) if death is ACCIDENTAL." },
+  { s: "Riders", q: "What is the Accidental Death & Dismemberment (AD&D) rider?", a: "Adds DISMEMBERMENT benefits (loss of limbs, sight, speech, hearing) to accidental death coverage." },
+  { s: "Riders", q: "What is the Guaranteed Insurability Option (GIO) rider?", a: "Allows the owner to purchase ADDITIONAL insurance at specified future dates WITHOUT evidence of insurability — regardless of health changes." },
+  { s: "Riders", q: "What is the Cost of Living Adjustment (COLA) rider?", a: "Automatically INCREASES the face amount based on the Consumer Price Index (CPI) — keeps death benefit pace with inflation." },
+  { s: "Riders", q: "What is the Payor Benefit rider?", a: "On JUVENILE policies — waives premiums if the adult PAYOR (parent/guardian) dies or becomes disabled." },
+  { s: "Riders", q: "What is the Exchange Privilege rider?", a: "Allows changing the INSURED on a business life insurance policy (e.g., when a key employee is replaced)." },
+  { s: "Riders", q: "What type of insurance do riders covering OTHER PEOPLE always provide?", a: "TERM insurance — riders covering spouses, children, or family members always add term coverage, not permanent." },
+  { s: "Riders", q: "What does the Return of Premium / Return of Cash Value rider add?", a: "Adds a death benefit equal to the premiums paid (Return of Premium) OR the accumulated cash value (Return of Cash Value) in addition to the face amount." },
+
+  // --- LO6: Exclusions ---
+  { s: "Exclusions", q: "What are the two types of War/Military Service exclusions?", a: "Status clause: excludes coverage while the insured is IN military service. Results clause: excludes only death resulting from MILITARY ACTIVITIES." },
+  { s: "Exclusions", q: "Does aviation exclusion apply to commercial airline passengers?", a: "NO — aviation exclusions typically only exclude HIGH-RISK aviation activities (e.g., stunt flying, private piloting). Commercial airline travel is NOT excluded." },
+  { s: "Exclusions", q: "Which exclusion is the ONLY one that expires?", a: "SUICIDE exclusion — excluded for the first TWO YEARS; after two years it falls off and the insurer must pay." },
+  { s: "Exclusions", q: "What exclusions are typically permanent (never expire)?", a: "War/military, aviation (high-risk), commission of a felony, illegal occupation, intoxicants/narcotics, hazardous activities. These remain for the LIFE of the policy." },
+  { s: "Exclusions", q: "When a lapsed policy is reinstated, does the suicide exclusion restart?", a: "NO — reinstatement starts a NEW contestable period but does NOT restart the suicide exclusion period." },
+  { s: "Exclusions", q: "What is the Illegal Occupation exclusion?", a: "Excludes death resulting from the insured's participation in an ILLEGAL OCCUPATION (e.g., drug dealing)." },
+];
+
+const questions = [
+  // --- Standard Provisions ---
+  { section: "Standard Provisions", q: "The insuring clause appears on which page of a life insurance policy?", opts: ["The last page (signature page)", "The declarations page at the back", "The first page of the policy", "The application only"], ans: 2, exp: "The insuring clause — the company's promise to pay — always appears on the FIRST PAGE of the policy." },
+  { section: "Standard Provisions", q: "According to the Consideration Clause, the policyowner's consideration consists of:", opts: ["Premium payments only", "The application, the premium, and truthful statements", "The signed application and the first premium only", "The premium, the beneficiary designation, and medical records"], ans: 1, exp: "The policyowner's consideration is the application, the premium, and truthful statements — all three together." },
+  { section: "Standard Provisions", q: "An insured lied on her life insurance application about her smoking history. The insurer discovers this 2.5 years after the policy was issued. Can the insurer contest the policy?", opts: ["Yes — misrepresentation always allows rescission", "No — the incontestable clause bars contestment after two years", "Yes — smoking is always a contestable issue", "No — only material misrepresentations are contestable"], ans: 1, exp: "After TWO years, the incontestable clause prevents the insurer from contesting policy validity. The exception would be impersonation, no insurable interest, or intent to murder — not smoking misrepresentation." },
+  { section: "Standard Provisions", q: "Which of the following is NOT an exception to the incontestable clause?", opts: ["Impersonation (someone else took the medical exam)", "Intent to murder the insured", "Misstatement of age or sex", "No insurable interest at inception"], ans: 2, exp: "Misstatement of age/sex is handled by ADJUSTING the death benefit — the policy is not voided. The three true exceptions are: impersonation, no insurable interest, and intent to murder." },
+  { section: "Standard Provisions", q: "An applicant understated his age by 3 years on a life insurance application. When the insurer discovers this at death, they will:", opts: ["Void the policy and return premiums paid", "Pay the full face amount as stated in the policy", "Adjust the death benefit to what the correct premium would have purchased at the correct age", "Deny the claim due to misrepresentation"], ans: 2, exp: "Misstatement of age/sex: the policy is NOT voided — the benefit is adjusted to reflect what the correct premium would have purchased at the true age." },
+  { section: "Standard Provisions", q: "The policyOWNER (not the insured, not the beneficiary) holds:", opts: ["Only the right to change beneficiaries", "Only the right to receive dividends", "All rights contained in the policy", "Rights equal to those of the insured"], ans: 2, exp: "Per the Owner's Provision, the policyOWNER holds ALL rights contained in the policy — including naming beneficiaries, taking loans, surrendering the policy, etc." },
+  { section: "Standard Provisions", q: "An insured assigns her life insurance policy as collateral for a bank loan. This is an example of a(n):", opts: ["Absolute assignment", "Conditional assignment", "Beneficiary designation change", "Spendthrift arrangement"], ans: 1, exp: "Using a policy as loan collateral is a CONDITIONAL assignment — rights transfer only under specific conditions (loan default). An absolute assignment transfers all rights permanently." },
+  { section: "Standard Provisions", q: "The Free-Look provision gives a new policyowner the right to:", opts: ["Return the policy within 30 days for a pro-rated refund", "Cancel the policy at any time for cash value", "Return the policy within the specified period (usually 10 days) for a full refund", "Exchange the policy for a different product within 60 days"], ans: 2, exp: "The Free-Look period (usually 10 days) allows the owner to return the policy for a FULL REFUND — no questions asked." },
+  { section: "Standard Provisions", q: "Which premium payment frequency is the MOST costly to the policyowner?", opts: ["Annual", "Semi-annual", "Quarterly", "Monthly"], ans: 3, exp: "Monthly is the MOST costly due to additional processing fees charged per transaction. Annual mode is the LEAST costly." },
+  { section: "Standard Provisions", q: "During the grace period of a life insurance policy:", opts: ["Coverage is suspended until the premium is paid", "The policy lapses immediately", "Coverage CONTINUES even though the premium is unpaid", "The insurer may deny claims at its discretion"], ans: 2, exp: "The grace period (usually 30 days) keeps coverage IN FORCE even if the premium is not yet paid. If the insured dies during the grace period, the overdue premium is deducted from the death benefit." },
+  { section: "Standard Provisions", q: "A policyowner wants to reinstate a lapsed policy. Which of the following is required?", opts: ["Only payment of the current premium going forward", "Back premiums plus interest AND proof of insurability", "A new application and medical exam only", "Payment of a reinstatement fee set by the state"], ans: 1, exp: "Reinstatement requires: back premiums + interest AND proof of insurability — typically within three years of lapse." },
+  { section: "Standard Provisions", q: "After a policy is reinstated, which period RESTARTS and which does NOT?", opts: ["Both contestable and suicide periods restart", "Neither period restarts", "Contestable period restarts; suicide period does NOT restart", "Suicide period restarts; contestable period does NOT restart"], ans: 2, exp: "Reinstatement starts a NEW two-year contestable period but does NOT restart the suicide exclusion period — that clock continues from the original policy issue date." },
+
+  // --- Cash Value Provisions ---
+  { section: "Cash Value Provisions", q: "Non-forfeiture options become available to the policyowner after:", opts: ["The first premium is paid", "Six months of coverage", "The policy has been in force for three years", "The insured reaches age 65"], ans: 2, exp: "Non-forfeiture options are required to be offered after the policy has been in force for THREE YEARS (when meaningful cash value has accumulated)." },
+  { section: "Cash Value Provisions", q: "Which non-forfeiture option is the DEFAULT if the policyowner stops paying premiums and makes no election?", opts: ["Cash Surrender", "Reduced Paid-Up", "Extended Term", "Automatic Premium Loan"], ans: 2, exp: "Extended Term is the DEFAULT non-forfeiture option — it uses the cash value to purchase term coverage equal to the original face amount for as long as the cash value will fund." },
+  { section: "Cash Value Provisions", q: "The Reduced Paid-Up non-forfeiture option results in:", opts: ["A cash payout equal to the policy's loan value", "Term coverage equal to the original face amount for a fixed period", "A smaller permanent policy requiring NO further premiums", "Extended coverage at a reduced premium"], ans: 2, exp: "Reduced Paid-Up uses cash value to purchase a SMALLER permanent (whole life) policy — coverage continues for life at a reduced face amount with no more premiums." },
+  { section: "Cash Value Provisions", q: "A policyowner takes a $10,000 loan against a $100,000 whole life policy and dies without repaying it. The beneficiary receives:", opts: ["$100,000 — loans don't affect the death benefit", "$110,000 — face amount plus interest credit", "$90,000 — face amount minus the outstanding loan", "Nothing — the insurer keeps the loan amount"], ans: 2, exp: "Policy loans REDUCE the death benefit if not repaid. $100,000 − $10,000 loan = $90,000 paid to the beneficiary." },
+  { section: "Cash Value Provisions", q: "The Automatic Premium Loan (APL) provision:", opts: ["Is a mandatory provision in all whole life policies", "Automatically uses cash value to pay a missed premium, preventing unintentional lapse", "Requires insurer approval before each use", "Applies only after the grace period has expired"], ans: 1, exp: "APL is an OPTIONAL provision that automatically borrows against cash value to pay a missed premium — protecting the policy from unintentional lapse." },
+  { section: "Cash Value Provisions", q: "The Excess Interest Provision means:", opts: ["The owner receives a refund if premiums were excessive", "Cash value grows faster if the insurer's returns exceed the guaranteed minimum rate", "The insurer may charge additional premiums in poor market conditions", "Interest on policy loans is fixed regardless of market rates"], ans: 1, exp: "If the insurer's actual investment returns EXCEED the guaranteed rate, the excess is credited to cash value — it grows faster than the guaranteed minimum." },
+
+  // --- Policy Proceeds ---
+  { section: "Policy Proceeds", q: "The principal (default) method of paying a life insurance death benefit is:", opts: ["Installment payments over 10 years", "Interest only for the beneficiary's lifetime", "A lump sum payment", "Fixed period annuity payments"], ans: 2, exp: "A LUMP SUM is the principal/default method of distributing the death benefit to the beneficiary." },
+  { section: "Policy Proceeds", q: "A beneficiary is receiving life insurance proceeds in monthly installments. A creditor attempts to garnish the payments. A spendthrift clause would:", opts: ["Allow the creditor to garnish up to 25% of each payment", "Protect the proceeds from the beneficiary's creditors", "Only apply if the beneficiary has filed for bankruptcy", "Have no effect on installment payment plans"], ans: 1, exp: "The Spendthrift Clause PROTECTS death benefit proceeds from the beneficiary's creditors. It applies to non-lump sum settlement options (installment payments)." },
+  { section: "Policy Proceeds", q: "Accelerated Death Benefits allow an insured to:", opts: ["Receive benefits only after a 2-year waiting period", "Designate a new beneficiary while terminally ill", "Receive a portion of the death benefit while still alive if terminally ill", "Increase the death benefit when diagnosed with a serious illness"], ans: 2, exp: "Accelerated Death Benefits let a terminally ill insured receive a portion of the death benefit WHILE LIVING to cover medical or end-of-life expenses." },
+
+  // --- Dividend Options ---
+  { section: "Dividend Options (CRAPPO)", q: "What does the acronym CRAPPO stand for (dividend options)?", opts: ["Cash, Return, Accumulate, Premium-waiver, Paid-up, Options", "Cash, Reduction of premium, Accumulate at interest, Paid-up additions, Paid-up policy, One-year term", "Credit, Reinvestment, Annuity, Premiums, Policy, Options", "Cash, Reinstatement, Additions, Premiums, Paid-up, Ordinary"], ans: 1, exp: "CRAPPO: Cash; Reduction of premium; Accumulate at interest; Paid-up additions; Paid-up policy; One-year term." },
+  { section: "Dividend Options (CRAPPO)", q: "A policyowner selects the Accumulate at Interest dividend option. Which of the following is taxable?", opts: ["The entire dividend amount accumulated", "Nothing — dividends are always tax-exempt", "Only the interest earned on the accumulated dividends", "Only dividends accumulated after 10 years"], ans: 2, exp: "Dividends themselves are a return of premium and TAX-EXEMPT. However, INTEREST EARNED on dividends held in the accumulate at interest option IS taxable." },
+  { section: "Dividend Options (CRAPPO)", q: "A participating policyowner wants to use dividends to buy more permanent insurance without a medical exam. Which option applies?", opts: ["One-Year Term option", "Paid-Up Additions option", "Paid-Up Policy option", "Reduction of Premium option"], ans: 1, exp: "Paid-Up Additions: uses dividends to purchase ADDITIONAL PERMANENT insurance without evidence of insurability, increasing the total death benefit." },
+  { section: "Dividend Options (CRAPPO)", q: "A policyowner has an outstanding policy loan and wants to use dividends to cover the loan amount with insurance. Which dividend option is MOST suitable?", opts: ["Reduction of Premium", "Accumulate at Interest", "One-Year Term", "Paid-Up Policy"], ans: 2, exp: "The One-Year Term option can purchase term insurance in an amount equal to the POLICY LOAN — ensuring the loan amount is covered if the insured dies before repaying it." },
+  { section: "Dividend Options (CRAPPO)", q: "Why are life insurance policy dividends generally NOT taxable?", opts: ["The IRS exempts all insurance company payments", "Dividends are a return of the policyowner's own premiums", "Life insurance proceeds are always tax-free", "The state insurance department mandates tax exemption"], ans: 1, exp: "Dividends are considered a RETURN OF PREMIUM — the insured overpaid, and the company is returning the excess. Returning your own money is not taxable." },
+
+  // --- Riders ---
+  { section: "Riders", q: "The Waiver of Premium rider and the Disability Income rider both involve disability, but they differ in that:", opts: ["Waiver of premium pays monthly income; disability income waives premiums", "Waiver of premium waives premium payments; disability income pays monthly income (usually 1% of face amount)", "Both pay income, but at different percentages", "They are interchangeable names for the same rider"], ans: 1, exp: "Waiver of Premium: waives (eliminates) premium payments during disability. Disability Income Benefit: pays MONTHLY INCOME (usually 1% of face amount). Distinct riders with distinct benefits." },
+  { section: "Riders", q: "The Waiver of Premium rider has a waiting period of:", opts: ["30 days", "3 months", "6 months", "1 year"], ans: 2, exp: "The Waiver of Premium rider has a SIX-MONTH waiting period from onset of disability before premiums are waived. If still disabled after 6 months, back premiums are typically refunded." },
+  { section: "Riders", q: "The Accidental Death Benefit rider is sometimes called 'double indemnity' because:", opts: ["It covers two insured persons at once", "It pays TWICE the face amount if death is accidental", "It doubles the premium in risky occupations", "It requires two witnesses to file a claim"], ans: 1, exp: "The ADB rider pays an ADDITIONAL death benefit equal to the face amount if death is accidental — effectively doubling the total payout (double indemnity)." },
+  { section: "Riders", q: "A policyowner purchases a Guaranteed Insurability Option (GIO) rider. The main benefit is:", opts: ["A guaranteed minimum death benefit in all market conditions", "The ability to buy additional coverage at specified future dates WITHOUT evidence of insurability", "Guaranteed level premiums for the life of the policy", "A guaranteed return on cash value investments"], ans: 1, exp: "GIO allows the owner to purchase additional insurance at option dates (e.g., every 3 years, or at marriage/birth of child) WITHOUT proving insurability — protecting future coverage regardless of health changes." },
+  { section: "Riders", q: "The Cost of Living Adjustment (COLA) rider automatically adjusts the death benefit based on:", opts: ["The insurer's investment performance", "The policyholder's income changes", "The Consumer Price Index (CPI)", "The insured's attained age"], ans: 2, exp: "The COLA rider ties death benefit increases to the Consumer Price Index — keeping the policy's purchasing power in step with inflation." },
+  { section: "Riders", q: "The Payor Benefit rider is specifically designed for:", opts: ["Policies on business partners", "Juvenile (minor) life insurance policies", "Annuity contracts with variable rates", "Group life insurance certificates"], ans: 1, exp: "The Payor Benefit rider applies to JUVENILE policies — it waives premiums if the adult PAYOR (parent/guardian) dies or becomes disabled, keeping the child's policy in force." },
+  { section: "Riders", q: "Riders that cover family members (spouse riders, children's riders) always provide what type of insurance?", opts: ["Permanent whole life coverage", "Term insurance coverage", "Universal life coverage", "Endowment coverage"], ans: 1, exp: "Riders covering OTHER PEOPLE always provide TERM insurance — they add temporary coverage, not permanent. This is a key exam distinction." },
+  { section: "Riders", q: "The Exchange Privilege rider is most commonly used in:", opts: ["Family policies when a new child is born", "Business life insurance when the key insured person changes", "Annuity contracts at retirement", "Term policies when converting to whole life"], ans: 1, exp: "The Exchange Privilege rider allows changing the INSURED on a business policy — useful when a key employee (the insured) is replaced by another employee." },
+
+  // --- Exclusions ---
+  { section: "Exclusions", q: "Which life insurance exclusion is the ONLY one that expires over time?", opts: ["Aviation exclusion", "War/military exclusion", "Suicide exclusion", "Hazardous activity exclusion"], ans: 2, exp: "The SUICIDE exclusion is the ONLY exclusion that expires — it applies only for the first TWO YEARS. After two years, suicide is covered just like any other cause of death." },
+  { section: "Exclusions", q: "An insured dies in a commercial airline crash 3 years after the policy was issued. The aviation exclusion:", opts: ["Applies — all aviation deaths are excluded", "Does not apply — the aviation exclusion targets high-risk aviation, not commercial flights", "Applies only if the insured was piloting the plane", "Depends on whether a war exclusion also applies"], ans: 1, exp: "Aviation exclusions typically cover HIGH-RISK activities (stunt flying, private piloting, etc.), NOT commercial airline travel as a passenger." },
+  { section: "Exclusions", q: "The difference between a Status clause and a Results clause in a war exclusion is:", opts: ["Status excludes only officers; results excludes all military personnel", "Status excludes coverage while in military service; results excludes only deaths from military activities", "Results clause is broader and excludes all war-related deaths; status clause is more limited", "They are interchangeable terms for the same exclusion"], ans: 1, exp: "Status clause: excludes ALL deaths while the insured is IN military service. Results clause: excludes only deaths that RESULT from military activities — more limited." },
+  { section: "Exclusions", q: "An insured dies while committing armed robbery. The applicable exclusion is:", opts: ["Hazardous activity exclusion", "War and military exclusion", "Commission of a felony exclusion", "Intoxicants and narcotics exclusion"], ans: 2, exp: "Armed robbery is a felony — the Commission of a Felony exclusion applies, and the claim would be denied." },
+  { section: "Exclusions", q: "A policy is reinstated after lapsing. The insured commits suicide 18 months after reinstatement. Is the suicide exclusion still in effect?", opts: ["No — the suicide exclusion ended at original policy issue + 2 years", "Yes — reinstatement restarted the contestable period but NOT the suicide period; 18 months may still be within the original suicide period depending on original issue date", "No — reinstatement ends all exclusions", "Yes — reinstatement always starts a new 2-year suicide period"], ans: 1, exp: "Reinstatement starts a NEW contestable period but does NOT restart the suicide exclusion. The suicide clock continues from the ORIGINAL policy issue date. Whether coverage applies depends on when the original 2-year period ended." },
+  { section: "Exclusions", q: "Most policy exclusions are:", opts: ["Temporary and expire after two years", "Permanent and remain for the life of the policy", "Removed after the insured reaches age 65", "Waived once the policy's cash value exceeds the face amount"], ans: 1, exp: "Most exclusions (war, aviation, felony, illegal occupation, etc.) are PERMANENT — they remain for the life of the policy. Only the suicide exclusion expires (after 2 years)." },
+];
+
+let currentCard = 0;
+let cardOrder = cards.map((_, i) => i);
+let userAnswers = {};
+let submitted = false;
+
+function renderCard() {
+  const idx = cardOrder[currentCard];
+  const card = cards[idx];
+  document.getElementById('cardQ').textContent = card.q;
+  document.getElementById('cardA').textContent = card.a;
+  document.getElementById('fc-counter').textContent = `${currentCard + 1} / ${cards.length}`;
+  document.getElementById('fc-section').textContent = card.s;
+  document.getElementById('cardWrap').classList.remove('flipped');
+}
+
+function flipCard() {
+  document.getElementById('cardWrap').classList.toggle('flipped');
+}
+
+function nextCard() {
+  currentCard = (currentCard + 1) % cards.length;
+  renderCard();
+}
+
+function prevCard() {
+  currentCard = (currentCard - 1 + cards.length) % cards.length;
+  renderCard();
+}
+
+function shuffleCards() {
+  for (let i = cardOrder.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [cardOrder[i], cardOrder[j]] = [cardOrder[j], cardOrder[i]];
+  }
+  currentCard = 0;
+  renderCard();
+}
+
+function buildQuiz() {
+  const container = document.getElementById('quizContainer');
+  container.innerHTML = '';
+  questions.forEach((q, qi) => {
+    const block = document.createElement('div');
+    block.className = 'q-block';
+    block.innerHTML = `
+      <div class="q-section">${q.section}</div>
+      <div class="q-text">${qi + 1}. ${q.q}</div>
+      ${q.opts.map((o, oi) => `
+        <div class="opt" id="opt-${qi}-${oi}" onclick="selectAnswer(${qi}, ${oi})">
+          <span class="opt-letter">${String.fromCharCode(65 + oi)}.</span>
+          <span>${o}</span>
+        </div>`).join('')}
+      <div class="explanation" id="exp-${qi}">${q.exp}</div>
+    `;
+    container.appendChild(block);
+  });
+}
+
+function selectAnswer(qIdx, optIdx) {
+  if (submitted) return;
+  userAnswers[qIdx] = optIdx;
+  for (let i = 0; i < questions[qIdx].opts.length; i++) {
+    document.getElementById(`opt-${qIdx}-${i}`).classList.toggle('selected', i === optIdx);
+  }
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+  let correct = 0;
+  questions.forEach((q, qi) => {
+    const chosen = userAnswers[qi];
+    for (let i = 0; i < q.opts.length; i++) {
+      const el = document.getElementById(`opt-${qi}-${i}`);
+      el.classList.remove('selected');
+      if (i === q.ans) el.classList.add('correct');
+      else if (i === chosen && chosen !== q.ans) el.classList.add('wrong');
+    }
+    if (chosen === q.ans) correct++;
+    document.getElementById(`exp-${qi}`).classList.add('show');
+  });
+  const pct = Math.round((correct / questions.length) * 100);
+  document.getElementById('scoreBox').textContent = `Score: ${correct}/${questions.length} (${pct}%)`;
+  const banner = document.getElementById('resultBanner');
+  banner.classList.add('show');
+  document.getElementById('resultScore').textContent = `${correct} / ${questions.length} — ${pct}%`;
+  document.getElementById('resultMsg').textContent = pct >= 70 ? '✓ Passing score! Keep it up.' : '✗ Below 70% — review the explanations and retry.';
+  banner.scrollIntoView({ behavior: 'smooth' });
+}
+
+function resetQuiz() {
+  submitted = false;
+  userAnswers = {};
+  document.getElementById('scoreBox').textContent = 'Score: —';
+  document.getElementById('resultBanner').classList.remove('show');
+  buildQuiz();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function showTab(t) {
+  document.getElementById('cards').classList.toggle('active', t === 'cards');
+  document.getElementById('quiz').classList.toggle('active', t === 'quiz');
+  document.querySelectorAll('.tab').forEach((el, i) => {
+    el.classList.toggle('active', (i === 0 && t === 'cards') || (i === 1 && t === 'quiz'));
+  });
+}
+
+renderCard();
+buildQuiz();
+</script>
+</body>
+</html>

@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FL 2-15 | Chapter 2 Study Tool</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+  .header { background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%); padding: 24px 32px; border-bottom: 1px solid #1e40af44; }
+  .header h1 { font-size: 1.5rem; font-weight: 700; color: #60a5fa; letter-spacing: -0.02em; }
+  .header p { font-size: 0.875rem; color: #94a3b8; margin-top: 4px; }
+  .tabs { display: flex; gap: 0; padding: 20px 32px 0; border-bottom: 1px solid #1e293b; }
+  .tab { padding: 10px 24px; border-radius: 8px 8px 0 0; cursor: pointer; font-size: 0.875rem; font-weight: 600; border: 1px solid transparent; border-bottom: none; transition: all 0.2s; color: #64748b; }
+  .tab.active { background: #1e293b; color: #60a5fa; border-color: #1e40af44; }
+  .tab:hover:not(.active) { color: #94a3b8; }
+  .content { padding: 32px; max-width: 860px; margin: 0 auto; }
+  .fc-container { display: flex; flex-direction: column; align-items: center; gap: 24px; }
+  .fc-progress { font-size: 0.8rem; color: #64748b; letter-spacing: 0.05em; text-transform: uppercase; }
+  .fc-card-wrap { width: 100%; max-width: 640px; perspective: 1200px; cursor: pointer; user-select: none; }
+  .fc-card { position: relative; width: 100%; height: 240px; transition: transform 0.55s cubic-bezier(.4,2,.6,1); transform-style: preserve-3d; }
+  .fc-card.flipped { transform: rotateY(180deg); }
+  .fc-face { position: absolute; inset: 0; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 28px 36px; text-align: center; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+  .fc-front { background: linear-gradient(135deg, #1e3a5f, #1e293b); border: 1px solid #2563eb44; box-shadow: 0 8px 32px #0004; }
+  .fc-back  { background: linear-gradient(135deg, #14532d, #1e293b); border: 1px solid #16a34a44; box-shadow: 0 8px 32px #0004; transform: rotateY(180deg); }
+  .fc-label { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px; opacity: 0.5; }
+  .fc-text  { font-size: 1.1rem; font-weight: 600; line-height: 1.5; color: #f1f5f9; }
+  .fc-hint  { font-size: 0.75rem; color: #64748b; margin-top: 14px; }
+  .fc-controls { display: flex; gap: 12px; align-items: center; }
+  .btn { padding: 10px 22px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; transition: all 0.15s; }
+  .btn-primary { background: #2563eb; color: #fff; }
+  .btn-primary:hover { background: #1d4ed8; }
+  .btn-ghost { background: #1e293b; color: #94a3b8; border: 1px solid #334155; }
+  .btn-ghost:hover { background: #334155; color: #e2e8f0; }
+  .btn-sm { padding: 7px 16px; font-size: 0.8rem; }
+  .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+  .quiz-meta { font-size: 0.8rem; color: #64748b; }
+  .score-badge { background: #1e293b; border: 1px solid #334155; border-radius: 999px; padding: 4px 14px; font-size: 0.8rem; font-weight: 700; color: #94a3b8; }
+  .q-card { background: #1e293b; border: 1px solid #334155; border-radius: 14px; padding: 28px; margin-bottom: 20px; }
+  .q-num { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #64748b; margin-bottom: 10px; }
+  .q-text { font-size: 1rem; font-weight: 600; color: #f1f5f9; line-height: 1.55; margin-bottom: 20px; }
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .opt { padding: 12px 18px; border-radius: 9px; border: 1.5px solid #334155; background: #0f172a; cursor: pointer; font-size: 0.9rem; color: #cbd5e1; transition: all 0.15s; display: flex; align-items: flex-start; gap: 10px; }
+  .opt:hover:not(.disabled) { border-color: #3b82f6; color: #e2e8f0; background: #1e3a5f; }
+  .opt.correct { border-color: #22c55e; background: #14532d22; color: #4ade80; }
+  .opt.wrong   { border-color: #ef4444; background: #7f1d1d22; color: #f87171; }
+  .opt.disabled { cursor: default; pointer-events: none; }
+  .opt-letter { font-weight: 700; opacity: 0.5; min-width: 18px; }
+  .explanation { margin-top: 14px; padding: 12px 16px; border-radius: 8px; background: #0f172a; border-left: 3px solid #3b82f6; font-size: 0.85rem; color: #94a3b8; line-height: 1.5; display: none; }
+  .explanation.show { display: block; }
+  .quiz-results { text-align: center; padding: 40px 20px; }
+  .score-big { font-size: 4rem; font-weight: 800; color: #60a5fa; line-height: 1; }
+  .score-sub { font-size: 1rem; color: #64748b; margin-top: 8px; }
+  .score-msg { font-size: 1.1rem; font-weight: 600; margin-top: 16px; }
+  .section-divider { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #3b82f6; background: #1e3a5f22; border: 1px solid #1e40af33; border-radius: 6px; padding: 5px 14px; display: inline-block; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>FL 2-15 Exam Prep</h1>
+  <p>Chapter 2 — Risk, Hazards, Perils &amp; Methods of Handling Risk &nbsp;·&nbsp; ✅ Complete</p>
+</div>
+<div class="tabs">
+  <div class="tab active" onclick="showTab('flashcards')">📇 Flashcards</div>
+  <div class="tab" onclick="showTab('quiz')">📝 Practice Test</div>
+</div>
+
+<!-- FLASHCARDS -->
+<div id="tab-flashcards" class="content">
+  <div class="fc-container">
+    <div class="fc-progress" id="fc-progress">Card 1 of 30</div>
+    <div class="fc-card-wrap" onclick="flipCard()">
+      <div class="fc-card" id="fc-card">
+        <div class="fc-face fc-front">
+          <div class="fc-label">Term / Concept</div>
+          <div class="fc-text" id="fc-front-text"></div>
+          <div class="fc-hint">click to reveal</div>
+        </div>
+        <div class="fc-face fc-back">
+          <div class="fc-label">Answer</div>
+          <div class="fc-text" id="fc-back-text"></div>
+        </div>
+      </div>
+    </div>
+    <div class="fc-controls">
+      <button class="btn btn-ghost btn-sm" onclick="prevCard()">← Prev</button>
+      <button class="btn btn-primary" onclick="nextCard()">Next →</button>
+      <button class="btn btn-ghost btn-sm" onclick="shuffleCards()">🔀 Shuffle</button>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div id="tab-quiz" class="content" style="display:none;">
+  <div id="quiz-area"></div>
+</div>
+
+<script>
+// ── FLASHCARDS ──
+const cards = [
+
+  // Core Definitions
+  { q: "Risk", a: "The UNCERTAINTY regarding the possibility of loss. Insurance exists to manage risk." },
+  { q: "Pure Risk", a: "Risk with ONLY the possibility of loss — NO chance of gain. This is the ONLY type of risk that is insurable. Example: dying, getting sick, house fire." },
+  { q: "Speculative Risk", a: "Risk with the possibility of BOTH loss AND gain. NOT insurable. Example: gambling, stock market investments." },
+  { q: "Pure Risk vs. Speculative Risk", a: "PURE = loss only → INSURABLE. SPECULATIVE = loss or gain → NOT insurable. Ask: 'Can this result in a gain?' If yes → speculative." },
+  { q: "Peril", a: "The specific EVENT or CAUSE that results in a loss. Examples: fire, accident, death, illness." },
+  { q: "Hazard", a: "A CONDITION that increases the LIKELIHOOD of a loss occurring. Hazards don't cause losses directly — they make losses more probable." },
+  { q: "Loss", a: "An UNINTENTIONAL decrease in value due to a covered peril." },
+
+  // Types of Hazards
+  { q: "Physical Hazard", a: "A physical or TANGIBLE condition that makes a loss more likely. Can be SEEN, MEASURED, or DOCUMENTED (e.g., high blood pressure, obesity, dangerous occupation, hazardous hobbies)." },
+  { q: "Moral Hazard", a: "DISHONEST character or INTENTIONAL behavior that increases chance of loss. Always involves INTENT. Examples: lying on application, faking symptoms, submitting false claims, concealing pre-existing conditions." },
+  { q: "Morale Hazard", a: "CARELESS ATTITUDE or INDIFFERENCE to loss because insurance exists. UNINTENTIONAL. Examples: skipping preventive care, choosing more expensive treatments because 'insurance covers it.'" },
+  { q: "Moral vs. Morale Hazard", a: "MORAL = INTENTIONAL dishonesty (lying, fraud). MORALE = UNINTENTIONAL carelessness (indifference because insured). Moral has the 'e' removed = ethics removed = intentional bad act." },
+
+  // Perils by Line
+  { q: "Perils — Accident & Health Insurance", a: "Illnesses, accidents, disease, and disability. BOTH sudden AND gradual onset conditions can be covered." },
+  { q: "Perils — Life Insurance", a: "Death (mortality). Life insurance protects against PREMATURE death." },
+  { q: "Perils — Annuities", a: "Living too long (longevity). Annuities provide protection when DEATH IS DELAYED — they solve the risk of outliving income." },
+  { q: "Perils — Liability Insurance", a: "Negligence, errors/omissions, professional mistakes, third-party claims. Must involve LEGAL RESPONSIBILITY to others." },
+  { q: "Accident vs. Occurrence", a: "Every ACCIDENT is an occurrence, but NOT every occurrence is an accident. An accident implies sudden and unintended; an occurrence is a broader term." },
+
+  // Adverse Selection & Law of Large Numbers
+  { q: "Adverse Selection", a: "The tendency of HIGHER-RISK individuals to seek insurance MORE FREQUENTLY than lower-risk individuals. Increases insurer's risk and claims costs. Underwriting is the primary tool to combat it." },
+  { q: "Adverse Selection — How Insurers Combat It", a: "Underwriting (risk assessment), waiting periods, medical exams, and application questions. Concealing material information on an application IS a form of adverse selection." },
+  { q: "Law of Large Numbers", a: "The larger the number of SIMILAR, INDEPENDENT risks insured, the more accurately future losses can be predicted. Requires exposure units that are both NUMEROUS and INDEPENDENT." },
+  { q: "Risk Pooling", a: "Transferring risk from an INDIVIDUAL to a GROUP. Exposure units in the pool must be SIMILAR (homogeneous). Works together with the Law of Large Numbers to make insurance viable." },
+  { q: "Homogeneous Exposure Units", a: "Exposure units in an insurance pool must be SIMILAR in nature. A large group is NOT enough — they must also be INDEPENDENT (a single event shouldn't affect all units simultaneously)." },
+
+  // Methods of Handling Risk
+  { q: "5 Methods of Handling Risk", a: "1. SHARING — spread among multiple parties. 2. TRANSFER — via legal contract (insurance). 3. AVOIDANCE — eliminate the activity. 4. REDUCTION — reduce likelihood/severity. 5. RETENTION — keep the risk, use own reserves." },
+  { q: "Risk Sharing", a: "Spreading risk AMONG MULTIPLE PARTIES. Example: coinsurance in a major medical policy. Best when multiple parties can share the risk." },
+  { q: "Risk Transfer", a: "Transferring risk from one party to another via a LEGAL CONTRACT. Buying insurance is the primary example. Also: incorporation, hold-harmless clauses." },
+  { q: "Risk Avoidance", a: "ELIMINATING an activity or condition that exposes you to loss. Example: not building in a flood zone; not skydiving. Best when risk is too high and no other solution is viable." },
+  { q: "Risk Reduction", a: "Deliberate actions to REDUCE the likelihood or SEVERITY of a loss. Examples: safety systems, training, maintenance. Best when risk can't be avoided and multiple exposures exist." },
+  { q: "Risk Retention", a: "Maintaining PERSONAL RESERVES to address costs of loss — accepting the risk yourself. Examples: deductibles, self-insurance, no insurance. Best for small, frequent, predictable losses." },
+
+  // Indemnity (Ch. 2 angle)
+  { q: "Principle of Indemnity — Purpose", a: "PREVENTING PROFIT from insurance. Restores insured to pre-loss financial condition. Key terms: 'make whole,' 'restore,' 'financial position.'" },
+  { q: "Exceptions to the Principle of Indemnity", a: "LIFE INSURANCE (valued contract — pays predetermined amount), VALUED POLICIES, and REPLACEMENT COST VALUATION can result in payment exceeding actual cash value." },
+
+  // ── From Review Notes: gaps ──
+  { q: "Direct Loss", a: "IMMEDIATE damage caused directly by the peril itself. Example: a fire burns down a house → the structural damage is a direct loss." },
+  { q: "Indirect Loss", a: "A CONSEQUENTIAL loss that results from the direct loss — not from the peril itself. Example: a fire destroys a house → the cost of temporary housing while rebuilding is an indirect loss." },
+  { q: "Direct vs. Indirect Loss", a: "DIRECT = immediate physical damage from the peril. INDIRECT (consequential) = downstream costs resulting from the direct loss. Example: fire damage to a building = direct; lost rental income = indirect." },
+  { q: "Risk Prevention", a: "Actions taken to ELIMINATE the potential for loss entirely. The 6th method of handling risk. Different from reduction (which reduces likelihood) — prevention aims to make the loss IMPOSSIBLE." },
+  { q: "6 Methods of Handling Risk (STARR+P)", a: "SHARING, TRANSFER, AVOIDANCE, REDUCTION, RETENTION, PREVENTION. Memory: STARR (Sharing, Transfer, Avoidance, Reduction, Retention) + Prevention." },
+  { q: "Self-Insurance vs. No Insurance", a: "SELF-INSURANCE = a PLANNED program of retaining risk using dedicated reserves. NO INSURANCE = unplanned — simply not purchasing coverage. Key difference: intentional planning vs. absence of planning." },
+  { q: "Adverse Selection — Warning Signs", a: "Unusual URGENCY on the application, INCOMPLETE information, EARLY or PATTERN of claims, coverage AMOUNTS EXCEEDING NEEDS." },
+  { q: "Adverse Selection — Control Methods", a: "Medical UNDERWRITING, WAITING PERIODS, PREEXISTING CONDITION limitations, COMPLETE health information requirements, RISK CLASSIFICATION." },
+  { q: "Accident vs. Occurrence", a: "An ACCIDENT is sudden and specific in time and place. An OCCURRENCE can be gradual (e.g., repeated exposure). Every accident is an occurrence, but NOT every occurrence is an accident." },
+];
+
+let currentIdx = 0;
+let flipped = false;
+let shuffled = [...cards];
+
+function renderCard() {
+  const c = shuffled[currentIdx];
+  document.getElementById('fc-front-text').textContent = c.q;
+  document.getElementById('fc-back-text').textContent = c.a;
+  document.getElementById('fc-progress').textContent = `Card ${currentIdx + 1} of ${shuffled.length}`;
+  const card = document.getElementById('fc-card');
+  card.classList.remove('flipped');
+  flipped = false;
+}
+function flipCard() {
+  flipped = !flipped;
+  document.getElementById('fc-card').classList.toggle('flipped', flipped);
+}
+function nextCard() {
+  currentIdx = (currentIdx < shuffled.length - 1) ? currentIdx + 1 : 0;
+  renderCard();
+}
+function prevCard() {
+  currentIdx = (currentIdx > 0) ? currentIdx - 1 : shuffled.length - 1;
+  renderCard();
+}
+function shuffleCards() {
+  shuffled = [...cards].sort(() => Math.random() - 0.5);
+  currentIdx = 0;
+  renderCard();
+}
+renderCard();
+
+// ── QUIZ QUESTIONS ──
+const questions = [
+
+  // Pure vs Speculative Risk
+  {
+    section: "Pure vs. Speculative Risk",
+    q: "An insurance agent explains that insurance companies ONLY insure pure risks. Which of the following is an example of a PURE RISK?",
+    opts: ["Investing in the stock market","Starting a new business","The possibility of dying prematurely","Placing a bet at a casino"],
+    ans: 2,
+    exp: "Pure risk = possibility of LOSS ONLY, no chance of gain. Dying prematurely = loss only. Stocks, business, and gambling all involve possible gain → speculative risk → not insurable."
+  },
+  {
+    section: "Pure vs. Speculative Risk",
+    q: "Which of the following is a SPECULATIVE RISK?",
+    opts: ["A house fire","A car accident","Purchasing stock in a company","Becoming disabled from an illness"],
+    ans: 2,
+    exp: "Speculative risk involves possible GAIN as well as loss. Stock purchases can result in profit → speculative. House fire, car accident, and disability = loss only → pure risk → insurable."
+  },
+  {
+    section: "Pure vs. Speculative Risk",
+    q: "Insurance companies will NOT insure which type of risk?",
+    opts: ["Pure risk","Speculative risk","Mortality risk","Morbidity risk"],
+    ans: 1,
+    exp: "Insurance only covers PURE RISKS. Speculative risks (which have potential for gain) are not insurable. Mortality and morbidity are examples of pure risks — they are insurable."
+  },
+
+  // Peril vs Hazard
+  {
+    section: "Perils & Hazards",
+    q: "A peril is BEST defined as:",
+    opts: [
+      "A condition that increases the likelihood of a loss",
+      "The specific event or cause that results in a loss",
+      "The financial impact of a covered loss",
+      "A type of insurance coverage"
+    ],
+    ans: 1,
+    exp: "PERIL = the cause of the loss (fire, accident, death). HAZARD = a condition that makes loss more likely. Don't confuse the two — they are different concepts the exam tests separately."
+  },
+  {
+    section: "Perils & Hazards",
+    q: "A hazard is BEST defined as:",
+    opts: [
+      "The specific event that causes a loss",
+      "A condition that increases the likelihood of a loss occurring",
+      "An unintentional decrease in the value of property",
+      "The uncertainty regarding the possibility of loss"
+    ],
+    ans: 1,
+    exp: "HAZARD = a condition that makes loss MORE LIKELY. It doesn't cause the loss directly — it just increases probability. Example: poor health (physical hazard) makes the peril of illness more likely."
+  },
+  {
+    section: "Perils & Hazards",
+    q: "An applicant for life insurance lies about a pre-existing heart condition on their application. This is an example of a:",
+    opts: ["Physical hazard","Morale hazard","Moral hazard","Pure risk"],
+    ans: 2,
+    exp: "MORAL hazard = INTENTIONAL dishonesty. Lying on an application is a deliberate, dishonest act. It's also a form of adverse selection. Moral hazard ALWAYS involves intent."
+  },
+  {
+    section: "Perils & Hazards",
+    q: "An insured doesn't bother going to the doctor for preventive care because 'my insurance will cover it if something goes wrong.' This attitude is an example of a:",
+    opts: ["Physical hazard","Moral hazard","Morale hazard","Speculative risk"],
+    ans: 2,
+    exp: "MORALE hazard = carelessness or INDIFFERENCE because insurance exists. It's UNINTENTIONAL — there's no dishonesty, just a casual 'insurance will handle it' attitude. Key: unintentional vs. moral's intentional."
+  },
+  {
+    section: "Perils & Hazards",
+    q: "Which type of hazard is characterized by physical or tangible conditions that can be seen, measured, or documented through medical exams?",
+    opts: ["Moral hazard","Morale hazard","Physical hazard","Speculative hazard"],
+    ans: 2,
+    exp: "PHYSICAL hazard = tangible, measurable conditions. High blood pressure, obesity, dangerous occupations, and hazardous hobbies are classic examples. Documentable via medical records or exams."
+  },
+  {
+    section: "Perils & Hazards",
+    q: "Which of the following correctly distinguishes between moral and morale hazards?",
+    opts: [
+      "Moral hazards are physical; morale hazards are mental",
+      "Moral hazards involve intentional dishonesty; morale hazards involve careless indifference",
+      "Moral hazards are uninsurable; morale hazards are always covered",
+      "Moral hazards apply only to health insurance; morale hazards apply only to life insurance"
+    ],
+    ans: 1,
+    exp: "The key distinction: MORAL = INTENTIONAL (dishonesty, fraud). MORALE = UNINTENTIONAL (carelessness, indifference). Memory trick: morale has an extra 'e' — extra carelessness."
+  },
+
+  // Perils by Line
+  {
+    section: "Types of Perils by Insurance Line",
+    q: "Which insurance line covers the peril of 'living too long'?",
+    opts: ["Life insurance","Accident and health insurance","Annuities","Liability insurance"],
+    ans: 2,
+    exp: "ANNUITIES address the risk of outliving your income (longevity risk). Life insurance addresses premature DEATH. These are the two sides of the mortality coin."
+  },
+  {
+    section: "Types of Perils by Insurance Line",
+    q: "Liability insurance covers losses that involve:",
+    opts: [
+      "Physical damage to the insured's property",
+      "The insured's death or disability",
+      "Legal responsibility to others (negligence, errors, third-party claims)",
+      "Fire, windstorm, and other property perils"
+    ],
+    ans: 2,
+    exp: "LIABILITY insurance = legal responsibility to OTHERS. It covers negligence, errors/omissions, professional mistakes, and third-party claims. There must be a legal obligation to a third party."
+  },
+  {
+    section: "Types of Perils by Insurance Line",
+    q: "Accident and health insurance is unique because it can cover conditions that are:",
+    opts: [
+      "Only sudden and unexpected",
+      "Only gradual in onset",
+      "Both sudden and gradual in onset",
+      "Only caused by accidents, not illness"
+    ],
+    ans: 2,
+    exp: "A&H insurance covers BOTH sudden (accidents) AND gradual onset (disease, disability) conditions. This is a key testing point — it's not limited to sudden events."
+  },
+
+  // Adverse Selection
+  {
+    section: "Adverse Selection & Underwriting",
+    q: "Adverse selection occurs when:",
+    opts: [
+      "Insurance companies deny claims to lower-risk policyholders",
+      "Higher-risk individuals seek insurance more frequently than lower-risk individuals",
+      "Insurance companies charge higher premiums than necessary",
+      "Agents select the best policies for their clients"
+    ],
+    ans: 1,
+    exp: "Adverse selection = higher-risk people disproportionately SEEK coverage. This increases the insurer's claims costs beyond what was anticipated. Underwriting is the primary defense."
+  },
+  {
+    section: "Adverse Selection & Underwriting",
+    q: "An insurance company uses underwriting to help prevent adverse selection. Which of the following is ALSO an example of adverse selection?",
+    opts: [
+      "An agent recommending a suitable product",
+      "An applicant concealing a material health condition on their application",
+      "An insurer setting premiums based on actuarial data",
+      "A policyholder filing a legitimate claim"
+    ],
+    ans: 1,
+    exp: "CONCEALING MATERIAL INFORMATION on an application is explicitly a form of adverse selection — it allows a high-risk individual to obtain coverage at rates meant for lower-risk people."
+  },
+
+  // Law of Large Numbers & Risk Pooling
+  {
+    section: "Law of Large Numbers & Risk Pooling",
+    q: "The Law of Large Numbers states that insurance companies can predict losses more accurately when they insure:",
+    opts: [
+      "A small number of very high-value risks",
+      "A large number of similar, independent exposure units",
+      "Only risks that have never resulted in a claim before",
+      "Groups located in the same geographic area"
+    ],
+    ans: 1,
+    exp: "The Law of Large Numbers requires exposure units that are NUMEROUS and INDEPENDENT. A large group in one area isn't enough — one event (flood, storm) could hit all of them simultaneously."
+  },
+  {
+    section: "Law of Large Numbers & Risk Pooling",
+    q: "For risk pooling to be effective, exposure units in the pool must be:",
+    opts: [
+      "All located in the same state",
+      "Similar (homogeneous) in nature",
+      "Owned by the same policyowner",
+      "Only subject to pure speculative risks"
+    ],
+    ans: 1,
+    exp: "Risk pooling requires HOMOGENEOUS (similar) exposure units. You can't pool radically different risks together — actuaries need similar data to predict losses accurately."
+  },
+  {
+    section: "Law of Large Numbers & Risk Pooling",
+    q: "A large group of homes located in a single neighborhood may NOT provide accurate loss predictions for an insurer because:",
+    opts: [
+      "There are too many homes to track",
+      "A single event (like a flood) could affect many units simultaneously, violating the independence requirement",
+      "Homeowners in a neighborhood tend to file fewer claims",
+      "State law prohibits insuring entire neighborhoods under one pool"
+    ],
+    ans: 1,
+    exp: "The Law of Large Numbers requires INDEPENDENT exposure units. If one flood wipes out an entire neighborhood simultaneously, the risks aren't truly independent — which undermines accurate loss prediction."
+  },
+
+  // Methods of Handling Risk
+  {
+    section: "Methods of Handling Risk",
+    q: "A person decides not to take up skydiving because they feel the risk of injury is too great. This is an example of risk:",
+    opts: ["Transfer","Retention","Avoidance","Reduction"],
+    ans: 2,
+    exp: "RISK AVOIDANCE = eliminating the activity or condition entirely. Not skydiving = you can't get hurt skydiving if you never skydive. Best used when the risk is too severe and no other option is viable."
+  },
+  {
+    section: "Methods of Handling Risk",
+    q: "A company installs sprinkler systems and conducts fire safety training to reduce the likelihood of workplace fires. This is an example of risk:",
+    opts: ["Avoidance","Retention","Transfer","Reduction"],
+    ans: 3,
+    exp: "RISK REDUCTION = deliberate actions to reduce the LIKELIHOOD or SEVERITY of a loss. The risk still exists — but steps are taken to make it less probable or less damaging. Sprinklers and training = classic reduction."
+  },
+  {
+    section: "Methods of Handling Risk",
+    q: "An individual chooses to pay all out-of-pocket medical expenses rather than purchase health insurance, maintaining a savings account for this purpose. This is an example of risk:",
+    opts: ["Transfer","Sharing","Retention","Avoidance"],
+    ans: 2,
+    exp: "RISK RETENTION = keeping the risk yourself and using personal reserves to cover losses. Deductibles and self-insurance are the classic examples. Best for small, frequent, predictable losses."
+  },
+  {
+    section: "Methods of Handling Risk",
+    q: "Purchasing an insurance policy is the primary example of which method of handling risk?",
+    opts: ["Risk avoidance","Risk reduction","Risk retention","Risk transfer"],
+    ans: 3,
+    exp: "RISK TRANSFER = shifting risk from one party to another via a LEGAL CONTRACT. Insurance is the classic example. Others include incorporation and hold-harmless clauses."
+  },
+  {
+    section: "Methods of Handling Risk",
+    q: "A major medical insurance policy includes a coinsurance provision that splits costs between the insurer and the insured. This is an example of risk:",
+    opts: ["Transfer","Avoidance","Sharing","Retention"],
+    ans: 2,
+    exp: "RISK SHARING = spreading risk AMONG MULTIPLE PARTIES. Coinsurance splits the loss between insurer and insured — both parties share the risk. This is distinct from pure risk transfer where one party absorbs all the risk."
+  },
+
+  // Indemnity
+  {
+    section: "Principle of Indemnity",
+    q: "Which principle prevents insurance from being a source of profit for the insured?",
+    opts: ["Law of Large Numbers","Risk pooling","Principle of indemnity","Adverse selection"],
+    ans: 2,
+    exp: "PRINCIPLE OF INDEMNITY: the insured should be RESTORED to their pre-loss financial position — no better, no worse. It prevents the insured from PROFITING from a loss. Key terms: 'make whole,' 'restore,' 'financial position.'"
+  },
+  {
+    section: "Principle of Indemnity",
+    q: "Which type of policy is NOT subject to the principle of indemnification?",
+    opts: ["Health insurance","Accident insurance","Life insurance","Disability income insurance"],
+    ans: 2,
+    exp: "LIFE INSURANCE is a VALUED CONTRACT — it pays a PREDETERMINED amount regardless of actual financial loss. It is an exception to indemnity. Health, accident, and disability policies are contracts of indemnity."
+  },
+  {
+    section: "Principle of Indemnity",
+    q: "\"The principle that returns the insured to the same financial position they were in before their loss\" is describing:",
+    opts: ["Risk transfer","Adverse selection","Indemnification","Risk retention"],
+    ans: 2,
+    exp: "Classic exam phrasing for INDEMNIFICATION. Restore, make whole, same financial position = indemnity. No profit allowed. Life insurance (valued contract) is the main exception."
+  },
+
+  // ── Direct vs. Indirect Loss ──
+  {
+    section: "Direct vs. Indirect Loss",
+    q: "A fire destroys an apartment building. The owner cannot collect rent while repairs are made. The lost rental income is an example of a(n):",
+    opts: ["Direct loss","Peril","Indirect (consequential) loss","Physical hazard"],
+    ans: 2,
+    exp: "INDIRECT (consequential) loss = a downstream financial loss CAUSED BY the direct loss, not by the peril itself. The fire damage = direct loss. The lost rent = indirect loss. Both may be covered depending on the policy."
+  },
+  {
+    section: "Direct vs. Indirect Loss",
+    q: "Which of the following is a DIRECT loss?",
+    opts: [
+      "Lost business income while a building is being repaired",
+      "Temporary housing costs after a house fire",
+      "The structural damage to a home caused by a fire",
+      "Medical costs arising from a delayed diagnosis after an accident"
+    ],
+    ans: 2,
+    exp: "DIRECT loss = the IMMEDIATE physical damage caused by the peril. The fire burning the house = direct. Everything downstream (housing, lost income, etc.) = indirect/consequential."
+  },
+
+  // ── Self-Insurance vs. No Insurance ──
+  {
+    section: "Methods of Handling Risk",
+    q: "Self-insurance differs from simply having no insurance because self-insurance involves:",
+    opts: [
+      "Transferring risk to another party",
+      "A planned program of retaining risk with dedicated reserves set aside",
+      "Sharing risk with other policyholders",
+      "Eliminating the activity that causes the risk"
+    ],
+    ans: 1,
+    exp: "SELF-INSURANCE = intentional, PLANNED retention with dedicated reserves. NO INSURANCE = simply not buying coverage (unplanned). The intent and preparation distinguish them. Self-insurance is a form of risk RETENTION."
+  },
+
+  // ── Risk Prevention ──
+  {
+    section: "Methods of Handling Risk",
+    q: "Risk prevention differs from risk reduction in that risk prevention aims to:",
+    opts: [
+      "Reduce the severity of a loss after it occurs",
+      "Share the financial impact among multiple parties",
+      "Eliminate the potential for loss entirely",
+      "Transfer the risk to an insurance company"
+    ],
+    ans: 2,
+    exp: "RISK PREVENTION = eliminate the potential for loss entirely (make it impossible). RISK REDUCTION = reduce the LIKELIHOOD or SEVERITY but the risk still exists. Prevention is more absolute."
+  },
+
+  // ── Adverse Selection (detailed) ──
+  {
+    section: "Adverse Selection & Underwriting",
+    q: "Which of the following is a WARNING SIGN of adverse selection that an underwriter should look for?",
+    opts: [
+      "An applicant who requests a lower coverage amount than typical",
+      "An applicant who takes longer than usual to complete the application",
+      "Unusual urgency in the application process and coverage amounts that exceed the applicant's apparent needs",
+      "An applicant who has never filed a claim before"
+    ],
+    ans: 2,
+    exp: "Adverse selection warning signs: unusual URGENCY, INCOMPLETE information, early or pattern of claims, coverage AMOUNTS EXCEEDING NEEDS. High urgency + over-coverage = applicant likely knows something the insurer doesn't."
+  },
+
+  // ── Accident vs. Occurrence ──
+  {
+    section: "Perils & Hazards",
+    q: "A worker gradually develops hearing loss from years of exposure to loud machinery. This is best classified as a(n):",
+    opts: [
+      "Accident, because it was unintentional",
+      "Occurrence, because it developed gradually over time",
+      "Moral hazard, because it involves the workplace",
+      "Speculative risk, because the outcome was uncertain"
+    ],
+    ans: 1,
+    exp: "An OCCURRENCE can develop gradually — it doesn't have to be sudden. An ACCIDENT is sudden and identifiable at a specific point in time. Gradual hearing loss = occurrence, not an accident. This distinction matters in policy language."
+  },
+];
+
+// ── QUIZ ENGINE ──
+let answered = {};
+let score = 0;
+let submitted = false;
+
+function buildQuiz() {
+  answered = {}; score = 0; submitted = false;
+  const area = document.getElementById('quiz-area');
+  let html = `<div class="quiz-header"><div class="quiz-meta">${questions.length} Questions · Chapter 2</div><div class="score-badge" id="score-live">Score: —</div></div>`;
+  let lastSection = '';
+  questions.forEach((q, i) => {
+    if (q.section !== lastSection) {
+      html += `<div class="section-divider">${q.section}</div>`;
+      lastSection = q.section;
+    }
+    const letters = ['A','B','C','D'];
+    html += `<div class="q-card" id="qcard-${i}"><div class="q-num">Question ${i+1}</div><div class="q-text">${q.q}</div><div class="options">`;
+    q.opts.forEach((opt, j) => {
+      html += `<div class="opt" id="opt-${i}-${j}" onclick="selectAnswer(${i},${j})"><span class="opt-letter">${letters[j]}</span><span>${opt}</span></div>`;
+    });
+    html += `</div><div class="explanation" id="exp-${i}">${q.exp}</div></div>`;
+  });
+  html += `<div style="text-align:center;margin-top:32px;"><button class="btn btn-primary" onclick="submitQuiz()" id="submit-btn">Submit & Score</button></div><div id="results-area"></div>`;
+  area.innerHTML = html;
+}
+
+function selectAnswer(qIdx, optIdx) {
+  if (submitted) return;
+  answered[qIdx] = optIdx;
+  questions[qIdx].opts.forEach((_, j) => {
+    const el = document.getElementById(`opt-${qIdx}-${j}`);
+    el.style.borderColor = j === optIdx ? '#3b82f6' : '';
+    el.style.background  = j === optIdx ? '#1e3a5f' : '';
+    el.style.color       = j === optIdx ? '#e2e8f0' : '';
+  });
+  let correct = 0;
+  Object.keys(answered).forEach(i => { if (answered[i] === questions[i].ans) correct++; });
+  document.getElementById('score-live').textContent = `${correct}/${Object.keys(answered).length} answered`;
+}
+
+function submitQuiz() {
+  submitted = true; score = 0;
+  questions.forEach((q, i) => {
+    q.opts.forEach((_, j) => {
+      const el = document.getElementById(`opt-${i}-${j}`);
+      el.classList.add('disabled');
+      if (j === q.ans) el.classList.add('correct');
+      else if (answered[i] === j) el.classList.add('wrong');
+    });
+    document.getElementById(`exp-${i}`).classList.add('show');
+    if (answered[i] === q.ans) score++;
+  });
+  const pct = Math.round((score / questions.length) * 100);
+  let msg, color;
+  if (pct >= 90)      { msg = "Excellent! Chapter 2 locked in."; color = "#4ade80"; }
+  else if (pct >= 70) { msg = "Passing — review your misses."; color = "#facc15"; }
+  else                { msg = "Below threshold — review and retry."; color = "#f87171"; }
+  document.getElementById('score-live').textContent = `Score: ${score}/${questions.length} (${pct}%)`;
+  document.getElementById('submit-btn').outerHTML = `<button class="btn btn-ghost" onclick="buildQuiz()">🔄 Retake</button>`;
+  document.getElementById('results-area').innerHTML = `
+    <div class="quiz-results">
+      <div class="score-big" style="color:${color}">${pct}%</div>
+      <div class="score-sub">${score} correct out of ${questions.length}</div>
+      <div class="score-msg" style="color:${color}">${msg}</div>
+      <div style="margin-top:8px;font-size:0.85rem;color:#64748b;">Pass threshold: 70% · Scroll up to review explanations</div>
+    </div>`;
+}
+
+function showTab(t) {
+  document.getElementById('tab-flashcards').style.display = t === 'flashcards' ? '' : 'none';
+  document.getElementById('tab-quiz').style.display       = t === 'quiz' ? '' : 'none';
+  document.querySelectorAll('.tab').forEach((el, i) => {
+    el.classList.toggle('active', (i === 0 && t === 'flashcards') || (i === 1 && t === 'quiz'));
+  });
+  if (t === 'quiz' && !document.querySelector('.q-card')) buildQuiz();
+}
+</script>
+</body>
+</html>

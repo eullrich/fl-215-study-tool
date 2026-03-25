@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FL 2-15 Exam | Chapter 1 Study Tool</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+
+  .header { background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%); padding: 24px 32px; border-bottom: 1px solid #1e40af44; }
+  .header h1 { font-size: 1.5rem; font-weight: 700; color: #60a5fa; letter-spacing: -0.02em; }
+  .header p { font-size: 0.875rem; color: #94a3b8; margin-top: 4px; }
+
+  .tabs { display: flex; gap: 0; padding: 20px 32px 0; border-bottom: 1px solid #1e293b; }
+  .tab { padding: 10px 24px; border-radius: 8px 8px 0 0; cursor: pointer; font-size: 0.875rem; font-weight: 600; border: 1px solid transparent; border-bottom: none; transition: all 0.2s; color: #64748b; }
+  .tab.active { background: #1e293b; color: #60a5fa; border-color: #1e40af44; }
+  .tab:hover:not(.active) { color: #94a3b8; }
+
+  .content { padding: 32px; max-width: 860px; margin: 0 auto; }
+
+  /* ── FLASHCARDS ── */
+  .fc-container { display: flex; flex-direction: column; align-items: center; gap: 24px; }
+  .fc-progress { font-size: 0.8rem; color: #64748b; letter-spacing: 0.05em; text-transform: uppercase; }
+  .fc-card-wrap { width: 100%; max-width: 640px; perspective: 1200px; cursor: pointer; user-select: none; }
+  .fc-card { position: relative; width: 100%; height: 220px; transition: transform 0.55s cubic-bezier(.4,2,.6,1); transform-style: preserve-3d; }
+  .fc-card.flipped { transform: rotateY(180deg); }
+  .fc-face { position: absolute; inset: 0; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 28px 36px; text-align: center; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+  .fc-front { background: linear-gradient(135deg, #1e3a5f, #1e293b); border: 1px solid #2563eb44; box-shadow: 0 8px 32px #0004; }
+  .fc-back  { background: linear-gradient(135deg, #14532d, #1e293b); border: 1px solid #16a34a44; box-shadow: 0 8px 32px #0004; transform: rotateY(180deg); }
+  .fc-label { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px; opacity: 0.5; }
+  .fc-text  { font-size: 1.15rem; font-weight: 600; line-height: 1.5; color: #f1f5f9; }
+  .fc-hint  { font-size: 0.75rem; color: #64748b; margin-top: 14px; }
+
+  .fc-controls { display: flex; gap: 12px; align-items: center; }
+  .btn { padding: 10px 22px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; transition: all 0.15s; }
+  .btn-primary { background: #2563eb; color: #fff; }
+  .btn-primary:hover { background: #1d4ed8; }
+  .btn-ghost { background: #1e293b; color: #94a3b8; border: 1px solid #334155; }
+  .btn-ghost:hover { background: #334155; color: #e2e8f0; }
+  .btn-sm { padding: 7px 16px; font-size: 0.8rem; }
+
+  /* ── QUIZ ── */
+  .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+  .quiz-meta { font-size: 0.8rem; color: #64748b; }
+  .score-badge { background: #1e293b; border: 1px solid #334155; border-radius: 999px; padding: 4px 14px; font-size: 0.8rem; font-weight: 700; color: #94a3b8; }
+
+  .q-card { background: #1e293b; border: 1px solid #334155; border-radius: 14px; padding: 28px; margin-bottom: 20px; }
+  .q-num { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #64748b; margin-bottom: 10px; }
+  .q-text { font-size: 1rem; font-weight: 600; color: #f1f5f9; line-height: 1.55; margin-bottom: 20px; }
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .opt { padding: 12px 18px; border-radius: 9px; border: 1.5px solid #334155; background: #0f172a; cursor: pointer; font-size: 0.9rem; color: #cbd5e1; transition: all 0.15s; display: flex; align-items: flex-start; gap: 10px; }
+  .opt:hover:not(.disabled) { border-color: #3b82f6; color: #e2e8f0; background: #1e3a5f; }
+  .opt.correct { border-color: #22c55e; background: #14532d22; color: #4ade80; }
+  .opt.wrong   { border-color: #ef4444; background: #7f1d1d22; color: #f87171; }
+  .opt.disabled { cursor: default; pointer-events: none; }
+  .opt-letter { font-weight: 700; opacity: 0.5; min-width: 18px; }
+  .explanation { margin-top: 14px; padding: 12px 16px; border-radius: 8px; background: #0f172a; border-left: 3px solid #3b82f6; font-size: 0.85rem; color: #94a3b8; line-height: 1.5; display: none; }
+  .explanation.show { display: block; }
+
+  .quiz-results { text-align: center; padding: 40px 20px; }
+  .score-big { font-size: 4rem; font-weight: 800; color: #60a5fa; line-height: 1; }
+  .score-sub { font-size: 1rem; color: #64748b; margin-top: 8px; }
+  .score-msg { font-size: 1.1rem; font-weight: 600; margin-top: 16px; }
+
+  .section-divider { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #3b82f6; background: #1e3a5f22; border: 1px solid #1e40af33; border-radius: 6px; padding: 5px 14px; display: inline-block; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>FL 2-15 Exam Prep</h1>
+  <p>Chapter 1 — Basic Principles of Life and Health Insurance &nbsp;·&nbsp; ✅ Complete &nbsp;·&nbsp; 83 Practice Questions &nbsp;·&nbsp; 44 Focused Flashcards</p>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('flashcards')">📇 Flashcards</div>
+  <div class="tab" onclick="showTab('quiz')">📝 Practice Test</div>
+</div>
+
+<!-- ══════════════ FLASHCARDS ══════════════ -->
+<div id="tab-flashcards" class="content">
+  <div class="fc-container">
+    <div class="fc-progress" id="fc-progress">Card 1 of 24</div>
+    <div class="fc-card-wrap" onclick="flipCard()">
+      <div class="fc-card" id="fc-card">
+        <div class="fc-face fc-front">
+          <div class="fc-label">Term</div>
+          <div class="fc-text" id="fc-front-text"></div>
+          <div class="fc-hint">click to reveal definition</div>
+        </div>
+        <div class="fc-face fc-back">
+          <div class="fc-label">Definition</div>
+          <div class="fc-text" id="fc-back-text"></div>
+        </div>
+      </div>
+    </div>
+    <div class="fc-controls">
+      <button class="btn btn-ghost btn-sm" onclick="prevCard()">← Prev</button>
+      <button class="btn btn-primary" onclick="nextCard()">Next →</button>
+      <button class="btn btn-ghost btn-sm" onclick="shuffleCards()">🔀 Shuffle</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ QUIZ ══════════════ -->
+<div id="tab-quiz" class="content" style="display:none;">
+  <div id="quiz-area"></div>
+</div>
+
+<script>
+// ──────────────────────────────────────────
+// FLASHCARD DATA — focused on Chapter 1 Review Notes (Learning Objectives 1–6)
+// ──────────────────────────────────────────
+const cards = [
+
+  // ── LO 1: Basic Insurance Concepts ──
+  { q: "Insurance", a: "A legal contract that TRANSFERS RISK from the policyholder to the insurer in exchange for premium payments." },
+  { q: "Premium Pooling", a: "Spreading risk by collecting premiums from MANY policyholders to pay for the losses of the FEW." },
+  { q: "Indemnification", a: "Restoring the insured to the SAME FINANCIAL POSITION they were in BEFORE the loss — no better, no worse. The insured cannot profit from a loss." },
+  { q: "Insured", a: "The person receiving insurance protection." },
+  { q: "Insurer", a: "The company providing coverage and assuming risk." },
+  { q: "Premium", a: "The payment made by the policyholder to the insurer in exchange for coverage." },
+  { q: "Policyowner", a: "The person who owns the policy and transfers risk to the insurer. May or may not be the same as the insured." },
+  { q: "Valued Contract vs. Indemnity Contract", a: "VALUED CONTRACT (life insurance): pays a PREDETERMINED amount regardless of actual loss. INDEMNITY CONTRACT (health, property, casualty): reimburses ACTUAL loss — insured cannot profit." },
+
+  // ── LO 2: Types of Insurance Companies ──
+  { q: "Stock Insurance Company", a: "Owned by SHAREHOLDERS. Issues NONPARTICIPATING policies (no dividends to policyholders). Profits go to stockholders. Publicly traded." },
+  { q: "Mutual Insurance Company", a: "Owned by POLICYHOLDERS. Issues PARTICIPATING policies. Policyholders may receive DIVIDENDS (not guaranteed, not taxable) and ELECT THE BOARD OF DIRECTORS." },
+  { q: "Participating vs. Nonparticipating Policy", a: "PARTICIPATING (mutual): policyholders get dividends + vote for board. NONPARTICIPATING (stock): no dividends, no voting rights." },
+  { q: "Fraternal Benefit Society", a: "NON-PROFIT. Must have a LODGE SYSTEM with ritualistic work. Must EXIST FOR REASONS OTHER THAN insurance (social, charitable, religious). Insures its members." },
+  { q: "Reciprocal Insurer", a: "Members (subscribers) INSURE EACH OTHER. Risk-SHARING, not risk-transfer. Day-to-day operations run by an ATTORNEY-IN-FACT." },
+  { q: "Risk Retention Group (RRG)", a: "Created under federal law (LRRA 1986). Provides LIABILITY insurance for groups in the same profession. Acts as the insurer itself. Licensed in ONE state but operates nationally." },
+  { q: "Captive Insurer", a: "Owned by a PARENT COMPANY specifically to insure the parent's own risks." },
+
+  // ── LO 3: Key Departments ──
+  { q: "Marketing / Sales Department", a: "MARKETING: increases prospective applicants through advertising. SALES: face-to-face appointments and completing applications with individual buyers." },
+  { q: "Underwriting Department", a: "Reviews applications, investigates applicants, assigns RISK CLASSIFICATIONS, approves or declines coverage." },
+  { q: "Claims Department", a: "Processes, investigates, and PAYS CLAIMS for losses incurred by insureds." },
+  { q: "Actuarial Department", a: "Calculates policy RATES, RESERVES, and DIVIDENDS. Uses MORTALITY tables (death/life insurance) and MORBIDITY tables (sickness/health insurance)." },
+
+  // ── LO 3: Key People ──
+  { q: "Producer", a: "Umbrella term for anyone licensed to sell insurance — includes agents and brokers." },
+  { q: "Agent", a: "Represents the INSURER. Can bind coverage. In a dispute, represents the insurer — NOT the insured." },
+  { q: "Broker", a: "Represents the INSURED (buyer). Cannot bind coverage. In a dispute, represents the insured." },
+  { q: "Solicitor", a: "NOT licensed to sell insurance. Refers prospects to a producer — cannot sell or bind coverage." },
+  { q: "Underwriter", a: "Assesses and classifies risk to decide whether to issue coverage and at what premium." },
+  { q: "Actuary", a: "Calculates rates, reserves, and dividends using statistical tables (mortality/morbidity)." },
+  { q: "Adjuster", a: "Investigates claims for the INSURER. A PUBLIC ADJUSTER works for the INSURED for compensation." },
+
+  // ── LO 4: Distribution Systems ──
+  { q: "Career Agency System", a: "Agents work exclusively for ONE company. Focus: BUILDING SALES STAFF. Agents are recruited, trained, and supervised by a GENERAL AGENT (GA)." },
+  { q: "Independent Agency System (American Agency)", a: "Agents represent MULTIPLE companies. Agents OWN their book of business. NOT tied to any single insurer." },
+  { q: "Personal Producing General Agency (PPGA)", a: "Primarily SELLS insurance. Does NOT recruit, train, or supervise agents. Agents are employees of the PPGA, not the insurer." },
+  { q: "Direct Selling", a: "The insurer deals DIRECTLY with consumers — no agents. Examples: vending machines, ads, salaried reps." },
+  { q: "Captive Agent vs. Independent Agent vs. Broker", a: "CAPTIVE: one company. INDEPENDENT: multiple companies, owns book of business. BROKER: represents the buyer, not an insurer." },
+
+  // ── LO 5: Evolution of Oversight ──
+  { q: "Paul v. Virginia (1868)", a: "Insurance = NOT interstate commerce → STATE regulation authority established." },
+  { q: "US v. SEUA (1944)", a: "Reversed Paul v. Virginia — insurance = interstate commerce → federal jurisdiction. Congress responded with McCarran-Ferguson." },
+  { q: "McCarran-Ferguson Act (1945)", a: "Returned primary regulation to STATES. Required federal antitrust compliance. Penalty: up to $10,000 + 1 year imprisonment." },
+  { q: "Fair Credit Reporting Act (1970)", a: "If coverage is DENIED based on a consumer report, insurer must disclose WHICH agency provided the report. Must notify applicants of ongoing investigations." },
+  { q: "Gramm-Leach-Bliley Act / GLBA (1999)", a: "Broke down barriers between banking/insurance/securities (repealed Glass-Steagall). Privacy rules: OPT-OUT for non-affiliated 3rd parties; OPT-IN for health information." },
+  { q: "NAIC", a: "State insurance regulators. Creates MODEL LAWS (not regulations). NOT a regulator — cannot enact laws or enforce compliance. 4 objectives: uniformity, administration, consumer protection, preserve state regulation." },
+  { q: "NCOIL", a: "State LEGISLATORS (formed 1969). Writes model laws. Opposes federal encroachment on state insurance authority." },
+  { q: "State Insurance Departments", a: "PRIMARY regulators of insurance. Issue licenses (certificates of authority), enforce regulations, protect consumers." },
+
+  // ── LO 6: Industry Organizations ──
+  { q: "NAIC — 4 Objectives", a: "(1) Uniformity in state laws, (2) Assist administration efficiently, (3) Protect policyowner/consumer interests, (4) Preserve STATE regulation." },
+  { q: "NAIFA", a: "National Association of Insurance and Financial Advisors. Professional association for agents with a CODE OF ETHICS covering: selling to needs, suitability, full disclosure, documentation, client service." },
+  { q: "Rating Services (A.M. Best, Moody's, S&P, Fitch)", a: "Evaluate insurer FINANCIAL STRENGTH (solvency/stability). NOT regulators — they publicize findings. A.M. Best is the most insurance-specific." },
+  { q: "Reserves vs. Liquidity", a: "RESERVES = future KNOWN obligations to policyholders (classified as LIABILITIES). LIQUIDITY = ability to make UNPREDICTABLE payouts. Both assessed before a certificate of authority is issued." },
+];
+
+let currentIdx = 0;
+let flipped = false;
+let shuffled = [...cards];
+
+function renderCard() {
+  const c = shuffled[currentIdx];
+  document.getElementById('fc-front-text').textContent = c.q;
+  document.getElementById('fc-back-text').textContent  = c.a;
+  document.getElementById('fc-progress').textContent = `Card ${currentIdx + 1} of ${shuffled.length}`;
+  const card = document.getElementById('fc-card');
+  card.classList.remove('flipped');
+  flipped = false;
+}
+
+function flipCard() {
+  const card = document.getElementById('fc-card');
+  flipped = !flipped;
+  card.classList.toggle('flipped', flipped);
+}
+
+function nextCard() {
+  if (currentIdx < shuffled.length - 1) currentIdx++;
+  else currentIdx = 0;
+  renderCard();
+}
+
+function prevCard() {
+  if (currentIdx > 0) currentIdx--;
+  else currentIdx = shuffled.length - 1;
+  renderCard();
+}
+
+function shuffleCards() {
+  shuffled = [...cards].sort(() => Math.random() - 0.5);
+  currentIdx = 0;
+  renderCard();
+}
+
+renderCard();
+
+// ──────────────────────────────────────────
+// QUIZ DATA
+// ──────────────────────────────────────────
+const questions = [
+  {
+    section: "The Concept of Insurance",
+    q: "Which of the following BEST describes the concept of insurance?",
+    opts: ["A guarantee that no financial loss will occur","The transfer of risk through the pooling of funds","A savings account for future losses","A government program for financial protection"],
+    ans: 1,
+    exp: "Insurance works by collecting premiums from many to pay for the losses of the few — this is risk transfer through premium pooling."
+  },
+  {
+    section: "The Concept of Insurance",
+    q: "The principle that restores an insured to the same financial position they were in before a loss — no better, no worse — is called:",
+    opts: ["Risk pooling","Subrogation","Indemnification","Actuarial equivalence"],
+    ans: 2,
+    exp: "Indemnification is the core principle that insurance should restore, not enrich. It prevents profiting from a loss."
+  },
+  {
+    section: "The Concept of Insurance",
+    q: "The Law of Large Numbers is important to insurance companies because it:",
+    opts: ["Guarantees that every policyholder will file a claim","Allows more accurate prediction of losses across a large group","Requires all companies to charge the same premium","Limits the number of policyholders an insurer can accept"],
+    ans: 1,
+    exp: "The larger the insured pool, the closer actual losses come to statistically predicted losses — making pricing accurate and the business viable."
+  },
+  {
+    section: "Types of Insurance Companies",
+    q: "A stock insurance company is owned by:",
+    opts: ["Its policyholders","The state government","Stockholders (shareholders)","A fraternal organization"],
+    ans: 2,
+    exp: "Stock companies are owned by stockholders, not policyholders. They typically issue nonparticipating policies."
+  },
+  {
+    section: "Types of Insurance Companies",
+    q: "A mutual insurance company typically issues _______ policies, which may pay dividends to policyholders.",
+    opts: ["Nonparticipating","Convertible","Participating","Variable"],
+    ans: 2,
+    exp: "Mutual companies are owned by policyholders and issue participating policies. Dividends are a return of excess premium, not guaranteed income."
+  },
+  {
+    section: "Types of Insurance Companies",
+    q: "Which type of insurer is organized for religious, national, or social purposes and provides insurance benefits to its members?",
+    opts: ["Stock company","Mutual company","Fraternal benefit society","Reciprocal insurer"],
+    ans: 2,
+    exp: "Fraternal benefit societies are non-profit membership organizations. They operate under special provisions of insurance law."
+  },
+  {
+    section: "Types of Insurance Companies",
+    q: "A participating policy differs from a nonparticipating policy in that it:",
+    opts: ["Has lower premiums","Allows policyowners to receive dividends and vote for directors","Is only available through mutual companies","Provides guaranteed cash values"],
+    ans: 1,
+    exp: "Participating policies give policyowners dividend rights and voting rights. Nonparticipating policies (common in stock companies) offer neither."
+  },
+  {
+    section: "Key Departments & People",
+    q: "Which department within an insurance company is responsible for reviewing applications and determining whether to issue or decline coverage?",
+    opts: ["Claims Department","Actuarial Department","Underwriting Department","Marketing Department"],
+    ans: 2,
+    exp: "The Underwriting Department evaluates risk, approves/declines applications, and assigns risk classifications that determine premium rates."
+  },
+  {
+    section: "Key Departments & People",
+    q: "After a covered loss, the policyholder submits a request for payment. Which department processes and pays this request?",
+    opts: ["Underwriting Department","Claims Department","Actuarial Department","Compliance Department"],
+    ans: 1,
+    exp: "The Claims Department investigates, processes, and pays (or denies) claims submitted by insureds."
+  },
+  {
+    section: "Key Departments & People",
+    q: "An actuary's primary role within an insurance company is to:",
+    opts: ["Sell insurance products to clients","Investigate and pay claims","Analyze statistics to calculate premiums and reserves","Recruit and train insurance agents"],
+    ans: 2,
+    exp: "Actuaries are mathematicians/statisticians who use data to price products, set reserves, and assess financial risk."
+  },
+  {
+    section: "How Insurance Is Sold",
+    q: "Which of the following BEST describes a captive agent?",
+    opts: ["An agent who represents multiple insurance companies","An agent who represents only one insurance company","A broker who cannot bind coverage","An agent employed directly by the state"],
+    ans: 1,
+    exp: "A captive (or exclusive) agent is contracted to represent a single insurer. Compare with independent agents who represent multiple companies."
+  },
+  {
+    section: "How Insurance Is Sold",
+    q: "A broker represents the _______ rather than the insurance company.",
+    opts: ["Insurer","State regulator","Insured (client)","Reinsurer"],
+    ans: 2,
+    exp: "This is a critical distinction: agents represent the insurer; brokers represent the insured. Brokers also cannot bind coverage."
+  },
+  {
+    section: "How Insurance Is Sold",
+    q: "The term 'producer' refers to:",
+    opts: ["Only insurance agents","Only insurance brokers","Both agents and brokers who are licensed to sell insurance","The underwriter who approves policies"],
+    ans: 2,
+    exp: "'Producer' is the umbrella term for anyone licensed to sell insurance, covering both agents and brokers."
+  },
+  {
+    section: "How Insurance Is Sold",
+    q: "An independent agent differs from a captive agent because an independent agent:",
+    opts: ["Cannot earn commissions","Can represent multiple insurance companies","Must work directly for an insurer","Can only sell life insurance"],
+    ans: 1,
+    exp: "Independent agents represent several insurers and can shop the market for clients. They typically own their client files/book of business."
+  },
+  {
+    section: "Evolution of Industry Oversight",
+    q: "Insurance regulation in the United States is primarily handled by:",
+    opts: ["The federal government","Individual states","The NAIC","The Department of Commerce"],
+    ans: 1,
+    exp: "The McCarran-Ferguson Act of 1945 established that states have primary authority to regulate insurance. The federal government plays a limited role."
+  },
+  {
+    section: "Evolution of Industry Oversight",
+    q: "The NAIC (National Association of Insurance Commissioners) is best described as:",
+    opts: ["A federal agency with authority to regulate insurers","An organization of state insurance regulators that develops model laws","A consumer advocacy group","A trade association for insurance companies"],
+    ans: 1,
+    exp: "The NAIC develops model legislation and promotes regulatory uniformity — but it has NO direct regulatory authority. Real authority stays with each state."
+  },
+  {
+    section: "Evolution of Industry Oversight",
+    q: "NCOIL (National Conference of Insurance Legislators) focuses primarily on:",
+    opts: ["Paying claims on behalf of insolvent insurers","Protecting state authority over insurance regulation","Setting federal minimum coverage standards","Licensing insurance producers nationally"],
+    ans: 1,
+    exp: "NCOIL is made up of state legislators and works to preserve state-level insurance regulation against federal encroachment."
+  },
+  {
+    section: "Mixed Review",
+    q: "Which of the following is TRUE regarding stock insurance companies vs. mutual insurance companies?",
+    opts: [
+      "Stock companies are owned by policyholders; mutual companies are owned by shareholders",
+      "Both stock and mutual companies can pay dividends to policyholders",
+      "Stock companies are owned by shareholders and typically issue nonparticipating policies",
+      "Mutual companies cannot issue dividends under any circumstances"
+    ],
+    ans: 2,
+    exp: "Stock company = shareholder-owned, nonparticipating policies. Mutual company = policyholder-owned, participating policies with potential dividends."
+  },
+  {
+    section: "Mixed Review",
+    q: "An insurance company that sells policies directly to consumers without using agents is called a:",
+    opts: ["Captive insurer","Fraternal society","Direct writer","Reciprocal exchange"],
+    ans: 2,
+    exp: "Direct writers bypass the agent distribution channel and sell to consumers directly — think online or phone-based sales."
+  },
+  {
+    section: "Mixed Review",
+    q: "A client comes to you wanting to purchase insurance. You search several companies to find the best policy for them. In this transaction, you are acting as a:",
+    opts: ["Captive agent","Broker","Direct writer","Underwriter"],
+    ans: 1,
+    exp: "Searching multiple companies on behalf of the client = broker behavior. Brokers represent the insured, not any single insurer."
+  },
+  // ── Indemnity vs. Valued Contracts ──
+  {
+    section: "Principle of Indemnity",
+    q: "The purpose of the principle of indemnity is to:",
+    opts: [
+      "Allow the insured to receive more than their actual loss as a reward for paying premiums",
+      "Restore the insured to the same financial position they were in before the loss",
+      "Guarantee the insured a profit on every claim",
+      "Ensure the insurance company is never liable for more than the premium paid"
+    ],
+    ans: 1,
+    exp: "Indemnity = restoration, not enrichment. The insured should end up in the same financial position as before — no better, no worse."
+  },
+  {
+    section: "Principle of Indemnity",
+    q: "Under the principle of indemnity, which of the following is TRUE?",
+    opts: [
+      "An insured may receive up to twice their actual loss",
+      "An insured may not profit or gain from their loss",
+      "Life insurance is a contract of indemnity",
+      "Health insurance is a valued contract"
+    ],
+    ans: 1,
+    exp: "Key rule: no profit from loss. Life insurance is the valued contract (pays predetermined amount). Health insurance IS a contract of indemnity."
+  },
+  {
+    section: "Principle of Indemnity",
+    q: "Which of the following types of insurance is classified as a CONTRACT OF INDEMNITY?",
+    opts: ["Life insurance","Variable life insurance","Health insurance","All life insurance products"],
+    ans: 2,
+    exp: "Accident, health, property, and casualty policies are contracts of indemnity — they reimburse actual loss. Life insurance is the exception: it's a valued contract."
+  },
+  {
+    section: "Principle of Indemnity",
+    q: "A life insurance policy that pays $500,000 upon the insured's death is an example of a:",
+    opts: [
+      "Contract of indemnity, because it reimburses economic loss",
+      "Valued contract, because it pays a predetermined amount regardless of actual loss",
+      "Participating policy, because policyowners receive dividends",
+      "Subrogation contract, because the insurer assumes the insured's rights"
+    ],
+    ans: 1,
+    exp: "Life insurance pays a FIXED face amount regardless of the actual economic loss suffered — that's the defining feature of a valued contract."
+  },
+  {
+    section: "Life Insurance & Annuities",
+    q: "Life insurance is said to create an 'instant estate' because:",
+    opts: [
+      "It takes years of premiums before any benefit is paid",
+      "The full death benefit is available immediately upon the insured's death, regardless of how long the policy has been in force",
+      "It guarantees the insured a lifetime income",
+      "It eliminates all estate taxes for the beneficiary"
+    ],
+    ans: 1,
+    exp: "Even on day one of coverage, the full face amount is payable at death — creating wealth (an estate) instantly, regardless of premiums paid so far."
+  },
+  {
+    section: "Life Insurance & Annuities",
+    q: "An annuity is primarily designed to address which financial risk?",
+    opts: [
+      "The risk of dying too soon and leaving dependents without income",
+      "The risk of outliving your income (longevity risk)",
+      "The risk of a catastrophic medical expense",
+      "The risk of property loss due to a natural disaster"
+    ],
+    ans: 1,
+    exp: "Life insurance addresses dying too soon; annuities address living too long (outliving income). These are the two complementary problems life & annuity products solve."
+  },
+  {
+    section: "Life Insurance & Annuities",
+    q: "Life insurance addresses the financial risk of dying prematurely. What risk does an annuity address?",
+    opts: [
+      "Property damage",
+      "Disability",
+      "Outliving one's income",
+      "Medical expenses"
+    ],
+    ans: 2,
+    exp: "Annuities provide guaranteed income for life, directly addressing longevity risk — the possibility of outliving your savings."
+  },
+
+  // ── Stock vs Mutual ──
+  {
+    section: "Stock & Mutual Companies",
+    q: "In a mutual insurance company, ownership rests with the:",
+    opts: ["Stockholders","Federal government","Policyowners","Board of directors"],
+    ans: 2,
+    exp: "Mutual companies have NO stockholders — policyowners ARE the owners. They vote for the board of directors and may receive dividends."
+  },
+  {
+    section: "Stock & Mutual Companies",
+    q: "Dividends paid by a MUTUAL insurance company to its policyowners are:",
+    opts: [
+      "Guaranteed and taxable",
+      "Never permitted under law",
+      "Not guaranteed and NOT taxable",
+      "Guaranteed and not taxable"
+    ],
+    ans: 2,
+    exp: "Mutual company policy dividends are (1) not guaranteed — they depend on the divisible surplus — and (2) not taxable, because they're considered a partial return of premium."
+  },
+  {
+    section: "Stock & Mutual Companies",
+    q: "The 'divisible surplus' of a mutual insurance company is best defined as:",
+    opts: [
+      "The total premiums collected during the year",
+      "The amount returned to policyowners as dividends after covering reserves, expenses, and claims",
+      "The capital contributed by shareholders",
+      "The reserves set aside for future claims"
+    ],
+    ans: 1,
+    exp: "Divisible surplus = excess earnings after reserves and expenses are funded. It's distributed to policyowners as policy dividends."
+  },
+  {
+    section: "Stock & Mutual Companies",
+    q: "The process of converting a mutual insurance company into a stock company is called:",
+    opts: ["Mutualization","Reinsurance","Demutualization","Capitalization"],
+    ans: 2,
+    exp: "Demutualization = mutual → stock. Mutualization = stock → mutual. In demutualization, existing policyholders receive shares of stock proportional to their premiums."
+  },
+  {
+    section: "Stock & Mutual Companies",
+    q: "When an insurance company issues BOTH participating and nonparticipating policies, it is said to operate under a:",
+    opts: ["Reinsurance plan","Mixed plan","Reciprocal plan","Captive plan"],
+    ans: 1,
+    exp: "A 'mixed plan' means the company issues both types. Participating (mutual-style) AND nonparticipating (stock-style) policies."
+  },
+
+  // ── Fraternal, Reciprocal, Assessment ──
+  {
+    section: "Other Insurer Types",
+    q: "Which of the following is NOT a required characteristic of a fraternal benefit society?",
+    opts: [
+      "It must be a non-profit organization",
+      "It must have a lodge system with ritualistic work",
+      "It must exist primarily to provide insurance",
+      "It must have a representative government with elected officers"
+    ],
+    ans: 2,
+    exp: "Fraternal societies must exist for reasons OTHER than insurance — social, charitable, or benevolent activities. Insurance is a benefit offered to members, not the primary purpose."
+  },
+  {
+    section: "Other Insurer Types",
+    q: "In a reciprocal insurer, who actually assumes the risk?",
+    opts: [
+      "The insurance company as a corporate entity",
+      "The state's guaranty fund",
+      "Each member (subscriber) individually assumes a share of the other members' risks",
+      "The attorney-in-fact"
+    ],
+    ans: 2,
+    exp: "Reciprocal insurers are risk-SHARING, not risk-TRANSFER. Members insure each other — no separate corporate entity assumes the risk. The attorney-in-fact manages operations but doesn't assume risk."
+  },
+  {
+    section: "Other Insurer Types",
+    q: "Who handles the day-to-day operations of a reciprocal insurer?",
+    opts: ["The state insurance commissioner","A board of policyholders","An attorney-in-fact","The federal reinsurer"],
+    ans: 2,
+    exp: "An attorney-in-fact is authorized to conduct the daily transactions and affairs of a reciprocal insurer on behalf of its subscribers."
+  },
+
+  // ── RRG vs RPG ──
+  {
+    section: "Risk Retention & Purchasing Groups",
+    q: "A risk retention group (RRG) differs from a risk purchasing group (RPG) primarily because an RRG:",
+    opts: [
+      "Purchases insurance from a commercial carrier on behalf of its members",
+      "Acts as the insurer itself, assuming and pooling members' liability risks",
+      "Is regulated in every state where its members reside",
+      "Provides property insurance rather than liability insurance"
+    ],
+    ans: 1,
+    exp: "RRG = IS the insurer (assumes risk). RPG = BUYS insurance from an insurer. Both cover liability risks for groups with a common bond under the federal LRRA of 1986."
+  },
+  {
+    section: "Risk Retention & Purchasing Groups",
+    q: "Both risk retention groups (RRGs) and risk purchasing groups (RPGs) were created under which federal law?",
+    opts: [
+      "The Employee Retirement Income Security Act (ERISA) of 1974",
+      "The McCarran-Ferguson Act of 1945",
+      "The Liability Risk Retention Act (LRRA) of 1986",
+      "The Affordable Care Act of 2010"
+    ],
+    ans: 2,
+    exp: "Both RRGs and RPGs operate under the federal Liability Risk Retention Act (LRRA) of 1986. They provide liability coverage for members with a common profession or business."
+  },
+  {
+    section: "Risk Retention & Purchasing Groups",
+    q: "An RRG is only licensed in ONE state, yet it can insure members across the entire United States. This is because:",
+    opts: [
+      "All states automatically recognize RRG licenses",
+      "Federal law under the LRRA requires RRGs to follow only their home state's laws, with federal law prevailing in other jurisdictions",
+      "RRGs are exempt from all state regulation",
+      "The NAIC grants nationwide authorization to RRGs"
+    ],
+    ans: 1,
+    exp: "Federal law (LRRA) allows RRGs licensed in their home state to operate nationally. They follow home state law, and federal law prevails in other states."
+  },
+
+  // ── Reinsurance ──
+  {
+    section: "Reinsurance",
+    q: "The insurance company that transfers (cedes) a portion of its risk to another insurer is called the:",
+    opts: ["Reinsurer","Assuming company","Ceding company (primary insurer)","Surplus lines carrier"],
+    ans: 2,
+    exp: "The CEDING company (also called the primary insurer) transfers risk. The ASSUMING company (reinsurer) accepts it. The ceding company always remains liable to its original policyholders."
+  },
+  {
+    section: "Reinsurance",
+    q: "Treaty reinsurance differs from facultative reinsurance in that treaty reinsurance:",
+    opts: [
+      "Covers only a single, specific risk negotiated individually",
+      "Is automatic and covers risks meeting pre-established criteria without case-by-case negotiation",
+      "Is more expensive and rarely used",
+      "Requires the ceding company to obtain state approval for each transfer"
+    ],
+    ans: 1,
+    exp: "Treaty = broad, automatic agreement covering categories of risk. Facultative = individually negotiated for a specific risk. Think: Treaty = treaty (broad agreement), Facultative = flexible/case-by-case."
+  },
+
+  // ── Surplus Lines & Lloyd's ──
+  {
+    section: "Surplus Lines & Lloyd's",
+    q: "A person may seek coverage through a surplus lines insurer when:",
+    opts: [
+      "They want cheaper rates than the standard market offers",
+      "Coverage for their risk is unavailable in the authorized (admitted) market",
+      "They disagree with an underwriter's decision",
+      "They want to avoid state regulation"
+    ],
+    ans: 1,
+    exp: "Surplus lines is for risks the standard market WON'T cover — not for those seeking lower prices. In fact, many states require proof that the applicant tried and failed to get admitted market coverage first."
+  },
+  {
+    section: "Surplus Lines & Lloyd's",
+    q: "Lloyd's of London is best described as:",
+    opts: [
+      "The world's largest insurance company",
+      "A government-run reinsurer",
+      "A marketplace (syndicate) of individual and corporate underwriters — not an insurer itself",
+      "A surplus lines carrier licensed in all 50 states"
+    ],
+    ans: 2,
+    exp: "Lloyd's is NOT an insurance company — it's a marketplace, like a stock exchange for underwriting. Individual underwriters in the syndicate accept risk, not Lloyd's itself."
+  },
+
+  // ── HMO / PPO ──
+  {
+    section: "Service Providers",
+    q: "An HMO (Health Maintenance Organization) is considered a SERVICE PROVIDER rather than an insurer because it:",
+    opts: [
+      "Is owned by stockholders",
+      "Provides healthcare SERVICES directly, not just financial reimbursement",
+      "Issues nonparticipating policies only",
+      "Is regulated by the federal government exclusively"
+    ],
+    ans: 1,
+    exp: "HMOs provide both financing AND the actual healthcare — that's what makes them 'service providers.' They deliver care through contracted physicians and hospitals, not just pay claims."
+  },
+  {
+    section: "Service Providers",
+    q: "Which of the following is a key characteristic of a PPO (Preferred Provider Organization)?",
+    opts: [
+      "Members must pay a fixed premium and can only see in-network doctors",
+      "Members receive discounts for using preferred (in-network) providers but have flexibility to use out-of-network providers",
+      "The PPO assumes all insurance risk for its members",
+      "PPOs only serve government employees"
+    ],
+    ans: 1,
+    exp: "PPOs offer discounts for using preferred providers but allow out-of-network use (at higher cost). This flexibility distinguishes them from HMOs, which require in-network use."
+  },
+
+  // ── Domestic / Foreign / Alien ──
+  {
+    section: "Insurer Classifications by Domicile",
+    q: "ABC Insurance Company is incorporated in Georgia. It is also licensed to sell insurance in Florida. How is ABC classified in Florida?",
+    opts: ["Domestic insurer","Alien insurer","Foreign insurer","Nonadmitted insurer"],
+    ans: 2,
+    exp: "Foreign = incorporated in a DIFFERENT U.S. state than where it's doing business. ABC is incorporated in Georgia but operating in Florida → FOREIGN insurer in Florida."
+  },
+  {
+    section: "Insurer Classifications by Domicile",
+    q: "Rising Sun Life Insurance Company is incorporated in Tokyo, Japan, and is licensed to sell insurance in Florida. In Florida, Rising Sun Life is classified as a(n):",
+    opts: ["Domestic insurer","Foreign insurer","Alien insurer","Surplus lines carrier"],
+    ans: 2,
+    exp: "ALIEN insurer = incorporated in a FOREIGN COUNTRY (not another U.S. state). Rising Sun Life is from Japan → alien insurer in every U.S. state where it operates."
+  },
+  {
+    section: "Insurer Classifications by Domicile",
+    q: "XYZ Insurance Company is incorporated in Florida and is selling insurance in Florida. XYZ is considered a _______ insurer in Florida.",
+    opts: ["Foreign","Alien","Domestic","Surplus lines"],
+    ans: 2,
+    exp: "DOMESTIC = incorporated in the SAME state where it's doing business. XYZ incorporated in Florida, operating in Florida = Domestic."
+  },
+  {
+    section: "Insurer Classifications by Authorization",
+    q: "An insurer that has received permission from the state to transact insurance business is known as a(n):",
+    opts: ["Alien insurer","Nonadmitted insurer","Admitted (authorized) insurer","Surplus lines insurer"],
+    ans: 2,
+    exp: "An ADMITTED or AUTHORIZED insurer has received a certificate of authority from the state's Department of Insurance. Nonadmitted = no permission = generally cannot sell in that state."
+  },
+  {
+    section: "Insurer Classifications by Authorization",
+    q: "The document that authorizes an insurance company to conduct business in a particular state is called a:",
+    opts: ["Producer license","Certificate of authority","Certificate of insurance","Policy declaration"],
+    ans: 1,
+    exp: "A CERTIFICATE OF AUTHORITY is the license issued by the state's Department of Insurance. Without it, an insurer is nonadmitted and generally cannot legally sell insurance in that state."
+  },
+
+  // ── Key Departments (Section 5) ──
+  {
+    section: "Key Departments & People",
+    q: "Which department is responsible for calculating policy rates, setting reserves, and analyzing mortality and morbidity tables?",
+    opts: ["Claims Department","Marketing Department","Underwriting Department","Actuarial Department"],
+    ans: 3,
+    exp: "The ACTUARIAL department handles all statistical and financial calculations — rates, reserves, dividends, and mortality/morbidity analysis. Underwriting classifies individual risks; actuarial sets the overall pricing basis."
+  },
+  {
+    section: "Key Departments & People",
+    q: "A mortality table is primarily used to price which type of insurance?",
+    opts: ["Health insurance","Disability income insurance","Life insurance","Property insurance"],
+    ans: 2,
+    exp: "MORTALITY = probability of DEATH. Used to price LIFE insurance. Morbidity (sickness/disability) tables are used to price health and disability products."
+  },
+  {
+    section: "Key Departments & People",
+    q: "A morbidity table differs from a mortality table in that it shows the probability of:",
+    opts: [
+      "Death at a given age",
+      "Sickness or disability at a given age",
+      "Policy lapses over a given period",
+      "Investment returns for annuity products"
+    ],
+    ans: 1,
+    exp: "MORBIDITY = sickness/disability. MORTALITY = death. Morbidity tables underpin health and disability insurance pricing; mortality tables underpin life insurance pricing."
+  },
+  {
+    section: "Key Departments & People",
+    q: "Within an insurance company, what is the PRIMARY distinction between the marketing department and the sales department?",
+    opts: [
+      "Marketing approves applications; sales declines them",
+      "Marketing focuses on advertising to increase prospects; sales handles face-to-face appointments and completing applications",
+      "Marketing handles claims; sales handles underwriting",
+      "There is no distinction — they perform the same functions"
+    ],
+    ans: 1,
+    exp: "MARKETING = generates leads through advertising. SALES = works directly with individual buyers to complete applications and close policies. Different functions, though often grouped together in smaller companies."
+  },
+  {
+    section: "Key Departments & People",
+    q: "Which department is responsible for conducting investigations on applicants, assigning risk classifications, and approving or declining insurance applications?",
+    opts: ["Claims Department","Sales Department","Actuarial Department","Underwriting Department"],
+    ans: 3,
+    exp: "UNDERWRITING: reviews apps, investigates applicants, classifies risk, approves or declines. Think of underwriters as the 'gatekeepers' who decide who gets covered and at what rate."
+  },
+
+  // ── Key People (Section 5.2) ──
+  {
+    section: "Key People",
+    q: "A solicitor in the insurance industry is best described as someone who:",
+    opts: [
+      "Is licensed to sell and bind insurance coverage independently",
+      "Represents an insurer and can countersign policies",
+      "Represents a producer and solicits prospects to meet with that producer, but is NOT licensed to sell insurance",
+      "Is an insurance company employee authorized to handle claims"
+    ],
+    ans: 2,
+    exp: "A solicitor works FOR a producer (not an insurer) and simply drums up prospects. They CANNOT sell insurance, bind coverage, or countersign policies — they are not licensed to do so."
+  },
+  {
+    section: "Key People",
+    q: "A public adjuster differs from a regular insurance adjuster in that a public adjuster:",
+    opts: [
+      "Works for the insurance company to investigate and settle claims",
+      "Is employed by the state insurance department",
+      "Works on behalf of the INSURED for compensation to help with claim settlements",
+      "Can only handle property claims, not life or health claims"
+    ],
+    ans: 2,
+    exp: "Public adjuster = hired by the INSURED to advocate for them in the claims process. Regular adjuster = works for the INSURER. Key distinction: who they represent."
+  },
+  {
+    section: "Key People",
+    q: "During a dispute between a beneficiary and an insurance company, the agent who originally solicited the application is legally considered to represent:",
+    opts: ["The beneficiary","The insured","The insurer","Both the insured and the insurer equally"],
+    ans: 2,
+    exp: "Critical exam fact: in disputes, the soliciting agent represents the INSURER. The BROKER, by contrast, represents the insured. This matters for determining liability in coverage disputes."
+  },
+  {
+    section: "Key People",
+    q: "A service representative at an insurance company is generally NOT required to be licensed UNLESS they:",
+    opts: [
+      "Attend industry training courses",
+      "Receive commissions, solicit insurance, countersign policies, or collect premiums",
+      "Work more than 20 hours per week",
+      "Interact directly with clients at any point"
+    ],
+    ans: 1,
+    exp: "Service reps don't need a license for pure customer service work. The license requirement kicks in only when they cross into sales activity: soliciting, countersigning, collecting premiums, or earning commissions."
+  },
+
+  // ── Agency Systems ──
+  {
+    section: "Agency Systems",
+    q: "In the career agency system, who is responsible for recruiting, training, and supervising agents?",
+    opts: ["A salaried branch manager employed by the insurer","A personal producing general agent (PPGA)","A general agent (GA) who has a vested right in business written","An independent agent acting as a contractor"],
+    ans: 2,
+    exp: "In the career agency system, the GENERAL AGENT (GA) recruits, trains, and supervises agents. The GA has a vested right in all business those agents write."
+  },
+  {
+    section: "Agency Systems",
+    q: "The managerial system differs from the career agency system in that the managerial system uses a:",
+    opts: [
+      "General agent who contracts independently with the insurer",
+      "Salaried branch manager employed directly by the insurance company",
+      "Personal producing general agent who also recruits a small sales force",
+      "Group of independent agents under a master contract"
+    ],
+    ans: 1,
+    exp: "Managerial system = insurer employs a SALARIED BRANCH MANAGER (no GA contract). The manager earns salary + bonus. This is a variation of the career agency model."
+  },
+  {
+    section: "Agency Systems",
+    q: "Which of the following statements about Personal Producing General Agencies (PPGAs) is TRUE?",
+    opts: [
+      "PPGAs recruit, train, and supervise agents the same way career agencies do",
+      "PPGAs primarily sell insurance and do NOT recruit, train, or supervise career agents",
+      "Agents working for a PPGA are considered employees of the insurance company",
+      "PPGAs are part of the American agency system"
+    ],
+    ans: 1,
+    exp: "PPGAs are producers FIRST — they sell. They may build a small sales force but do NOT recruit/train/supervise like career agencies. Agents hired by a PPGA are employees of the PPGA, not the insurer."
+  },
+  {
+    section: "Agency Systems",
+    q: "The independent agency system is also known as the:",
+    opts: ["Career agency system","Managerial system","American agency system","Surplus lines system"],
+    ans: 2,
+    exp: "The independent agency system = the AMERICAN AGENCY SYSTEM. Independent agents represent multiple insurers, own their book of business, and are not tied to any single company. Originally a creation of the P&C industry."
+  },
+  {
+    section: "Agency Systems",
+    q: "In the independent agency system, who OWNS the book of business (i.e., the renewal and expiration rights)?",
+    opts: ["The insurance company","The general agent","The independent agent","The state insurance department"],
+    ans: 2,
+    exp: "A key feature of the independent agency system: the INDEPENDENT AGENT owns the book of business. This means they retain clients even if they switch carriers — contrasting with captive agents whose book belongs to the insurer."
+  },
+
+  // ── Federal Legislation ──
+  {
+    section: "Federal Legislation — Insurance Regulation",
+    q: "The Supreme Court case that established states' authority to regulate insurance by ruling it was NOT interstate commerce was:",
+    opts: ["US v. SEUA (1944)","McCarran-Ferguson Act (1945)","Paul v. Virginia (1868)","Gramm-Leach-Bliley Act (1999)"],
+    ans: 2,
+    exp: "Paul v. Virginia (1868) = insurance is NOT interstate commerce → STATE regulation. This held until 1944 when SEUA reversed it."
+  },
+  {
+    section: "Federal Legislation — Insurance Regulation",
+    q: "The US v. SEUA decision in 1944 is significant because it:",
+    opts: [
+      "Confirmed that states have exclusive authority to regulate insurance",
+      "Declared insurance to be interstate commerce subject to FEDERAL regulation, reversing Paul v. Virginia",
+      "Created the National Association of Insurance Commissioners",
+      "Established the federal do-not-call registry for insurance agents"
+    ],
+    ans: 1,
+    exp: "SEUA (1944) flipped Paul v. Virginia — suddenly insurance was FEDERAL territory. Congress immediately responded with the McCarran-Ferguson Act (1945) to restore state authority."
+  },
+  {
+    section: "Federal Legislation — Insurance Regulation",
+    q: "The McCarran-Ferguson Act (1945) was primarily designed to:",
+    opts: [
+      "Transfer all insurance regulation to the federal government",
+      "Return primary insurance regulation to the states while requiring compliance with federal antitrust laws",
+      "Establish federal licensing requirements for all insurance producers",
+      "Create the National Flood Insurance Program"
+    ],
+    ans: 1,
+    exp: "McCarran-Ferguson was Congress's direct response to SEUA. It restored STATE primary authority while maintaining federal antitrust oversight. Violations: up to $10,000 fine and/or 1 year imprisonment."
+  },
+  {
+    section: "Federal Legislation — Insurance Regulation",
+    q: "Under the Fraud and False Statements Act (USC §1033/1034), a person with a felony conviction involving dishonesty who wants to work in insurance must:",
+    opts: [
+      "Simply disclose the conviction on their license application",
+      "Wait 5 years after release before applying for a license",
+      "Obtain written consent from state regulators before working in insurance",
+      "Post a surety bond equal to their first year's expected commissions"
+    ],
+    ans: 2,
+    exp: "Written consent from state regulators is required — not just disclosure. Maximum penalties: $50,000 fine + 10 years imprisonment (15 years if insurer solvency is threatened)."
+  },
+  {
+    section: "Federal Legislation — Insurance Regulation",
+    q: "What is the maximum prison term under the Fraud and False Statements Act if the violation THREATENS THE SOLVENCY of an insurer?",
+    opts: ["1 year","5 years","10 years","15 years"],
+    ans: 3,
+    exp: "Standard violation: up to 10 years. If the insurer's solvency is threatened: up to 15 years. Also: up to $50,000 fine and license revocation. These numbers are tested specifically."
+  },
+  {
+    section: "Federal Legislation — Insurance Regulation",
+    q: "The Gramm-Leach-Bliley Act (GLBA) of 1999 is notable for two main reasons. Which of the following is one of them?",
+    opts: [
+      "It transferred insurance regulation back to the federal government",
+      "It broke down barriers between banking, insurance, and securities industries, and established strict privacy protections for consumers",
+      "It created the National Do Not Call Registry",
+      "It required insurers to file annual solvency reports with the NAIC"
+    ],
+    ans: 1,
+    exp: "GLBA: (1) broke down banking/insurance/securities walls by repealing Glass-Steagall; (2) established privacy rules — written notices, opt-out for non-affiliated 3rd parties, opt-IN for health info."
+  },
+  {
+    section: "Federal Legislation — Insurance Regulation",
+    q: "Under the Gramm-Leach-Bliley Act, what type of consent is required BEFORE a financial institution can share a customer's PROTECTED HEALTH INFORMATION?",
+    opts: [
+      "No consent needed if the information is anonymized",
+      "Opt-out consent (the customer must actively say no)",
+      "Affirmative opt-in consent (the customer must actively say yes)",
+      "Written notice only — no consent required"
+    ],
+    ans: 2,
+    exp: "GLBA key distinction: non-affiliated third-party sharing = OPT-OUT (customer says no to stop it). Protected HEALTH information = OPT-IN (affirmative consent required before sharing). Health info gets stronger protection."
+  },
+  {
+    section: "Federal Legislation — Insurance Regulation",
+    q: "The Fair Credit Reporting Act (1970) requires insurance companies to:",
+    opts: [
+      "Obtain a credit score before issuing any policy",
+      "Inform applicants about investigations AND disclose which reporting agency was used if coverage is denied based on a consumer report",
+      "Share applicant credit information with all affiliated companies",
+      "Conduct background checks only for life insurance applicants"
+    ],
+    ans: 1,
+    exp: "FCRA focuses on TRANSPARENCY: applicants must be told about investigations, and if coverage is DENIED based on a consumer report, the insurer must name the reporting agency."
+  },
+  {
+    section: "Federal Legislation — Insurance Regulation",
+    q: "The CAN-SPAM Act (2003) requires that opt-out requests from email recipients be honored within:",
+    opts: ["24 hours","3 business days","10 business days","30 calendar days"],
+    ans: 2,
+    exp: "CAN-SPAM: opt-out requests must be honored within 10 BUSINESS DAYS. Other requirements: accurate headers, identify as advertising, valid physical address, easy opt-out method."
+  },
+  {
+    section: "Federal Legislation — Insurance Regulation",
+    q: "Which federal legislation passed in response to the September 11 attacks requires financial institutions, including insurers, to implement anti-money laundering programs?",
+    opts: ["Fair Credit Reporting Act","Gramm-Leach-Bliley Act","USA PATRIOT Act","Fraud and False Statements Act"],
+    ans: 2,
+    exp: "The USA PATRIOT Act (2001) was passed to detect, deter, and disrupt TERRORISM FINANCING through anti-money laundering education programs and information-sharing procedures."
+  },
+
+  // ── NAIC / NCOIL / Ethics / Rating Services ──
+  {
+    section: "NAIC & Regulatory Organizations",
+    q: "The NAIC is best described as an organization that:",
+    opts: [
+      "Regulates insurance companies directly and can revoke licenses",
+      "Enacts federal insurance legislation on behalf of Congress",
+      "Creates model acts and regulations as templates — but does NOT regulate, enact laws, or enforce compliance",
+      "Sets minimum reserve requirements that all states must follow"
+    ],
+    ans: 2,
+    exp: "NAIC = model-maker, not a regulator. It creates model acts/regulations as templates for states to adopt (or modify), but has zero direct regulatory power. Real authority stays with each state."
+  },
+  {
+    section: "NAIC & Regulatory Organizations",
+    q: "Which of the following is one of the NAIC's four objectives?",
+    opts: [
+      "Transfer insurance regulation to the federal government",
+      "Preserve state regulation of the insurance business",
+      "Set uniform premium rates across all states",
+      "Enforce federal antitrust laws against insurance companies"
+    ],
+    ans: 1,
+    exp: "The NAIC's 4 objectives: (1) encourage uniformity in state laws, (2) assist in administering those laws, (3) protect policyowner/consumer interests, (4) PRESERVE STATE REGULATION. All four reinforce state authority."
+  },
+  {
+    section: "NAIC & Regulatory Organizations",
+    q: "Under the NAIC Unfair Trade Practices Act, which of the following is an example of an unfair trade practice?",
+    opts: [
+      "Offering a policyholder a 30-day free-look period",
+      "Charging different premiums based on actuarially justified risk differences",
+      "Misrepresentation of policy terms to a prospective insured",
+      "Requiring a medical exam before issuing a life policy"
+    ],
+    ans: 2,
+    exp: "MISREPRESENTATION is explicitly listed as an unfair trade practice. Other unfair practices: false advertising, coercion, intimidation, unfair discrimination, and inequitable claims settlement."
+  },
+  {
+    section: "NAIC & Regulatory Organizations",
+    q: "The NAIC Advertising Code primarily addresses:",
+    opts: [
+      "Agent commission disclosure requirements",
+      "Misleading words and phrases in insurance advertising, and requires full disclosure of renewal/cancellation provisions",
+      "Social media posting guidelines for producers",
+      "Required disclaimers on all insurance company websites"
+    ],
+    ans: 1,
+    exp: "The NAIC Advertising Code bans inherently misleading words/phrases and requires COMPLETE DISCLOSURE of renewal, cancellation, and termination provisions in all insurance advertising."
+  },
+  {
+    section: "NAIC & Regulatory Organizations",
+    q: "NCOIL was formed in 1969. Its membership is primarily comprised of:",
+    opts: [
+      "State insurance commissioners and regulators",
+      "Federal legislators serving on banking committees",
+      "State legislators serving on state insurance and financial institution committees",
+      "Insurance company executives from the top 50 U.S. insurers"
+    ],
+    ans: 2,
+    exp: "NCOIL = LEGISLATORS (elected lawmakers). NAIC = COMMISSIONERS/REGULATORS (appointed/elected insurance dept heads). Both support state authority, but they represent different branches of government."
+  },
+  {
+    section: "NAIC & Regulatory Organizations",
+    q: "NAIFA and NAHU are insurance industry organizations that are best known for:",
+    opts: [
+      "Regulating agent licensing requirements in all 50 states",
+      "Setting premium rates for life and health insurance products",
+      "Creating a Code of Ethics that details agent expectations in duties toward clients",
+      "Administering the state guaranty fund programs"
+    ],
+    ans: 2,
+    exp: "NAIFA (National Association of Insurance and Financial Advisors) and NAHU (National Association of Health Underwriters) are professional associations whose Code of Ethics governs agent conduct toward clients."
+  },
+  {
+    section: "NAIC & Regulatory Organizations",
+    q: "According to ethical agent standards, 'client service' means that:",
+    opts: [
+      "Agents should contact clients only during policy renewals",
+      "The sale marks the beginning of the client relationship, not the end",
+      "Agents must document only the largest policy transactions",
+      "Clients should be contacted no more than once per year"
+    ],
+    ans: 1,
+    exp: "Ethical agents view the sale as the START of the relationship. Ongoing service, relationship maintenance, and seeking referrals are all part of a producer's long-term responsibilities."
+  },
+  {
+    section: "Rating Services & Financial Strength",
+    q: "The primary purpose of insurance rating services (such as A.M. Best, Moody's, S&P, and Fitch) is to:",
+    opts: [
+      "Set the maximum premium rates insurers may charge",
+      "Regulate insurer marketing practices",
+      "Determine an insurance company's financial strength (solvency and stability)",
+      "Certify that policies meet state minimum coverage requirements"
+    ],
+    ans: 2,
+    exp: "Rating agencies evaluate FINANCIAL STRENGTH — can the insurer pay claims? They assess reserves and liquidity. They do NOT regulate — they simply publicize their findings to the public and the market."
+  },
+  {
+    section: "Rating Services & Financial Strength",
+    q: "Insurance reserves are classified as _______ on an insurer's financial statements.",
+    opts: ["Assets","Equity","Liabilities","Revenue"],
+    ans: 2,
+    exp: "Reserves = future obligations to policyholders = LIABILITIES. They represent money the insurer OWES (promises to pay), so they sit on the liability side of the balance sheet."
+  },
+  {
+    section: "Rating Services & Financial Strength",
+    q: "An insurance company's 'liquidity' refers to its ability to:",
+    opts: [
+      "Invest premium income in high-yield securities",
+      "Set accurate reserve levels for future known claims",
+      "Make unpredictable payouts to policyowners when needed",
+      "Comply with NAIC model act requirements"
+    ],
+    ans: 2,
+    exp: "LIQUIDITY = ability to cover UNPREDICTABLE payouts. RESERVES = measure of KNOWN future obligations. Both are key financial health indicators that states require before issuing a certificate of authority."
+  },
+];
+
+// ──────────────────────────────────────────
+// QUIZ RENDERING
+// ──────────────────────────────────────────
+let answered = {};
+let score = 0;
+let submitted = false;
+
+function buildQuiz() {
+  answered = {};
+  score = 0;
+  submitted = false;
+  const area = document.getElementById('quiz-area');
+  let html = `<div class="quiz-header"><div class="quiz-meta">${questions.length} Questions · Chapter 1 · Full Coverage</div><div class="score-badge" id="score-live">Score: —</div></div>`;
+
+  let lastSection = '';
+  questions.forEach((q, i) => {
+    if (q.section !== lastSection) {
+      html += `<div class="section-divider">${q.section}</div>`;
+      lastSection = q.section;
+    }
+    html += `<div class="q-card" id="qcard-${i}">
+      <div class="q-num">Question ${i + 1}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="options">`;
+    const letters = ['A','B','C','D'];
+    q.opts.forEach((opt, j) => {
+      html += `<div class="opt" id="opt-${i}-${j}" onclick="selectAnswer(${i},${j})">
+        <span class="opt-letter">${letters[j]}</span><span>${opt}</span>
+      </div>`;
+    });
+    html += `</div><div class="explanation" id="exp-${i}">${q.exp}</div></div>`;
+  });
+
+  html += `<div style="text-align:center; margin-top:32px;">
+    <button class="btn btn-primary" onclick="submitQuiz()" id="submit-btn">Submit & Score</button>
+  </div><div id="results-area"></div>`;
+  area.innerHTML = html;
+}
+
+function selectAnswer(qIdx, optIdx) {
+  if (submitted) return;
+  answered[qIdx] = optIdx;
+  const letters = ['A','B','C','D'];
+  questions[0].opts.forEach((_, j) => {
+    const el = document.getElementById(`opt-${qIdx}-${j}`);
+    el.style.borderColor = '';
+    el.style.background = '';
+    el.style.color = '';
+  });
+  questions[qIdx].opts.forEach((_, j) => {
+    const el = document.getElementById(`opt-${qIdx}-${j}`);
+    el.style.borderColor = j === optIdx ? '#3b82f6' : '';
+    el.style.background  = j === optIdx ? '#1e3a5f' : '';
+    el.style.color       = j === optIdx ? '#e2e8f0' : '';
+  });
+  updateLiveScore();
+}
+
+function updateLiveScore() {
+  let correct = 0;
+  Object.keys(answered).forEach(i => { if (answered[i] === questions[i].ans) correct++; });
+  const pct = Math.round((correct / Object.keys(answered).length) * 100) || 0;
+  document.getElementById('score-live').textContent = `${correct}/${Object.keys(answered).length} answered`;
+}
+
+function submitQuiz() {
+  submitted = true;
+  score = 0;
+  questions.forEach((q, i) => {
+    q.opts.forEach((_, j) => {
+      const el = document.getElementById(`opt-${i}-${j}`);
+      el.classList.add('disabled');
+      if (j === q.ans) {
+        el.classList.add('correct');
+      } else if (answered[i] === j) {
+        el.classList.add('wrong');
+      }
+    });
+    document.getElementById(`exp-${i}`).classList.add('show');
+    if (answered[i] === q.ans) score++;
+  });
+
+  const pct = Math.round((score / questions.length) * 100);
+  let msg, color;
+  if (pct >= 90)      { msg = "Excellent! You're exam-ready on this chapter."; color = "#4ade80"; }
+  else if (pct >= 70) { msg = "Above passing threshold. Review missed questions."; color = "#facc15"; }
+  else                { msg = "Below passing threshold. Review and retry!"; color = "#f87171"; }
+
+  document.getElementById('score-live').textContent = `Score: ${score}/${questions.length} (${pct}%)`;
+  document.getElementById('submit-btn').outerHTML = `<button class="btn btn-ghost" onclick="buildQuiz()">🔄 Retake Quiz</button>`;
+  document.getElementById('results-area').innerHTML = `
+    <div class="quiz-results">
+      <div class="score-big" style="color:${color}">${pct}%</div>
+      <div class="score-sub">${score} correct out of ${questions.length}</div>
+      <div class="score-msg" style="color:${color}">${msg}</div>
+      <div style="margin-top:8px;font-size:0.85rem;color:#64748b;">Pass threshold: 70% · Scroll up to review explanations</div>
+    </div>`;
+  window.scrollTo({ top: document.getElementById('results-area').offsetTop - 80, behavior: 'smooth' });
+}
+
+function showTab(t) {
+  document.getElementById('tab-flashcards').style.display = t === 'flashcards' ? '' : 'none';
+  document.getElementById('tab-quiz').style.display       = t === 'quiz' ? '' : 'none';
+  document.querySelectorAll('.tab').forEach((el, i) => {
+    el.classList.toggle('active', (i === 0 && t === 'flashcards') || (i === 1 && t === 'quiz'));
+  });
+  if (t === 'quiz' && !document.querySelector('.q-card')) buildQuiz();
+}
+</script>
+</body>
+</html>

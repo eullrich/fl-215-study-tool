@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FL 2-15 | Chapter 3 Study Tool</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+  .header { background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%); padding: 24px 32px; border-bottom: 1px solid #1e40af44; }
+  .header h1 { font-size: 1.5rem; font-weight: 700; color: #60a5fa; letter-spacing: -0.02em; }
+  .header p { font-size: 0.875rem; color: #94a3b8; margin-top: 4px; }
+  .tabs { display: flex; gap: 0; padding: 20px 32px 0; border-bottom: 1px solid #1e293b; }
+  .tab { padding: 10px 24px; border-radius: 8px 8px 0 0; cursor: pointer; font-size: 0.875rem; font-weight: 600; border: 1px solid transparent; border-bottom: none; transition: all 0.2s; color: #64748b; }
+  .tab.active { background: #1e293b; color: #60a5fa; border-color: #1e40af44; }
+  .tab:hover:not(.active) { color: #94a3b8; }
+  .content { padding: 32px; max-width: 860px; margin: 0 auto; }
+  .fc-container { display: flex; flex-direction: column; align-items: center; gap: 24px; }
+  .fc-progress { font-size: 0.8rem; color: #64748b; letter-spacing: 0.05em; text-transform: uppercase; }
+  .fc-card-wrap { width: 100%; max-width: 640px; perspective: 1200px; cursor: pointer; user-select: none; }
+  .fc-card { position: relative; width: 100%; height: 250px; transition: transform 0.55s cubic-bezier(.4,2,.6,1); transform-style: preserve-3d; }
+  .fc-card.flipped { transform: rotateY(180deg); }
+  .fc-face { position: absolute; inset: 0; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 28px 36px; text-align: center; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+  .fc-front { background: linear-gradient(135deg, #1e3a5f, #1e293b); border: 1px solid #2563eb44; box-shadow: 0 8px 32px #0004; }
+  .fc-back  { background: linear-gradient(135deg, #14532d, #1e293b); border: 1px solid #16a34a44; box-shadow: 0 8px 32px #0004; transform: rotateY(180deg); }
+  .fc-label { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px; opacity: 0.5; }
+  .fc-text  { font-size: 1.05rem; font-weight: 600; line-height: 1.5; color: #f1f5f9; }
+  .fc-hint  { font-size: 0.75rem; color: #64748b; margin-top: 14px; }
+  .fc-controls { display: flex; gap: 12px; align-items: center; }
+  .btn { padding: 10px 22px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; transition: all 0.15s; }
+  .btn-primary { background: #2563eb; color: #fff; }
+  .btn-primary:hover { background: #1d4ed8; }
+  .btn-ghost { background: #1e293b; color: #94a3b8; border: 1px solid #334155; }
+  .btn-ghost:hover { background: #334155; color: #e2e8f0; }
+  .btn-sm { padding: 7px 16px; font-size: 0.8rem; }
+  .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+  .quiz-meta { font-size: 0.8rem; color: #64748b; }
+  .score-badge { background: #1e293b; border: 1px solid #334155; border-radius: 999px; padding: 4px 14px; font-size: 0.8rem; font-weight: 700; color: #94a3b8; }
+  .q-card { background: #1e293b; border: 1px solid #334155; border-radius: 14px; padding: 28px; margin-bottom: 20px; }
+  .q-num { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #64748b; margin-bottom: 10px; }
+  .q-text { font-size: 1rem; font-weight: 600; color: #f1f5f9; line-height: 1.55; margin-bottom: 20px; }
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .opt { padding: 12px 18px; border-radius: 9px; border: 1.5px solid #334155; background: #0f172a; cursor: pointer; font-size: 0.9rem; color: #cbd5e1; transition: all 0.15s; display: flex; align-items: flex-start; gap: 10px; }
+  .opt:hover:not(.disabled) { border-color: #3b82f6; color: #e2e8f0; background: #1e3a5f; }
+  .opt.correct { border-color: #22c55e; background: #14532d22; color: #4ade80; }
+  .opt.wrong   { border-color: #ef4444; background: #7f1d1d22; color: #f87171; }
+  .opt.disabled { cursor: default; pointer-events: none; }
+  .opt-letter { font-weight: 700; opacity: 0.5; min-width: 18px; }
+  .explanation { margin-top: 14px; padding: 12px 16px; border-radius: 8px; background: #0f172a; border-left: 3px solid #3b82f6; font-size: 0.85rem; color: #94a3b8; line-height: 1.5; display: none; }
+  .explanation.show { display: block; }
+  .quiz-results { text-align: center; padding: 40px 20px; }
+  .score-big { font-size: 4rem; font-weight: 800; color: #60a5fa; line-height: 1; }
+  .score-sub { font-size: 1rem; color: #64748b; margin-top: 8px; }
+  .score-msg { font-size: 1.1rem; font-weight: 600; margin-top: 16px; }
+  .section-divider { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #3b82f6; background: #1e3a5f22; border: 1px solid #1e40af33; border-radius: 6px; padding: 5px 14px; display: inline-block; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>FL 2-15 Exam Prep</h1>
+  <p>Chapter 3 — Insurance Contracts: Elements, Features &amp; Legal Principles &nbsp;·&nbsp; ✅ Complete &nbsp;·&nbsp; 38 Flashcards &nbsp;·&nbsp; 35 Practice Questions</p>
+</div>
+<div class="tabs">
+  <div class="tab active" onclick="showTab('flashcards')">📇 Flashcards</div>
+  <div class="tab" onclick="showTab('quiz')">📝 Practice Test</div>
+</div>
+
+<div id="tab-flashcards" class="content">
+  <div class="fc-container">
+    <div class="fc-progress" id="fc-progress">Card 1 of 38</div>
+    <div class="fc-card-wrap" onclick="flipCard()">
+      <div class="fc-card" id="fc-card">
+        <div class="fc-face fc-front">
+          <div class="fc-label">Term / Concept</div>
+          <div class="fc-text" id="fc-front-text"></div>
+          <div class="fc-hint">click to reveal</div>
+        </div>
+        <div class="fc-face fc-back">
+          <div class="fc-label">Answer</div>
+          <div class="fc-text" id="fc-back-text"></div>
+        </div>
+      </div>
+    </div>
+    <div class="fc-controls">
+      <button class="btn btn-ghost btn-sm" onclick="prevCard()">← Prev</button>
+      <button class="btn btn-primary" onclick="nextCard()">Next →</button>
+      <button class="btn btn-ghost btn-sm" onclick="shuffleCards()">🔀 Shuffle</button>
+    </div>
+  </div>
+</div>
+
+<div id="tab-quiz" class="content" style="display:none;">
+  <div id="quiz-area"></div>
+</div>
+
+<script>
+const cards = [
+
+  // ── LO1: CLOC — 4 Elements of a Valid Contract ──
+  { q: "CLOC — 4 Essential Elements of a Valid Insurance Contract", a: "C – Competent Parties\nL – Legal Purpose\nO – Offer and Acceptance\nC – Consideration\nAll 4 required. Missing any one = VOID contract." },
+  { q: "Competent Parties", a: "Both insurer and applicant must have LEGAL CAPACITY. Insurer must be licensed. INCOMPETENT parties: minors, mentally incompetent persons, intoxicated persons. Contracts with incompetent parties are VOID." },
+  { q: "Legal Purpose", a: "The contract must serve a LAWFUL purpose and align with public policy. Insurance contracts inherently have a legal purpose. A contract for an illegal activity would be void." },
+  { q: "Offer and Acceptance", a: "OFFER = application + premium payment. An application WITHOUT a premium is just an INVITATION, not an offer. ACCEPTANCE = insurer issues or delivers the policy." },
+  { q: "Consideration", a: "Items of VALUE exchanged by both parties. APPLICANT: premiums + truthful statements on the application. INSURER: promise to pay covered claims. Must be ongoing (perpetual premium payments)." },
+
+  // ── LO2: Special Features of Insurance Contracts ──
+  { q: "Aleatory Contract", a: "An unequal exchange is POSSIBLE. Benefits are based on an UNCERTAIN EVENT. Example: pay $1,200/year in premiums but receive $500,000 in death benefits. One side may get far more than they paid." },
+  { q: "Contract of Adhesion", a: "Written by the INSURER ONLY. The applicant must accept on a 'TAKE IT OR LEAVE IT' basis — no negotiation. Key rule: any AMBIGUITIES are interpreted in favor of the INSURED." },
+  { q: "Unilateral Contract", a: "Only the INSURER makes a legally enforceable promise (to pay claims). The policyowner does NOT promise to pay premiums — but the insurer CAN cancel if premiums go unpaid." },
+  { q: "Personal Contract", a: "The policy is between the insurer and a SPECIFIC PERSON. Cannot be transferred to another person without the insurer's consent. EXCEPTION: life insurance allows ASSIGNMENT." },
+  { q: "Conditional Contract", a: "Benefits are paid only if SPECIFIC CONDITIONS are met. Examples: paying premiums, filing proof of loss, submitting a claim within a certain time. No condition met = no payment." },
+  { q: "Aleatory vs. Conditional Contract", a: "ALEATORY = exchange may be unequal (based on uncertain event). CONDITIONAL = benefits only paid if conditions are fulfilled. Insurance contracts are BOTH aleatory AND conditional." },
+
+  // ── LO3: Insurable Interest ──
+  { q: "Insurable Interest", a: "The financial/economic interest a person must have in the insured subject. A person has insurable interest if they would suffer a FINANCIAL LOSS from damage to or loss of that person/property." },
+  { q: "Insurable Interest — Life/Health Timing", a: "Must exist only at the TIME OF APPLICATION. Does NOT need to continue after the policy is issued. Example: divorced couples can keep existing policies on each other." },
+  { q: "Insurable Interest — Property/Casualty Timing", a: "Must exist at BOTH the time of application AND the time of loss. If ownership transfers before a loss, insurable interest ends and coverage doesn't pay." },
+  { q: "Insurable Interest — Automatic Relationships (Life)", a: "Automatically exists for: SELF, SPOUSE, PARENT-CHILD relationships, BUSINESS partner / key employee, DEBTOR-CREDITOR relationships." },
+  { q: "STOLI — Stranger-Originated Life Insurance", a: "A scheme where a stranger (with no insurable interest) finances a life insurance policy with the intent to later purchase it. ILLEGAL. You cannot insure someone you have no financial interest in." },
+
+  // ── LO4: Types of Agent Authority ──
+  { q: "Express Authority", a: "Authority SPECIFICALLY WRITTEN in the agent's contract. Clearly stated powers. Example: authority to collect premiums, countersign policies, or bind coverage." },
+  { q: "Implied Authority", a: "Authority NOT explicitly stated but NECESSARY to do the job. Flows naturally from express authority. Example: ordering business cards, maintaining an office." },
+  { q: "Apparent Authority", a: "Authority created by the COMPANY'S ACTIONS that leads the public to REASONABLY BELIEVE the agent has certain powers. Example: agent uses company letterhead or email — the public assumes they're authorized." },
+  { q: "Express vs. Implied vs. Apparent Authority", a: "EXPRESS = written in contract. IMPLIED = necessary to carry out express duties (unstated). APPARENT = created by company's conduct — what the public reasonably believes." },
+  { q: "Agent vs. Broker — Authority to Bind", a: "AGENT: represents the INSURER, CAN bind coverage, has fiduciary responsibility to both insurer and client. BROKER: represents the INSURED, CANNOT bind coverage, must work with an agent/company." },
+
+  // ── LO5: Legal Principles ──
+  { q: "Void Contract", a: "A contract that was NEVER LEGALLY IN FORCE. Missing an essential element (CLOC). Neither party can enforce it. Example: contract with a minor or mentally incompetent person." },
+  { q: "Voidable Contract", a: "A contract that is VALID but can be SET ASIDE by one party for a legally acceptable reason. Example: insurer can void a policy if the applicant committed material misrepresentation." },
+  { q: "Void vs. Voidable", a: "VOID = never valid (no essential element present). VOIDABLE = valid until one party exercises right to cancel (e.g., fraud, misrepresentation, non-payment)." },
+  { q: "Waiver", a: "The VOLUNTARY GIVING UP of a KNOWN legal right. Example: insurer accepts a late premium — they have waived their right to cancel for that late payment." },
+  { q: "Estoppel", a: "Prevents a party from taking a legal position that contradicts a prior statement when the other party RELIED on that statement to their detriment. Requires ALL 4 conditions: (1) agent makes statement, (2) client believes it, (3) client acts on it, (4) client suffers financial harm." },
+  { q: "Waiver vs. Estoppel", a: "WAIVER = intentional giving up of a right (no reliance needed). ESTOPPEL = created by reliance — stops a party from asserting a right because the other party detrimentally relied on their prior conduct/statement." },
+  { q: "Warranty", a: "A statement GUARANTEED to be true. Part of the contract. If false, the policy can be voided regardless of whether it's material to the risk." },
+  { q: "Representation", a: "A statement the applicant BELIEVES to be true at the time it's made. NOT part of the contract itself. Policy can only be voided if the misrepresentation is MATERIAL to the risk." },
+  { q: "Warranty vs. Representation", a: "WARRANTY = guaranteed true; false warranty voids the policy. REPRESENTATION = believed true; only a MATERIAL misrepresentation voids the policy. Most application statements are representations." },
+  { q: "Material Misrepresentation", a: "A FALSE statement on the application that influences the insurer's decision to ACCEPT the risk OR how to CLASSIFY/PRICE it. Can make a contract voidable." },
+  { q: "Concealment", a: "Failure to DISCLOSE a material fact the applicant knows is relevant. Can void the policy. The insurer must PROVE the concealment was intentional and material." },
+  { q: "Utmost Good Faith", a: "Both the policyowner AND the insurer must disclose ALL material facts with no attempt to conceal or deceive. The foundation of insurance contracts." },
+  { q: "Subrogation", a: "The insurer's right to RECOVER from the THIRD PARTY responsible for a loss AFTER paying the insured's claim. Common in property, health, accident, and workers' compensation. Prevents the insured from collecting twice." },
+
+  // ── LO6: Torts & E&O ──
+  { q: "Tort", a: "A PRIVATE WRONG (not a crime) independent of a contract, handled in CIVIL COURT. Purpose: provide compensation for harm caused by another's conduct." },
+  { q: "Three Types of Negligence", a: "SIMPLE: failure to act as a reasonable person (e.g., forgetting to submit application). GROSS: reckless disregard (e.g., never maintaining records). WILLFUL & WANTON: knowing harm will occur — NOT covered by insurance." },
+  { q: "E&O Insurance (Errors & Omissions)", a: "Professional liability insurance that protects agents against claims arising from mistakes or failures in their professional duties. Covers: admin errors, premium mistakes, coverage misstatements, failure to recommend coverage. EXCLUDES: criminal acts, intentional harm, dishonest acts." },
+];
+
+let currentIdx = 0;
+let flipped = false;
+let shuffled = [...cards];
+
+function renderCard() {
+  const c = shuffled[currentIdx];
+  document.getElementById('fc-front-text').textContent = c.q;
+  document.getElementById('fc-back-text').textContent = c.a;
+  document.getElementById('fc-progress').textContent = `Card ${currentIdx + 1} of ${shuffled.length}`;
+  document.getElementById('fc-card').classList.remove('flipped');
+  flipped = false;
+}
+function flipCard() { flipped = !flipped; document.getElementById('fc-card').classList.toggle('flipped', flipped); }
+function nextCard() { currentIdx = currentIdx < shuffled.length - 1 ? currentIdx + 1 : 0; renderCard(); }
+function prevCard() { currentIdx = currentIdx > 0 ? currentIdx - 1 : shuffled.length - 1; renderCard(); }
+function shuffleCards() { shuffled = [...cards].sort(() => Math.random() - 0.5); currentIdx = 0; renderCard(); }
+renderCard();
+
+// ── QUIZ QUESTIONS ──
+const questions = [
+
+  // CLOC
+  {
+    section: "CLOC — Elements of a Valid Contract",
+    q: "Which mnemonic helps remember the four essential elements of a valid insurance contract?",
+    opts: ["CLAP","CLOC","COLA","COAL"],
+    ans: 1,
+    exp: "CLOC: Competent parties, Legal purpose, Offer and acceptance, Consideration. ALL four must be present. Missing any one makes the contract VOID from the start."
+  },
+  {
+    section: "CLOC — Elements of a Valid Contract",
+    q: "An applicant submits an insurance application but does NOT include a premium payment. This is considered a(n):",
+    opts: ["Binding offer","Acceptance of coverage","Invitation to do business, not a formal offer","Completed contract"],
+    ans: 2,
+    exp: "An application WITHOUT a premium is just an INVITATION — not a legal offer. The OFFER requires both the application AND the premium. Acceptance occurs when the insurer issues or delivers the policy."
+  },
+  {
+    section: "CLOC — Elements of a Valid Contract",
+    q: "In an insurance contract, the APPLICANT'S consideration consists of:",
+    opts: [
+      "Only the first premium payment",
+      "The promise to pay future claims",
+      "Premiums paid AND truthful statements on the application",
+      "Signing the application and waiting for the policy"
+    ],
+    ans: 2,
+    exp: "The applicant's consideration has TWO parts: (1) premium payments and (2) truthful statements on the application. The insurer's consideration is the promise to pay covered claims."
+  },
+  {
+    section: "CLOC — Elements of a Valid Contract",
+    q: "An insurance contract is written with a person who has been declared legally incompetent. This contract is:",
+    opts: ["Voidable at the insurer's option","Valid if the guardian signs","Void — never legally in force","Conditional on a court review"],
+    ans: 2,
+    exp: "Contracts with INCOMPETENT parties (minors, mentally incompetent, intoxicated persons) lack the essential element of 'Competent Parties' — making the contract VOID, not voidable. It was never legally in force."
+  },
+
+  // Special Features
+  {
+    section: "Special Features of Insurance Contracts",
+    q: "An insurance contract is considered 'aleatory' because:",
+    opts: [
+      "Both parties contribute equally to the contract terms",
+      "The exchange of values may be unequal depending on whether an uncertain event occurs",
+      "The insurer must pay every claim submitted",
+      "The applicant negotiates each policy term individually"
+    ],
+    ans: 1,
+    exp: "ALEATORY = unequal exchange possible. A policyholder may pay $1,200/year but collect $500,000 — or pay premiums for 30 years and never file a claim. The outcome depends on an uncertain event."
+  },
+  {
+    section: "Special Features of Insurance Contracts",
+    q: "When a court interprets an ambiguous clause in an insurance policy, the ambiguity is resolved:",
+    opts: [
+      "In favor of the insurer, since they wrote the contract",
+      "By the NAIC model regulations",
+      "In favor of the insured, because it is a contract of adhesion",
+      "By an independent arbitrator"
+    ],
+    ans: 2,
+    exp: "Because insurance is a CONTRACT OF ADHESION (written only by the insurer, take-it-or-leave-it), ambiguities are always interpreted in favor of the INSURED. The insurer wrote it — they bear the responsibility for unclear language."
+  },
+  {
+    section: "Special Features of Insurance Contracts",
+    q: "An insurance contract is UNILATERAL because:",
+    opts: [
+      "Both parties make legally enforceable promises",
+      "Only the insurer makes a legally enforceable promise to pay claims",
+      "The policyholder must pay premiums or face legal action",
+      "Only one insurance company can insure each risk"
+    ],
+    ans: 1,
+    exp: "UNILATERAL = only ONE party (the insurer) makes an enforceable promise. The policyholder doesn't legally promise to pay premiums — they can stop anytime. But if they do, the insurer can cancel."
+  },
+  {
+    section: "Special Features of Insurance Contracts",
+    q: "A life insurance policy is considered a PERSONAL CONTRACT. This means:",
+    opts: [
+      "It can be freely transferred to any family member",
+      "It cannot be transferred to another person without insurer consent — though assignment is an exception",
+      "It can only be issued to individuals, not businesses",
+      "All policy changes require a personal meeting with the agent"
+    ],
+    ans: 1,
+    exp: "Personal contracts are tied to a SPECIFIC PERSON and can't be freely transferred. However, life insurance allows ASSIGNMENT (transferring ownership rights to another party) as a noted exception."
+  },
+
+  // Insurable Interest
+  {
+    section: "Insurable Interest",
+    q: "For a LIFE INSURANCE policy, insurable interest must exist:",
+    opts: [
+      "At the time of the loss (death) only",
+      "At the time of application only",
+      "At both the time of application and the time of loss",
+      "For the entire duration of the policy"
+    ],
+    ans: 1,
+    exp: "LIFE insurance: insurable interest required ONLY at the time of APPLICATION. It does not need to continue. A divorced spouse can keep an existing policy even after the relationship ends."
+  },
+  {
+    section: "Insurable Interest",
+    q: "For a PROPERTY INSURANCE policy, insurable interest must exist:",
+    opts: [
+      "Only at the time of application",
+      "Only at the time of the loss",
+      "At both the time of application AND at the time of loss",
+      "Only when the policy is first renewed"
+    ],
+    ans: 2,
+    exp: "PROPERTY insurance: insurable interest required at BOTH application AND time of loss. If you sell a property and it later burns down, you have no insurable interest at the time of loss — no payout."
+  },
+  {
+    section: "Insurable Interest",
+    q: "Which of the following relationships would automatically create an insurable interest in a life insurance context?",
+    opts: [
+      "Neighbors who have lived next to each other for 20 years",
+      "A business owner and a key employee",
+      "A mail carrier and a regular customer",
+      "Friends who have known each other for 30 years"
+    ],
+    ans: 1,
+    exp: "AUTO insurable interest exists for: self, spouse, parent-child, BUSINESS KEY EMPLOYEE, and debtor-creditor. Neighbors, friends, and mail carriers — even long-standing ones — do NOT automatically qualify."
+  },
+  {
+    section: "Insurable Interest",
+    q: "Stranger-Originated Life Insurance (STOLI) is:",
+    opts: [
+      "A legitimate estate planning tool for wealthy individuals",
+      "An illegal scheme where a stranger finances a policy intending to later own it",
+      "A type of group life insurance for unrelated individuals",
+      "A surplus lines policy for hard-to-insure individuals"
+    ],
+    ans: 1,
+    exp: "STOLI is ILLEGAL. It involves a stranger financing a life insurance policy on someone else with no insurable interest, intending to later purchase it as an investment. It violates the insurable interest requirement."
+  },
+
+  // Types of Authority
+  {
+    section: "Types of Agent Authority",
+    q: "An agent's contract specifically states that they are authorized to collect premiums and countersign policies. This is an example of:",
+    opts: ["Implied authority","Apparent authority","Express authority","Fiduciary authority"],
+    ans: 2,
+    exp: "EXPRESS authority = authority SPECIFICALLY WRITTEN in the agent's contract. Any power that is clearly and explicitly stated in writing = express authority."
+  },
+  {
+    section: "Types of Agent Authority",
+    q: "An agent orders business cards with the insurance company's logo to conduct business. The agent's contract doesn't mention this specifically. This is an example of:",
+    opts: ["Express authority","Apparent authority","Implied authority","Unauthorized action"],
+    ans: 2,
+    exp: "IMPLIED authority = NOT explicitly stated, but NECESSARY to carry out the job. Ordering business cards isn't in the contract but is a natural extension of being an agent. It's implied by the express authority granted."
+  },
+  {
+    section: "Types of Agent Authority",
+    q: "A customer reasonably believes an agent has authority to do something because the insurance company has allowed the agent to use company email and letterhead. This is an example of:",
+    opts: ["Express authority","Implied authority","Apparent authority","Constructive authority"],
+    ans: 2,
+    exp: "APPARENT authority is created by the COMPANY'S ACTIONS — not by a written contract. If the company equips an agent with tools that make the public believe they have authority, the company is bound by that apparent authority."
+  },
+  {
+    section: "Types of Agent Authority",
+    q: "Which of the following statements about BROKERS is TRUE?",
+    opts: [
+      "Brokers represent the insurer and can bind coverage",
+      "Brokers represent the insured and cannot bind coverage",
+      "Brokers have the same authority as captive agents",
+      "Brokers can only work with one insurance company at a time"
+    ],
+    ans: 1,
+    exp: "BROKERS represent the INSURED (client). They CANNOT bind coverage — they must work through an agent or the insurer directly. They have no agency relationship with the insurer."
+  },
+
+  // Void vs. Voidable
+  {
+    section: "Void vs. Voidable Contracts",
+    q: "A policyholder intentionally lied about their smoking history on a life insurance application. The insurer discovers this during the contestability period. This policy is most likely:",
+    opts: [
+      "Void — it was never legally in force",
+      "Voidable — valid but the insurer may choose to rescind it",
+      "Unenforceable by either party",
+      "Valid — the insurer must pay the death benefit"
+    ],
+    ans: 1,
+    exp: "VOIDABLE: the policy WAS valid at issuance but the insurer has the RIGHT to rescind (cancel) it due to material misrepresentation. The contract existed — it just can be set aside. A VOID contract never existed at all."
+  },
+  {
+    section: "Void vs. Voidable Contracts",
+    q: "Which scenario produces a VOID (not voidable) contract?",
+    opts: [
+      "The applicant misrepresented their age on the application",
+      "The insured stops paying premiums",
+      "The policy was issued to a 15-year-old minor without guardian consent",
+      "The agent failed to disclose all policy exclusions"
+    ],
+    ans: 2,
+    exp: "A contract with a MINOR lacks the essential element of 'Competent Parties' — making it VOID (never legally in force). The other options produce voidable contracts that existed but can be cancelled."
+  },
+
+  // Waiver vs. Estoppel
+  {
+    section: "Waiver & Estoppel",
+    q: "An insurer accepts a premium payment three weeks after the grace period expired. By doing so, the insurer has:",
+    opts: [
+      "Committed a material misrepresentation",
+      "Created an estoppel situation",
+      "Waived its right to cancel the policy for that late payment",
+      "Violated the principle of utmost good faith"
+    ],
+    ans: 2,
+    exp: "WAIVER = voluntarily giving up a KNOWN right. By accepting the late premium, the insurer waived its right to cancel for non-payment. Waivers are intentional — the insurer KNEW the premium was late and accepted it anyway."
+  },
+  {
+    section: "Waiver & Estoppel",
+    q: "For estoppel to apply in an insurance context, ALL of the following must be true EXCEPT:",
+    opts: [
+      "The agent makes a statement",
+      "The client believes the statement",
+      "The insurer must have intended to deceive the client",
+      "The client suffers financial harm from acting on the statement"
+    ],
+    ans: 2,
+    exp: "Estoppel's 4 conditions: (1) agent makes a statement, (2) client BELIEVES it, (3) client ACTS on it, (4) client suffers FINANCIAL HARM. Intent to deceive is NOT required — the key is the client's reasonable reliance and resulting harm."
+  },
+  {
+    section: "Waiver & Estoppel",
+    q: "Waiver and estoppel are similar in that both:",
+    opts: [
+      "Require the insured to take legal action in civil court",
+      "Can prevent an insurer from asserting a right it previously abandoned or appeared to abandon",
+      "Require all four conditions to be met before taking effect",
+      "Apply only to property and casualty insurance"
+    ],
+    ans: 1,
+    exp: "Both waiver and estoppel can prevent an insurer from later asserting a right. WAIVER = insurer intentionally gives it up. ESTOPPEL = insurer is stopped from asserting the right because the insured detrimentally relied on their prior conduct."
+  },
+
+  // Warranties vs. Representations
+  {
+    section: "Warranties, Representations & Concealment",
+    q: "Most statements made on an insurance application are considered:",
+    opts: ["Warranties — guaranteed to be true","Representations — believed to be true at the time made","Conditions — requirements that must be met","Stipulations — absolute rules of the contract"],
+    ans: 1,
+    exp: "Application statements are REPRESENTATIONS — believed true at the time, not guaranteed. Only a MATERIAL misrepresentation can void the policy. WARRANTIES are guaranteed true and are less common."
+  },
+  {
+    section: "Warranties, Representations & Concealment",
+    q: "A WARRANTY differs from a REPRESENTATION in that a warranty:",
+    opts: [
+      "Is believed to be true but not guaranteed",
+      "Only applies at the time of application",
+      "Is guaranteed to be absolutely true — a false warranty can void the policy regardless of materiality",
+      "Must be signed by both parties to be binding"
+    ],
+    ans: 2,
+    exp: "WARRANTY = GUARANTEED true. If false, the policy can be voided even if it wasn't material. REPRESENTATION = believed true. Only material misrepresentations can void the policy. Big distinction!"
+  },
+  {
+    section: "Warranties, Representations & Concealment",
+    q: "Concealment in insurance law refers to:",
+    opts: [
+      "An agent failing to explain policy exclusions",
+      "An applicant's failure to disclose a material fact they know is relevant",
+      "An insurer hiding premium increases in fine print",
+      "An adjuster withholding claim payment information"
+    ],
+    ans: 1,
+    exp: "CONCEALMENT = applicant KNOWINGLY fails to reveal a material fact. The insurer must PROVE it was intentional and material to void the policy. Example: not disclosing a serious illness when applying for health insurance."
+  },
+  {
+    section: "Warranties, Representations & Concealment",
+    q: "Utmost good faith requires that:",
+    opts: [
+      "Only the insurer must disclose all relevant facts",
+      "Only the applicant must disclose all relevant facts",
+      "BOTH the policyowner and insurer must disclose all material facts with no attempt to deceive",
+      "Material facts must be disclosed only if the other party asks"
+    ],
+    ans: 2,
+    exp: "UTMOST GOOD FAITH is a mutual obligation — BOTH parties must be fully transparent. It's the foundation of insurance: the applicant must disclose health info; the insurer must disclose policy terms and exclusions."
+  },
+  {
+    section: "Warranties, Representations & Concealment",
+    q: "After paying a health insurance claim resulting from a car accident, the insurer pursues recovery from the at-fault driver's auto insurer. This is an example of:",
+    opts: ["Waiver","Subrogation","Estoppel","Indemnification"],
+    ans: 1,
+    exp: "SUBROGATION = insurer's right to step into the insured's shoes and recover from the RESPONSIBLE THIRD PARTY after paying a claim. It prevents the insured from collecting twice (once from their insurer and once from the at-fault party)."
+  },
+
+  // Torts & E&O
+  {
+    section: "Torts & E&O Insurance",
+    q: "An agent forgets to submit a client's application on time, causing the client to be uninsured during a loss. This is an example of:",
+    opts: ["Gross negligence","Willful and wanton conduct","Simple negligence","A criminal act"],
+    ans: 2,
+    exp: "SIMPLE negligence = failure to act as a REASONABLE person. Forgetting to submit an application is careless but not reckless or intentional. E&O insurance typically covers simple negligence."
+  },
+  {
+    section: "Torts & E&O Insurance",
+    q: "E&O (Errors & Omissions) insurance would NOT cover which of the following?",
+    opts: [
+      "An agent miscalculates a client's premium",
+      "An agent fails to recommend an appropriate coverage type",
+      "An agent intentionally submits fraudulent claims on behalf of a client",
+      "An agent makes a misstatement about coverage limits"
+    ],
+    ans: 2,
+    exp: "E&O EXCLUDES: criminal acts, intentional harm, dishonest acts, and illegal activities. Intentional fraud = not covered. E&O covers MISTAKES (errors and omissions) — not deliberate wrongdoing."
+  },
+  {
+    section: "Torts & E&O Insurance",
+    q: "Which type of negligence is characterized by RECKLESS DISREGARD for the consequences, such as an agent who never maintains any client records?",
+    opts: ["Simple negligence","Gross negligence","Willful and wanton conduct","Professional liability"],
+    ans: 1,
+    exp: "GROSS negligence = reckless disregard — a step beyond simple carelessness. WILLFUL & WANTON = knowing harm WILL occur (deliberate). SIMPLE = just not acting reasonably. E&O may cover gross but NOT willful and wanton."
+  },
+
+  // Mixed Review
+  {
+    section: "Mixed Review",
+    q: "Which of the following BEST describes the principle of 'utmost good faith' in insurance?",
+    opts: [
+      "The insurer must always pay every claim",
+      "Both parties must fully disclose all material facts and not attempt to deceive each other",
+      "The agent must recommend the best possible product",
+      "The policyholder must pay premiums on time"
+    ],
+    ans: 1,
+    exp: "Utmost good faith is BILATERAL — applies to both the insured and the insurer. Neither party may conceal material facts or attempt to deceive the other. It's the ethical cornerstone of insurance contracts."
+  },
+  {
+    section: "Mixed Review",
+    q: "A policy states that the insurer will pay claims ONLY IF the insured has paid all premiums and filed proof of loss within 60 days. This feature makes the contract a:",
+    opts: ["Unilateral contract","Aleatory contract","Conditional contract","Personal contract"],
+    ans: 2,
+    exp: "CONDITIONAL contract = benefits are paid only when SPECIFIC CONDITIONS are met. Paying premiums and filing proof of loss on time are conditions. Fail to meet them = insurer may not be obligated to pay."
+  },
+  {
+    section: "Mixed Review",
+    q: "Which statement about the CONTRACT OF ADHESION rule is most important for the exam?",
+    opts: [
+      "The insured writes the contract and the insurer accepts it",
+      "Both parties negotiate every term before signing",
+      "Since the insurer writes the contract, any ambiguous language is interpreted in favor of the insured",
+      "The contract can only be modified by a court order"
+    ],
+    ans: 2,
+    exp: "Contract of adhesion rule: AMBIGUITIES FAVOR THE INSURED. Because the insured had no hand in writing the policy, the insurer bears the burden of clear language. This is one of the most tested rules in this chapter."
+  },
+];
+
+// ── QUIZ ENGINE ──
+let answered = {}, score = 0, submitted = false;
+
+function buildQuiz() {
+  answered = {}; score = 0; submitted = false;
+  const area = document.getElementById('quiz-area');
+  let html = `<div class="quiz-header"><div class="quiz-meta">${questions.length} Questions · Chapter 3</div><div class="score-badge" id="score-live">Score: —</div></div>`;
+  let lastSection = '';
+  questions.forEach((q, i) => {
+    if (q.section !== lastSection) { html += `<div class="section-divider">${q.section}</div>`; lastSection = q.section; }
+    const letters = ['A','B','C','D'];
+    html += `<div class="q-card" id="qcard-${i}"><div class="q-num">Question ${i+1}</div><div class="q-text">${q.q}</div><div class="options">`;
+    q.opts.forEach((opt, j) => { html += `<div class="opt" id="opt-${i}-${j}" onclick="selectAnswer(${i},${j})"><span class="opt-letter">${letters[j]}</span><span>${opt}</span></div>`; });
+    html += `</div><div class="explanation" id="exp-${i}">${q.exp}</div></div>`;
+  });
+  html += `<div style="text-align:center;margin-top:32px;"><button class="btn btn-primary" onclick="submitQuiz()" id="submit-btn">Submit & Score</button></div><div id="results-area"></div>`;
+  area.innerHTML = html;
+}
+
+function selectAnswer(qIdx, optIdx) {
+  if (submitted) return;
+  answered[qIdx] = optIdx;
+  questions[qIdx].opts.forEach((_, j) => {
+    const el = document.getElementById(`opt-${qIdx}-${j}`);
+    el.style.borderColor = j === optIdx ? '#3b82f6' : '';
+    el.style.background  = j === optIdx ? '#1e3a5f' : '';
+    el.style.color       = j === optIdx ? '#e2e8f0' : '';
+  });
+  let correct = 0;
+  Object.keys(answered).forEach(i => { if (answered[i] === questions[i].ans) correct++; });
+  document.getElementById('score-live').textContent = `${correct}/${Object.keys(answered).length} answered`;
+}
+
+function submitQuiz() {
+  submitted = true; score = 0;
+  questions.forEach((q, i) => {
+    q.opts.forEach((_, j) => {
+      const el = document.getElementById(`opt-${i}-${j}`);
+      el.classList.add('disabled');
+      if (j === q.ans) el.classList.add('correct');
+      else if (answered[i] === j) el.classList.add('wrong');
+    });
+    document.getElementById(`exp-${i}`).classList.add('show');
+    if (answered[i] === q.ans) score++;
+  });
+  const pct = Math.round((score / questions.length) * 100);
+  let msg, color;
+  if (pct >= 90) { msg = "Excellent! Chapter 3 locked in."; color = "#4ade80"; }
+  else if (pct >= 70) { msg = "Passing — review your misses."; color = "#facc15"; }
+  else { msg = "Below threshold — review and retry."; color = "#f87171"; }
+  document.getElementById('score-live').textContent = `Score: ${score}/${questions.length} (${pct}%)`;
+  document.getElementById('submit-btn').outerHTML = `<button class="btn btn-ghost" onclick="buildQuiz()">🔄 Retake</button>`;
+  document.getElementById('results-area').innerHTML = `<div class="quiz-results"><div class="score-big" style="color:${color}">${pct}%</div><div class="score-sub">${score} correct out of ${questions.length}</div><div class="score-msg" style="color:${color}">${msg}</div><div style="margin-top:8px;font-size:0.85rem;color:#64748b;">Pass threshold: 70% · Scroll up to review explanations</div></div>`;
+}
+
+function showTab(t) {
+  document.getElementById('tab-flashcards').style.display = t === 'flashcards' ? '' : 'none';
+  document.getElementById('tab-quiz').style.display = t === 'quiz' ? '' : 'none';
+  document.querySelectorAll('.tab').forEach((el, i) => { el.classList.toggle('active', (i===0&&t==='flashcards')||(i===1&&t==='quiz')); });
+  if (t === 'quiz' && !document.querySelector('.q-card')) buildQuiz();
+}
+</script>
+</body>
+</html>

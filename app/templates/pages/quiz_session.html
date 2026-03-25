@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Quiz Ch {{ chapter.id }} | FL 2-15{% endblock %}
+
+{% block content %}
+<div class="top-bar">
+  <div class="top-bar-left">
+    <a href="/quiz" class="top-bar-close">&times;</a>
+    <span class="text-sm text-muted">Ch {{ chapter.id }} Quiz</span>
+  </div>
+  <span class="score-badge" id="score-badge">0 / 0</span>
+</div>
+
+<div id="quiz-area"
+     hx-get="/api/quiz/start?chapter_id={{ chapter.id }}"
+     hx-trigger="load"
+     hx-swap="innerHTML">
+  <div class="text-center text-muted" style="padding: 60px 0;">Loading quiz...</div>
+</div>
+{% endblock %}

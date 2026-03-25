@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Study{% if chapter %} Ch {{ chapter.id }}{% endif %} | FL 2-15{% endblock %}
+
+{% block content %}
+<div class="top-bar">
+  <div class="top-bar-left">
+    <a href="/study" class="top-bar-close">&times;</a>
+    <span class="text-sm text-muted">{% if chapter %}Ch {{ chapter.id }}{% else %}All Due Cards{% endif %}</span>
+  </div>
+  <span class="fc-progress" id="fc-progress">Loading...</span>
+</div>
+
+<div id="study-area"
+     hx-get="/api/study/next-card?chapter_id={{ chapter.id if chapter else '' }}"
+     hx-trigger="load"
+     hx-swap="innerHTML">
+  <div class="text-center text-muted" style="padding: 60px 0;">Loading cards...</div>
+</div>
+{% endblock %}

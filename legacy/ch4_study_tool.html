@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 4 – Life Insurance Products</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: #0d1b2a; color: #e0e6f0; min-height: 100vh; }
+  header { background: #112240; padding: 18px 28px; border-bottom: 2px solid #1e3a5f; }
+  header h1 { font-size: 1.4rem; color: #7eb8f7; }
+  header p { font-size: 0.85rem; color: #8899aa; margin-top: 4px; }
+  .tabs { display: flex; background: #0d1b2a; border-bottom: 2px solid #1e3a5f; }
+  .tab { padding: 13px 30px; cursor: pointer; font-size: 0.95rem; color: #7a90a8; border-bottom: 3px solid transparent; transition: all 0.2s; }
+  .tab.active { color: #7eb8f7; border-bottom-color: #7eb8f7; background: #112240; }
+  .tab:hover:not(.active) { color: #b0c8e8; background: #132030; }
+  .panel { display: none; padding: 30px 24px; max-width: 860px; margin: 0 auto; }
+  .panel.active { display: block; }
+
+  /* FLASHCARDS */
+  .fc-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+  .fc-counter { font-size: 0.9rem; color: #7a90a8; }
+  .fc-section-label { font-size: 0.8rem; color: #5a9fd4; background: #112240; padding: 3px 10px; border-radius: 12px; }
+  .card-wrap { perspective: 1000px; height: 240px; margin-bottom: 22px; cursor: pointer; }
+  .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.5s; transform-style: preserve-3d; }
+  .card-wrap.flipped .card-inner { transform: rotateY(180deg); }
+  .card-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 12px; display: flex; align-items: center; justify-content: center; padding: 28px; text-align: center; }
+  .card-front { background: linear-gradient(135deg, #112240, #1a3560); border: 1px solid #2a4a7a; }
+  .card-back { background: linear-gradient(135deg, #0e2840, #163050); border: 1px solid #2a5a9a; transform: rotateY(180deg); }
+  .card-front .card-text { font-size: 1.2rem; font-weight: 600; color: #c8ddf5; line-height: 1.5; }
+  .card-back .card-text { font-size: 1rem; color: #a8cce8; line-height: 1.65; }
+  .hint { font-size: 0.78rem; color: #4a6a8a; margin-top: 10px; }
+  .fc-controls { display: flex; gap: 12px; justify-content: center; align-items: center; margin-bottom: 20px; }
+  .btn { padding: 9px 22px; border: none; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.2s; }
+  .btn-primary { background: #1e5a9e; color: #e0eeff; }
+  .btn-primary:hover { background: #2672c0; }
+  .btn-secondary { background: #1a3050; color: #8ab4d8; border: 1px solid #2a4a70; }
+  .btn-secondary:hover { background: #223860; }
+  .btn-shuffle { background: #1a4060; color: #7ab8e0; border: 1px solid #2a5080; font-size: 0.82rem; padding: 7px 16px; }
+  .btn-shuffle:hover { background: #225070; }
+
+  /* QUIZ */
+  .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
+  .quiz-score-box { background: #112240; border: 1px solid #1e3a5f; border-radius: 8px; padding: 8px 18px; font-size: 0.88rem; color: #7eb8f7; }
+  .q-block { background: #112240; border: 1px solid #1e3a5f; border-radius: 10px; padding: 20px 22px; margin-bottom: 16px; }
+  .q-section { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: #5a8ab0; margin-bottom: 8px; }
+  .q-text { font-size: 0.97rem; color: #c8ddf5; margin-bottom: 14px; line-height: 1.55; }
+  .opt { display: flex; align-items: flex-start; gap: 10px; padding: 9px 12px; margin-bottom: 7px; border-radius: 7px; cursor: pointer; border: 1px solid #1e3a5f; transition: all 0.18s; font-size: 0.9rem; color: #a0bcd8; }
+  .opt:hover { border-color: #3a6a9a; background: #14304a; }
+  .opt.selected { border-color: #3a7acc; background: #132d4d; color: #c8ddf5; }
+  .opt.correct { border-color: #2a8a4a; background: #0e2e1e; color: #80d4a0; }
+  .opt.wrong { border-color: #8a3030; background: #2e1010; color: #d48080; }
+  .opt-letter { font-weight: 700; color: #5a8ab0; min-width: 18px; }
+  .explanation { margin-top: 12px; padding: 10px 14px; background: #0e2030; border-left: 3px solid #3a7acc; border-radius: 0 6px 6px 0; font-size: 0.86rem; color: #80aac8; line-height: 1.55; display: none; }
+  .explanation.show { display: block; }
+  .quiz-footer { display: flex; gap: 14px; justify-content: center; margin-top: 24px; padding-bottom: 40px; }
+  .result-banner { text-align: center; padding: 20px; background: #112240; border-radius: 10px; margin-bottom: 24px; border: 1px solid #1e3a5f; display: none; }
+  .result-banner.show { display: block; }
+  .result-score { font-size: 2.2rem; font-weight: 700; color: #7eb8f7; }
+  .result-msg { font-size: 0.95rem; color: #8899aa; margin-top: 6px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Chapter 4 — Life Insurance Products</h1>
+  <p>48 flashcards &nbsp;|&nbsp; 40 practice questions</p>
+</header>
+<div class="tabs">
+  <div class="tab active" onclick="showTab('cards')">Flashcards</div>
+  <div class="tab" onclick="showTab('quiz')">Practice Test</div>
+</div>
+
+<!-- FLASHCARDS -->
+<div id="cards" class="panel active">
+  <div class="fc-meta">
+    <div class="fc-section-label" id="fc-section"></div>
+    <div class="fc-counter" id="fc-counter"></div>
+  </div>
+  <div class="card-wrap" id="cardWrap" onclick="flipCard()">
+    <div class="card-inner" id="cardInner">
+      <div class="card-face card-front"><div class="card-text" id="cardQ"></div></div>
+      <div class="card-face card-back"><div class="card-text" id="cardA"></div></div>
+    </div>
+  </div>
+  <div class="hint" style="text-align:center">Click card to flip</div>
+  <div class="fc-controls" style="margin-top:14px">
+    <button class="btn btn-secondary" onclick="prevCard()">← Prev</button>
+    <button class="btn btn-primary" onclick="nextCard()">Next →</button>
+    <button class="btn btn-shuffle" onclick="shuffleCards()">⇄ Shuffle</button>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div id="quiz" class="panel">
+  <div class="quiz-header">
+    <div style="font-size:1rem;color:#7eb8f7;font-weight:600">Practice Test</div>
+    <div class="quiz-score-box" id="scoreBox">Score: —</div>
+  </div>
+  <div class="result-banner" id="resultBanner">
+    <div class="result-score" id="resultScore"></div>
+    <div class="result-msg" id="resultMsg"></div>
+  </div>
+  <div id="quizContainer"></div>
+  <div class="quiz-footer">
+    <button class="btn btn-primary" onclick="submitQuiz()">Submit Quiz</button>
+    <button class="btn btn-secondary" onclick="resetQuiz()">Reset</button>
+  </div>
+</div>
+
+<script>
+const cards = [
+  // --- LO1: General Concepts ---
+  { s: "General Concepts", q: "What risk does life insurance transfer?", a: "The risk of premature death — life insurance transfers this financial risk from the insured to the insurer." },
+  { s: "General Concepts", q: "What does 'life insurance creates an immediate estate' mean?", a: "The moment the policy is in force, a death benefit exists — the estate is created immediately upon policy issuance, not over time." },
+  { s: "General Concepts", q: "True or False: There are standard life insurance policies like there are standard P&C policies.", a: "FALSE. Unlike P&C, there are no 'standard' life insurance policies — products vary significantly by insurer." },
+
+  // --- LO2: Term Life Insurance ---
+  { s: "Term Life", q: "What is term life insurance?", a: "Pure/temporary protection. Provides the MOST coverage for the LOWEST initial premium. No cash value, no equity." },
+  { s: "Term Life", q: "What is decreasing term life insurance? Give an example.", a: "Death benefit decreases gradually over the term. Example: mortgage redemption insurance matches the declining loan balance." },
+  { s: "Term Life", q: "What is credit life insurance and what is its maximum benefit?", a: "Term policy covering a debtor's life; pays off the loan if the debtor dies. Maximum benefit = the outstanding loan value (individual or group)." },
+  { s: "Term Life", q: "What is level term life insurance?", a: "Provides a level (flat) death benefit for a specified period; policy expires at end of term." },
+  { s: "Term Life", q: "What is the option to renew on a term policy?", a: "Allows the policyowner to renew the term policy before expiration WITHOUT evidence of insurability." },
+  { s: "Term Life", q: "What is step-up premium?", a: "A steady, predictable increase in premium over time on a term policy." },
+  { s: "Term Life", q: "What is Annually Renewable Term (ART) / Yearly Renewable Term (YRT)?", a: "One-year term coverage that renews each year without evidence of insurability; premium increases with age each renewal." },
+  { s: "Term Life", q: "What is increasing term life insurance?", a: "Death benefit increases at periodic intervals over the policy's term." },
+  { s: "Term Life", q: "What is the option to convert on a term policy?", a: "Allows the insured to convert the term policy to a whole life/permanent policy WITHOUT evidence of insurability." },
+  { s: "Term Life", q: "When converting term insurance, what is the key cost factor?", a: "The cost of insurance — comparing converting at the insured's ORIGINAL age vs. ATTAINED (current) age. Original age = lower premium but back-premiums may be owed." },
+  { s: "Term Life", q: "What is interim term life insurance?", a: "Convertible term for someone who wants immediate protection but can't yet afford permanent. Premium for temp protection = original application age; premium for permanent = attained age when permanent begins." },
+  { s: "Term Life", q: "Name 4 advantages of term life insurance.", a: "1) Less expensive than permanent; 2) Protects insurability (renewable/convertible); 3) Useful for debts/mortgages; 4) Most protection for lowest cost." },
+  { s: "Term Life", q: "Name 3 disadvantages of term life insurance.", a: "1) Protection ends when term ends — no coverage after expiration; 2) Premiums rise with age (may lead to cancellation); 3) Few death claims paid (most outlive the term); 4) No cash value — doesn't mature." },
+
+  // --- LO3: Whole Life Insurance ---
+  { s: "Whole Life", q: "What is whole life insurance?", a: "Permanent insurance paying the death benefit whenever the insured dies. Features: level death benefit, level premium, tax-deferred cash value." },
+  { s: "Whole Life", q: "At what age does whole life insurance mature (endow)?", a: "Age 100 — cash value equals face amount at maturity." },
+  { s: "Whole Life", q: "What is ordinary (straight) life / continuous premium whole life?", a: "The most BASIC form of whole life. Premiums are payable for the insured's entire life." },
+  { s: "Whole Life", q: "What is limited payment whole life?", a: "Premiums paid only for a limited period (e.g., 20 years or to age 65), but coverage lasts the insured's whole life." },
+  { s: "Whole Life", q: "What is single-premium whole life and what is unique about it?", a: "One lump-sum premium payment. Most expensive initially. Creates immediate nonforfeiture (cash) value. Pays LESS total than stretching premiums over time." },
+  { s: "Whole Life", q: "How does the payment period affect the premium in whole life?", a: "Shorter payment period = HIGHER premium. All premiums fund the same death benefit, just compressed into fewer payments." },
+  { s: "Whole Life", q: "What is modified whole life insurance?", a: "Lower initial premium than straight whole life for an intro period (e.g., 5 years). After intro period, premium jumps HIGHER than a straight life policy would have cost originally." },
+  { s: "Whole Life", q: "What is graded premium whole life?", a: "Like modified life but premiums INCREASE ANNUALLY in early years (not just after a period), then fix at an amount HIGHER than straight whole life for the remainder of life." },
+  { s: "Whole Life", q: "What is enhanced/economatic/extraordinary life insurance?", a: "Low-premium, participating, permanent life insurance policy." },
+  { s: "Whole Life", q: "What is indexed (equity-indexed) whole life insurance?", a: "Policyholder shares in a percentage of growth of an equity index (e.g., S&P 500). Minimum interest and death benefit are GUARANTEED. NOT considered securities." },
+
+  // --- LO4: Nontraditional / Alternative Products ---
+  { s: "Adjustable / Universal / Variable", q: "What is adjustable life insurance?", a: "Combines FLEXIBILITY + PERMANENT insurance. Flexible premiums and adjustable death benefit. Adjustments are PROSPECTIVE (look to the future). Cash value grows at a GUARANTEED FIXED rate." },
+  { s: "Adjustable / Universal / Variable", q: "What is universal life insurance?", a: "Essentially a term policy with a cash value (savings). Flexible premiums, adjustable death benefit. Cash value earns money-market rates with a guaranteed minimum. Permanent insurance as long as cost of insurance is covered." },
+  { s: "Adjustable / Universal / Variable", q: "What is a target premium in universal life?", a: "A SUGGESTED (not required) premium amount in a universal life policy." },
+  { s: "Adjustable / Universal / Variable", q: "Universal Life Option A vs. Option B — what's the difference?", a: "Option A: Death benefit = cash value + decreasing pure insurance (face amount stays level). Option B: Death benefit = face amount + cash value (total death benefit increases as cash value grows)." },
+  { s: "Adjustable / Universal / Variable", q: "What is indexed universal life (IUL) insurance?", a: "Combines traditional UL features with interest potential tied to upward movement of an equity index. Has guaranteed floor (minimum interest)." },
+  { s: "Adjustable / Universal / Variable", q: "What is variable life insurance?", a: "Permanent life with FIXED premium. Cash value is in a SEPARATE ACCOUNT invested in securities. Guaranteed MINIMUM death benefit, but actual death benefit and cash value vary with investment performance. Regulated by SEC." },
+  { s: "Adjustable / Universal / Variable", q: "What is variable universal life (VUL) insurance?", a: "HYBRID of universal life + variable whole life. Flexible premiums + investment control over separate account. Combines flexible premium with investment feature. SEC regulated." },
+  { s: "Adjustable / Universal / Variable", q: "Which life insurance products are regulated by the SEC?", a: "Variable Life and Variable Universal Life (VUL) — because cash value is invested in securities (separate account)." },
+
+  // --- LO5: Special Use Products ---
+  { s: "Special Use Products", q: "What is a family plan policy?", a: "A single policy designed to cover ALL family members (typically whole life on breadwinner + term riders for spouse and children)." },
+  { s: "Special Use Products", q: "What is a family maintenance policy?", a: "Combines whole life + LEVEL TERM insurance. Pays income for a SPECIFIC PERIOD beginning on the DATE OF DEATH of the insured." },
+  { s: "Special Use Products", q: "What is a joint life policy?", a: "Covers two or more persons; pays the death benefit on the FIRST death, then coverage ends." },
+  { s: "Special Use Products", q: "What is a second-to-die (survivor) policy?", a: "Covers two or more persons; pays the death benefit on the LAST person's death. Often used for estate planning." },
+  { s: "Special Use Products", q: "What is juvenile life insurance?", a: "Any ordinary life insurance policy that insures the life of a MINOR." },
+  { s: "Special Use Products", q: "What is an endowment policy?", a: "Cash values grow rapidly and the policy matures (endows) BEFORE age 100 (e.g., 10-year, 20-year, or at age 65). Higher premiums than whole life; quickest cash value build-up. Pays whether insured DIES or SURVIVES the endowment period." },
+  { s: "Special Use Products", q: "What is a Modified Endowment Contract (MEC)?", a: "An overfunded life insurance policy that FAILED the seven-pay test. Premiums in first 7 years exceed what's needed to fully pay up the same policy in 7 years. IRS does not treat it as a regular life insurance policy for tax purposes." },
+  { s: "Special Use Products", q: "What is industrial life insurance?", a: "Small face amounts (e.g., $1,000). Premiums collected weekly or monthly (often at the home). Also called 'home service' insurance." },
+  { s: "Special Use Products", q: "What is monthly debit ordinary life insurance?", a: "A combination of industrial life insurance and ordinary life insurance." },
+
+  // --- LO6: Other Concepts ---
+  { s: "Other Concepts", q: "What is a face amount plus cash value policy?", a: "Promises to pay the face amount PLUS the accumulated cash value upon death of the insured." },
+  { s: "Other Concepts", q: "What is STOLI (Stranger-Owned Life Insurance)?", a: "A person buys life insurance with the intent to immediately sell it to a third party who has NO insurable interest — this third party could not have legally purchased the policy themselves." },
+  { s: "Other Concepts", q: "What is nonmedical life insurance?", a: "Policy issued WITHOUT requiring a medical exam. Typically MORE EXPENSIVE than medically underwritten policies." },
+  { s: "Other Concepts", q: "What is a participating life insurance policy?", a: "Policy that pays DIVIDENDS — the policyholder shares in the company's excess earnings." },
+  { s: "Other Concepts", q: "What is a nonparticipating life insurance policy?", a: "Policy that does NOT pay dividends. Policyholder has no right to share in excess earnings." },
+];
+
+const questions = [
+  // --- General Concepts ---
+  { section: "General Concepts", q: "Which of the following best describes the primary purpose of life insurance?", opts: ["To accumulate tax-deferred savings for retirement", "To transfer the risk of premature death to an insurer", "To provide investment growth in a separate account", "To pay medical expenses upon death"], ans: 1, exp: "Life insurance transfers the financial risk of premature death from the individual/family to the insurance company." },
+  { section: "General Concepts", q: "When an insured purchases a life insurance policy, when is the 'estate' created?", opts: ["At the insured's death", "After the first premium is paid in full", "Immediately upon the policy going into force", "After the contestability period ends"], ans: 2, exp: "Life insurance creates an immediate estate — from the moment the policy is in force, the death benefit exists." },
+  { section: "General Concepts", q: "Unlike property and casualty insurance, life insurance policies:", opts: ["Are heavily standardized by state regulators", "Have no standard policy form — they vary by insurer", "Must use NAIC-approved standard language verbatim", "Cannot include riders or endorsements"], ans: 1, exp: "There are no 'standard' life insurance policies as there are in P&C insurance. Products vary widely among insurers." },
+
+  // --- Term Life ---
+  { section: "Term Life Insurance", q: "Which type of life insurance provides the MOST coverage for the LOWEST initial premium?", opts: ["Whole life insurance", "Universal life insurance", "Term life insurance", "Endowment insurance"], ans: 2, exp: "Term life provides the most protection for the lowest initial premium. It is pure protection with no cash value." },
+  { section: "Term Life Insurance", q: "A homeowner takes out a policy to cover an outstanding mortgage. As the mortgage balance decreases, so does the death benefit. This is an example of:", opts: ["Level term insurance", "Decreasing term insurance", "Increasing term insurance", "Annually renewable term"], ans: 1, exp: "Mortgage redemption insurance is a classic example of decreasing term — the benefit decreases with the loan balance." },
+  { section: "Term Life Insurance", q: "The maximum benefit for a credit life insurance policy is:", opts: ["$100,000 for individual; $500,000 for group", "The insured's annual salary", "The value of the outstanding loan", "Two times the insured's annual income"], ans: 2, exp: "Credit life maximum benefit equals the value of the loan — it covers what is owed, not more." },
+  { section: "Term Life Insurance", q: "An insured wants to renew his term policy at expiration. The option to renew allows him to do so WITHOUT:", opts: ["Paying any additional premium", "Evidence of insurability", "The insurer's approval", "Notifying the state insurance department"], ans: 1, exp: "The option to renew lets the policyowner renew before expiration without providing evidence of insurability (no new medical exam required)." },
+  { section: "Term Life Insurance", q: "ART (Annually Renewable Term) insurance is best described as:", opts: ["A policy that provides a level death benefit for a 10-year period", "A policy that renews annually without evidence of insurability, with premiums increasing each year", "A policy with a fixed premium for the entire term", "A permanent policy with annual premium reviews"], ans: 1, exp: "ART/YRT provides one year of coverage, renewable each year without evidence of insurability. Premiums increase as the insured ages." },
+  { section: "Term Life Insurance", q: "Which term policy feature allows the insured to exchange the policy for a permanent policy WITHOUT evidence of insurability?", opts: ["Option to renew", "Option to convert", "Waiver of premium", "Step-up provision"], ans: 1, exp: "The option to convert allows the insured to convert a term policy to a whole life/permanent policy without evidence of insurability." },
+  { section: "Term Life Insurance", q: "When converting from term to permanent life insurance, what is the key factor the insured must consider?", opts: ["The contestability period of the new policy", "The cost of insurance at the original age vs. attained age", "Whether the insurer is stock or mutual", "The premium mode on the original term policy"], ans: 1, exp: "The insured must compare the cost of converting at the original (application) age vs. the attained (current) age. Original age conversion may require back-premium payment." },
+  { section: "Term Life Insurance", q: "Interim term life insurance is characterized by all of the following EXCEPT:", opts: ["It is a form of convertible term insurance", "The temporary premium is based on the original application age", "The permanent protection premium is based on the attained age when permanent coverage begins", "It provides immediate cash value accumulation"], ans: 3, exp: "Interim term provides immediate protection while permanent coverage is arranged — but it has NO cash value (it's term insurance)." },
+  { section: "Term Life Insurance", q: "All of the following are disadvantages of term life insurance EXCEPT:", opts: ["No cash value accumulation", "Protection ends when the term ends", "Provides the most protection for the lowest cost", "Premiums increase with age if renewable"], ans: 2, exp: "Providing the most protection for the lowest cost is an ADVANTAGE, not a disadvantage, of term life insurance." },
+  { section: "Term Life Insurance", q: "A term life policy whose death benefit grows larger over time is called:", opts: ["Decreasing term", "Level term", "Increasing term", "Graded term"], ans: 2, exp: "Increasing term — the death benefit increases at periodic intervals over the policy's term." },
+
+  // --- Whole Life ---
+  { section: "Whole Life Insurance", q: "At what age does a whole life policy traditionally 'mature' (endow)?", opts: ["Age 65", "Age 70½", "Age 95", "Age 100"], ans: 3, exp: "Whole life is designed to mature at age 100, at which point the cash value equals the face amount." },
+  { section: "Whole Life Insurance", q: "Which is the most BASIC form of whole life insurance?", opts: ["Limited payment whole life", "Single-premium whole life", "Ordinary (straight) whole life", "Modified whole life"], ans: 2, exp: "Ordinary/straight/continuous premium whole life is the most basic form — premiums paid for the insured's entire life." },
+  { section: "Whole Life Insurance", q: "A 20-Pay Life policy requires premiums for:", opts: ["20 years or until death, whichever comes first", "Only 20 annual payments; coverage lasts the insured's entire life", "20 years; then the policy converts to term", "Until age 20 of the insured's children"], ans: 1, exp: "Limited payment whole life (20-Pay) requires premiums for 20 years but coverage remains permanent for the insured's entire life." },
+  { section: "Whole Life Insurance", q: "Which whole life policy has the HIGHEST initial premium?", opts: ["Ordinary whole life", "20-Pay whole life", "Single-premium whole life", "Modified whole life"], ans: 2, exp: "Single-premium whole life requires one lump-sum payment — the highest initial cost. However, total amount paid may be less than paying over many years." },
+  { section: "Whole Life Insurance", q: "A single-premium whole life policy creates which of the following immediately?", opts: ["A convertible term rider", "A nonforfeiture (cash) value", "An accidental death benefit", "A waiver of premium provision"], ans: 1, exp: "Single-premium whole life creates an immediate nonforfeiture value (cash value) because the policy is fully funded from day one." },
+  { section: "Whole Life Insurance", q: "Modified whole life insurance is characterized by:", opts: ["Premiums that increase annually for the life of the policy", "A lower initial premium that later jumps higher than a standard whole life rate", "The same premium as straight whole life, with modified benefits", "A death benefit that decreases over time"], ans: 1, exp: "Modified whole life has a lower initial premium for an intro period (e.g., 5 years), then jumps to a rate HIGHER than straight whole life would have cost." },
+  { section: "Whole Life Insurance", q: "Which of the following best describes graded premium whole life?", opts: ["Premium stays level for 5 years then drops permanently", "Premiums increase annually in the early years, then level off at a rate higher than straight whole life", "Premiums are the same as ordinary whole life throughout", "Benefits are graded based on years of coverage"], ans: 1, exp: "Graded premium whole life increases premiums annually in early years, then fixes at a higher-than-straight-whole-life amount for the rest of the policy." },
+  { section: "Whole Life Insurance", q: "Indexed (equity-indexed) whole life is NOT classified as a security because:", opts: ["It is sold by life insurance agents, not broker-dealers", "The minimum interest rate and death benefit are guaranteed", "The SEC has a special exemption for life insurers", "It only tracks bond market indexes"], ans: 1, exp: "Indexed whole life is NOT a security because it has a GUARANTEED minimum interest rate and death benefit — the insurer bears the investment risk." },
+  { section: "Whole Life Insurance", q: "A policyowner with a shorter payment period on a whole life policy should expect:", opts: ["Lower premiums than straight whole life", "Higher premiums than straight whole life", "The same premiums as straight whole life", "Premiums that end when the insured turns 65"], ans: 1, exp: "Shorter payment period = HIGHER premium. Same death benefit, fewer payments — each payment must be larger." },
+
+  // --- Adjustable / Universal / Variable ---
+  { section: "Adjustable & Universal Life", q: "Adjustable life insurance is distinguished from other permanent policies by:", opts: ["Premiums invested in a separate account", "Flexibility in premium amounts and adjustable death benefit with a guaranteed fixed growth rate", "Death benefits tied to equity index performance", "No cash value accumulation"], ans: 1, exp: "Adjustable life combines permanent insurance with flexible premiums and an adjustable death benefit. Unlike UL, cash value grows at a guaranteed FIXED rate. Adjustments are prospective." },
+  { section: "Adjustable & Universal Life", q: "Universal life insurance is best described as:", opts: ["A term policy with flexible premiums, adjustable death benefits, and a cash value earning money market rates", "A whole life policy with a fixed premium invested in a separate account", "A type of term insurance with no cash value accumulation", "A policy that matures at age 65 with accelerated cash value"], ans: 0, exp: "UL is essentially a flexible-premium term policy with cash value accumulation at money market rates (with a guaranteed minimum)." },
+  { section: "Adjustable & Universal Life", q: "The 'target premium' in a universal life policy is:", opts: ["The minimum premium required to keep the policy in force", "A suggested (not required) premium amount", "The maximum premium allowed without creating a MEC", "The premium needed to fund the policy to age 100"], ans: 1, exp: "The target premium is simply a SUGGESTED premium — it is not a minimum requirement. The flexible nature of UL allows higher or lower payments." },
+  { section: "Adjustable & Universal Life", q: "Under Universal Life Option B, the death benefit:", opts: ["Equals the face amount only (level)", "Equals cash value plus decreasing pure insurance", "Equals the face amount plus the accumulated cash value", "Decreases as the policy ages"], ans: 2, exp: "Option B: death benefit = face amount + cash value. As cash value grows, total death benefit increases. (Level term + increasing cash value)" },
+  { section: "Adjustable & Universal Life", q: "Under Universal Life Option A, the death benefit:", opts: ["Increases as the cash value increases", "Remains level — face amount equals pure insurance plus cash value", "Equals face amount plus accumulated dividends", "Decreases as the insured ages"], ans: 1, exp: "Option A: death benefit stays LEVEL. The pure insurance (term) portion decreases as cash value increases, keeping total at the face amount." },
+  { section: "Adjustable & Universal Life", q: "A policyowner surrenders a universal life policy. She is entitled to:", opts: ["Only the premiums paid to date", "The full cash value accumulated in the policy", "The face amount minus unpaid premiums", "Nothing — UL has no surrender value"], ans: 1, exp: "The policyowner may surrender a UL policy for its ENTIRE cash value at any time." },
+  { section: "Adjustable & Universal Life", q: "Which of the following life insurance policies are regulated by the SEC?", opts: ["Indexed whole life and adjustable life", "Variable life and variable universal life", "Universal life and adjustable life", "Participating whole life and modified whole life"], ans: 1, exp: "Variable life and VUL are SEC-regulated because cash value is invested in a separate account of securities — an investment product." },
+  { section: "Adjustable & Universal Life", q: "Variable life insurance has all of the following characteristics EXCEPT:", opts: ["Fixed premium", "Guaranteed minimum death benefit", "Cash value in a separate account invested in securities", "Flexible premium payments"], ans: 3, exp: "Variable life has a FIXED premium. Flexible premiums are a feature of Variable UNIVERSAL Life (VUL), not variable life alone." },
+  { section: "Adjustable & Universal Life", q: "Variable Universal Life (VUL) is a hybrid of:", opts: ["Term life and whole life", "Universal life and variable whole life", "Endowment and adjustable life", "Indexed universal life and modified whole life"], ans: 1, exp: "VUL combines universal life (flexible premiums, adjustable death benefit) with variable whole life (investment control over separate account)." },
+
+  // --- Special Use Products ---
+  { section: "Special Use Life Products", q: "A family plan policy is designed to:", opts: ["Cover two spouses only, with benefits paid on first death", "Cover all family members under one policy", "Provide income to surviving children for 20 years", "Pay a benefit only if both spouses die within the same year"], ans: 1, exp: "A family plan policy covers ALL family members under one policy — typically whole life on the breadwinner with riders for other family members." },
+  { section: "Special Use Life Products", q: "A family maintenance policy combines:", opts: ["Term life with decreasing coverage and a whole life base", "Whole life and level term, providing income for a specific period from the date of death", "Two whole life policies on spouses", "Universal life with a waiver of premium rider"], ans: 1, exp: "Family maintenance = whole life + LEVEL TERM. Income is paid for a specific period beginning on the date of death." },
+  { section: "Special Use Life Products", q: "A joint life policy pays the death benefit:", opts: ["When the last covered person dies", "When either covered person becomes disabled", "Upon the first death of a covered person", "At the end of the policy term regardless of death"], ans: 2, exp: "Joint life pays on the FIRST death, then coverage ends. Compare to second-to-die which pays on the LAST death." },
+  { section: "Special Use Life Products", q: "A second-to-die (survivor) policy is most commonly used for:", opts: ["Covering minor children", "Business buy-sell agreements between equal partners", "Estate planning — providing liquidity after both spouses die", "Mortgage redemption when both spouses have loans"], ans: 2, exp: "Second-to-die pays on the LAST death, making it ideal for estate planning — typically when the estate tax is due after the death of the surviving spouse." },
+  { section: "Special Use Life Products", q: "Which of the following has the QUICKEST/most accelerated cash value build-up?", opts: ["Ordinary whole life", "20-Pay whole life", "Endowment contract", "Level term life"], ans: 2, exp: "Endowment contracts have the fastest cash value accumulation because they are designed to mature (endow) before age 100. Higher premiums drive rapid cash growth." },
+  { section: "Special Use Life Products", q: "An endowment policy pays:", opts: ["Only if the insured dies before the endowment date", "Only if the insured survives the endowment period", "Whether the insured dies OR survives the endowment period", "Only if the insured dies after age 65"], ans: 2, exp: "An endowment pays the face amount if the insured DIES before the period ends OR if the insured SURVIVES to the end of the period." },
+  { section: "Special Use Life Products", q: "A policy is classified as a Modified Endowment Contract (MEC) when:", opts: ["The insured is over age 70", "The policyholder failed the seven-pay test (overfunded in first 7 years)", "The policy cash value exceeds the death benefit", "The insurer files for a MEC designation with the state"], ans: 1, exp: "A MEC failed the seven-pay test — premiums paid in the first 7 years exceeded the total needed to fully pay up the same coverage in 7 years. IRS treats MECs differently for tax purposes." },
+  { section: "Special Use Life Products", q: "Industrial life insurance is characterized by:", opts: ["Large face amounts and annual premium billing", "Small face amounts (e.g., $1,000) with premiums collected weekly or monthly", "Coverage exclusively for industrial workers", "No medical exam and very high limits"], ans: 1, exp: "Industrial life has comparatively SMALL face amounts with premiums collected weekly or monthly — often by an agent visiting the home." },
+
+  // --- Other Concepts ---
+  { section: "Other Concepts", q: "Stranger-Owned Life Insurance (STOLI) is best described as:", opts: ["A life insurance policy with no named beneficiary", "A life insurance policy purchased with the intent to sell it to a third party who has no insurable interest", "Any policy sold in the secondary market by the insured", "Life insurance purchased by a corporation on a key employee"], ans: 1, exp: "STOLI: the purchaser intends from the start to sell the policy to a stranger who has no insurable interest — this arrangement circumvents insurable interest requirements." },
+  { section: "Other Concepts", q: "Nonmedical life insurance typically:", opts: ["Requires a full physical exam and blood tests", "Is less expensive than medically underwritten policies", "Does not require a medical exam and tends to be more expensive", "Is only available for term life policies"], ans: 2, exp: "Nonmedical life insurance skips the medical exam, but the insurer charges more to compensate for the higher unknown risk." },
+  { section: "Other Concepts", q: "A participating life insurance policy differs from a nonparticipating policy in that it:", opts: ["Has a lower death benefit", "Is issued only by mutual companies", "Pays dividends to the policyholder from the company's excess earnings", "Provides coverage for a specified term only"], ans: 2, exp: "Participating policies pay dividends — the policyholder shares in the insurer's excess earnings. Nonparticipating policies do not." },
+  { section: "Other Concepts", q: "A 'face amount plus cash value' policy promises to pay:", opts: ["The face amount only, with cash value returned separately", "Only the cash value upon death", "The face amount PLUS the accumulated cash value upon the insured's death", "Two times the face amount after a set period"], ans: 2, exp: "This policy pays BOTH the face amount AND the accumulated cash value to the beneficiary upon the insured's death." },
+];
+
+let currentCard = 0;
+let cardOrder = cards.map((_, i) => i);
+let userAnswers = {};
+let submitted = false;
+
+function renderCard() {
+  const idx = cardOrder[currentCard];
+  const card = cards[idx];
+  document.getElementById('cardQ').textContent = card.q;
+  document.getElementById('cardA').textContent = card.a;
+  document.getElementById('fc-counter').textContent = `${currentCard + 1} / ${cards.length}`;
+  document.getElementById('fc-section').textContent = card.s;
+  const wrap = document.getElementById('cardWrap');
+  wrap.classList.remove('flipped');
+}
+
+function flipCard() {
+  document.getElementById('cardWrap').classList.toggle('flipped');
+}
+
+function nextCard() {
+  currentCard = (currentCard + 1) % cards.length;
+  renderCard();
+}
+
+function prevCard() {
+  currentCard = (currentCard - 1 + cards.length) % cards.length;
+  renderCard();
+}
+
+function shuffleCards() {
+  for (let i = cardOrder.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [cardOrder[i], cardOrder[j]] = [cardOrder[j], cardOrder[i]];
+  }
+  currentCard = 0;
+  renderCard();
+}
+
+function buildQuiz() {
+  const container = document.getElementById('quizContainer');
+  container.innerHTML = '';
+  questions.forEach((q, qi) => {
+    const block = document.createElement('div');
+    block.className = 'q-block';
+    block.innerHTML = `
+      <div class="q-section">${q.section}</div>
+      <div class="q-text">${qi + 1}. ${q.q}</div>
+      ${q.opts.map((o, oi) => `
+        <div class="opt" id="opt-${qi}-${oi}" onclick="selectAnswer(${qi}, ${oi})">
+          <span class="opt-letter">${String.fromCharCode(65 + oi)}.</span>
+          <span>${o}</span>
+        </div>`).join('')}
+      <div class="explanation" id="exp-${qi}">${q.exp}</div>
+    `;
+    container.appendChild(block);
+  });
+}
+
+function selectAnswer(qIdx, optIdx) {
+  if (submitted) return;
+  userAnswers[qIdx] = optIdx;
+  for (let i = 0; i < questions[qIdx].opts.length; i++) {
+    const el = document.getElementById(`opt-${qIdx}-${i}`);
+    el.classList.toggle('selected', i === optIdx);
+  }
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+  let correct = 0;
+  questions.forEach((q, qi) => {
+    const chosen = userAnswers[qi];
+    for (let i = 0; i < q.opts.length; i++) {
+      const el = document.getElementById(`opt-${qi}-${i}`);
+      el.classList.remove('selected');
+      if (i === q.ans) el.classList.add('correct');
+      else if (i === chosen && chosen !== q.ans) el.classList.add('wrong');
+    }
+    if (chosen === q.ans) correct++;
+    document.getElementById(`exp-${qi}`).classList.add('show');
+  });
+  const pct = Math.round((correct / questions.length) * 100);
+  document.getElementById('scoreBox').textContent = `Score: ${correct}/${questions.length} (${pct}%)`;
+  const banner = document.getElementById('resultBanner');
+  banner.classList.add('show');
+  document.getElementById('resultScore').textContent = `${correct} / ${questions.length} — ${pct}%`;
+  document.getElementById('resultMsg').textContent = pct >= 70 ? '✓ Passing score! Keep it up.' : '✗ Below 70% — review the explanations and retry.';
+  banner.scrollIntoView({ behavior: 'smooth' });
+}
+
+function resetQuiz() {
+  submitted = false;
+  userAnswers = {};
+  document.getElementById('scoreBox').textContent = 'Score: —';
+  document.getElementById('resultBanner').classList.remove('show');
+  buildQuiz();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function showTab(t) {
+  document.getElementById('cards').classList.toggle('active', t === 'cards');
+  document.getElementById('quiz').classList.toggle('active', t === 'quiz');
+  document.querySelectorAll('.tab').forEach((el, i) => {
+    el.classList.toggle('active', (i === 0 && t === 'cards') || (i === 1 && t === 'quiz'));
+  });
+}
+
+renderCard();
+buildQuiz();
+</script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Study | FL 2-15{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Study Flashcards</h1>
+  <p>Choose a chapter or review all due cards</p>
+</div>
+
+{% if total_due > 0 %}
+<a href="/study/due/all" class="card" style="text-decoration: none; display: block; border-color: var(--primary); background: #2563eb12;">
+  <div class="flex justify-between items-center">
+    <div>
+      <div class="card-title" style="color: var(--primary-light);">Review All Due Cards</div>
+      <div class="card-subtitle">{{ total_due }} cards ready for review</div>
+    </div>
+    <span class="due-badge" style="font-size: 0.85rem; padding: 4px 12px;">{{ total_due }}</span>
+  </div>
+</a>
+{% endif %}
+
+{% for ch in chapters %}
+<a href="/study/{{ ch.id }}" class="card" style="text-decoration: none; display: block;">
+  <div class="flex justify-between items-center">
+    <div>
+      <div class="card-title">Ch {{ ch.id }}: {{ ch.title }}</div>
+      <div class="card-subtitle">{{ ch.total }} flashcards{% if ch.due > 0 %} · {{ ch.due }} due{% endif %}</div>
+    </div>
+    {% if ch.due > 0 %}
+    <span class="due-badge">{{ ch.due }}</span>
+    {% endif %}
+  </div>
+</a>
+{% endfor %}
+{% endblock %}

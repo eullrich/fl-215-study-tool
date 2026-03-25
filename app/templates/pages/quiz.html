@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Quiz | FL 2-15{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Practice Quiz</h1>
+  <p>Choose a chapter to test your knowledge</p>
+</div>
+
+{% for ch in chapters %}
+<a href="/quiz/{{ ch.id }}" class="card" style="text-decoration: none; display: block;">
+  <div class="flex justify-between items-center">
+    <div>
+      <div class="card-title">Ch {{ ch.id }}: {{ ch.title }}</div>
+      <div class="card-subtitle">{{ ch.total }} questions</div>
+    </div>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-dim)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+  </div>
+</a>
+{% endfor %}
+
+<a href="/exam" class="card" style="text-decoration: none; display: block; border-color: var(--orange); background: #f9731610;">
+  <div class="flex justify-between items-center">
+    <div>
+      <div class="card-title" style="color: var(--orange);">Exam Simulation</div>
+      <div class="card-subtitle">165 questions · 2h 45m · 70% to pass</div>
+    </div>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+  </div>
+</a>
+{% endblock %}

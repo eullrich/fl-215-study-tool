@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Dashboard | FL 2-15{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>FL 2-15 Study Tool</h1>
+  <p>Florida Health & Life Insurance Exam</p>
+</div>
+
+<!-- Readiness Ring -->
+<div class="card text-center" style="padding: 28px 20px;">
+  <div class="readiness-ring">
+    <svg width="120" height="120" viewBox="0 0 120 120">
+      <circle cx="60" cy="60" r="52" fill="none" stroke="var(--surface-hover)" stroke-width="8"/>
+      <circle cx="60" cy="60" r="52" fill="none"
+        stroke="{% if readiness >= 75 %}var(--success){% elif readiness >= 60 %}var(--orange){% elif readiness >= 40 %}var(--warning){% else %}var(--danger){% endif %}"
+        stroke-width="8" stroke-linecap="round"
+        stroke-dasharray="{{ (readiness / 100 * 326.7)|round(1) }} 326.7"
+        transform="rotate(-90 60 60)"/>
+      <text x="60" y="56" text-anchor="middle" fill="var(--text)" font-size="28" font-weight="800">{{ readiness }}%</text>
+      <text x="60" y="74" text-anchor="middle" fill="var(--text-dim)" font-size="10" font-weight="600">READINESS</text>
+    </svg>
+    <span class="readiness-label" style="color: {% if readiness >= 75 %}var(--success){% elif readiness >= 60 %}var(--orange){% elif readiness >= 40 %}var(--warning){% else %}var(--danger){% endif %}">
+      {% if readiness >= 75 %}Ready to Pass{% elif readiness >= 60 %}Almost Ready{% elif readiness >= 40 %}Getting There{% else %}Not Ready{% endif %}
+    </span>
+  </div>
+  <p class="text-sm text-dim">{{ total_mastered }} of {{ total_cards }} cards mastered</p>
+</div>
+
+<!-- Today's Plan -->
+<div class="card">
+  <div class="card-title">Today's Plan</div>
+  {% if total_due > 0 %}
+  <a href="/study/due/all" class="plan-item">
+    <div class="plan-icon" style="background: #2563eb33; color: var(--primary-light);">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+    </div>
+    <div class="plan-text">
+      <strong>Review Due Cards</strong>
+      <span>{{ total_due }} cards due for review</span>
+    </div>
+  </a>
+  {% endif %}
+  <a href="/quiz" class="plan-item">
+    <div class="plan-icon" style="background: #22c55e33; color: var(--success-light);">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    </div>
+    <div class="plan-text">
+      <strong>Practice Quiz</strong>
+      <span>Test your knowledge</span>
+    </div>
+  </a>
+  <a href="/exam" class="plan-item">
+    <div class="plan-icon" style="background: #f9731633; color: var(--orange);">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    </div>
+    <div class="plan-text">
+      <strong>Exam Simulation</strong>
+      <span>165 questions, 2h 45m, 70% to pass</span>
+    </div>
+  </a>
+</div>
+
+<!-- Chapters -->
+<div class="card">
+  <div class="card-title" style="margin-bottom: 12px;">Chapters</div>
+  {% for ch in chapter_stats %}
+  <a href="/study/{{ ch.id }}" class="plan-item" style="margin-bottom: 4px;">
+    <div class="chapter-info" style="flex: 1;">
+      <div class="chapter-title">Ch {{ ch.id }}: {{ ch.title }}</div>
+      <div class="chapter-meta">
+        <div class="progress-bar" style="margin-top: 6px; margin-bottom: 4px;">
+          <div class="progress-fill" style="width: {{ ch.mastery_pct }}%; background: {% if ch.mastery_pct >= 75 %}var(--success){% elif ch.mastery_pct >= 40 %}var(--warning){% else %}var(--primary){% endif %};"></div>
+        </div>
+        {{ ch.mastered }}/{{ ch.total }} mastered
+        {% if ch.quiz_seen > 0 %} · Quiz {{ ch.quiz_accuracy }}%{% endif %}
+      </div>
+    </div>
+    {% if ch.due > 0 %}
+    <span class="due-badge">{{ ch.due }} due</span>
+    {% endif %}
+  </a>
+  {% endfor %}
+</div>
+{% endblock %}
