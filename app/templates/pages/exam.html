@@ -106,7 +106,7 @@ function examApp() {
     async startExam() {
       const res = await fetch('/api/quiz/exam/start');
       const data = await res.json();
-      this.questions = data.questions;
+      this.questions = data;
       this.answers = {};
       this.currentIdx = 0;
       this.timeLeft = 9900;

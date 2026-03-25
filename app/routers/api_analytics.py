@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from fastapi import APIRouter, Depends
 from fastapi.responses import HTMLResponse
 from sqlalchemy import select, func
@@ -9,6 +7,7 @@ from app.database import get_db
 from app.models.content import Chapter, Flashcard, QuizQuestion
 from app.models.scheduling import CardSchedule, QuizQuestionState
 from app.models.study import StudySession
+from app.routers.api_study import get_position
 
 router = APIRouter(prefix="/api/analytics")
 
@@ -25,11 +24,12 @@ async def overview(db: AsyncSession = Depends(get_db)):
         select(func.count()).select_from(CardSchedule).where(CardSchedule.box.in_([1, 2]))
     )).scalar() or 0
     unseen = (await db.execute(
-        select(func.count()).select_from(CardSchedule).where(CardSchedule.box == 0)
+        select(func.count()).select_from(CardSchedule).where(CardSchedule.box == 0, CardSchedule.total_reviews == 0)
     )).scalar() or 0
+    current_pos = await get_position(db)
     due_now = (await db.execute(
         select(func.count()).select_from(CardSchedule)
-        .where(CardSchedule.next_review_at <= datetime.utcnow())
+        .where(CardSchedule.review_after_position <= current_pos, CardSchedule.total_reviews > 0)
     )).scalar() or 0
 
     # Quiz stats

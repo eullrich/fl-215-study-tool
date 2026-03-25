@@ -1,4 +1,3 @@
-import random
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, Request
@@ -214,7 +213,7 @@ async def exam_finish(request: Request, db: AsyncSession = Depends(get_db)):
                         state.streak += 1
                     else:
                         state.streak = 0
-                    state.mastery_level = state.times_correct / state.times_seen
+                    state.mastery_level = state.times_correct / state.times_seen if state.times_seen > 0 else 0
                     state.last_seen_at = datetime.utcnow()
 
     await db.commit()
