@@ -17,6 +17,7 @@ CHAPTERS = {
     3: "Insurance Contracts — Elements, Features & Legal Principles",
     4: "Life Insurance Products",
     5: "Life Insurance Policy Provisions, Riders & Exclusions",
+    6: "Premiums, Settlements, Beneficiaries & Taxation",
 }
 
 

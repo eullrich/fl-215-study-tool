@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FL 2-15 Exam | Chapter 6 Study Tool</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+
+  .header { background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%); padding: 24px 32px; border-bottom: 1px solid #1e40af44; }
+  .header h1 { font-size: 1.5rem; font-weight: 700; color: #60a5fa; letter-spacing: -0.02em; }
+  .header p { font-size: 0.875rem; color: #94a3b8; margin-top: 4px; }
+
+  .tabs { display: flex; gap: 0; padding: 20px 32px 0; border-bottom: 1px solid #1e293b; }
+  .tab { padding: 10px 24px; border-radius: 8px 8px 0 0; cursor: pointer; font-size: 0.875rem; font-weight: 600; border: 1px solid transparent; border-bottom: none; transition: all 0.2s; color: #64748b; }
+  .tab.active { background: #1e293b; color: #60a5fa; border-color: #1e40af44; }
+  .tab:hover:not(.active) { color: #94a3b8; }
+
+  .content { padding: 32px; max-width: 860px; margin: 0 auto; }
+
+  .fc-container { display: flex; flex-direction: column; align-items: center; gap: 24px; }
+  .fc-progress { font-size: 0.8rem; color: #64748b; letter-spacing: 0.05em; text-transform: uppercase; }
+  .fc-card-wrap { width: 100%; max-width: 640px; perspective: 1200px; cursor: pointer; user-select: none; }
+  .fc-card { position: relative; width: 100%; height: 220px; transition: transform 0.55s cubic-bezier(.4,2,.6,1); transform-style: preserve-3d; }
+  .fc-card.flipped { transform: rotateY(180deg); }
+  .fc-face { position: absolute; inset: 0; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 28px 36px; text-align: center; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+  .fc-front { background: linear-gradient(135deg, #1e3a5f, #1e293b); border: 1px solid #2563eb44; box-shadow: 0 8px 32px #0004; }
+  .fc-back  { background: linear-gradient(135deg, #14532d, #1e293b); border: 1px solid #16a34a44; box-shadow: 0 8px 32px #0004; transform: rotateY(180deg); }
+  .fc-label { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px; opacity: 0.5; }
+  .fc-text  { font-size: 1.15rem; font-weight: 600; line-height: 1.5; color: #f1f5f9; }
+  .fc-hint  { font-size: 0.75rem; color: #64748b; margin-top: 14px; }
+
+  .fc-controls { display: flex; gap: 12px; align-items: center; }
+  .btn { padding: 10px 22px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; transition: all 0.15s; }
+  .btn-primary { background: #2563eb; color: #fff; }
+  .btn-primary:hover { background: #1d4ed8; }
+  .btn-ghost { background: #1e293b; color: #94a3b8; border: 1px solid #334155; }
+  .btn-ghost:hover { background: #334155; color: #e2e8f0; }
+  .btn-sm { padding: 7px 16px; font-size: 0.8rem; }
+
+  .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+  .quiz-meta { font-size: 0.8rem; color: #64748b; }
+  .score-badge { background: #1e293b; border: 1px solid #334155; border-radius: 999px; padding: 4px 14px; font-size: 0.8rem; font-weight: 700; color: #94a3b8; }
+
+  .q-card { background: #1e293b; border: 1px solid #334155; border-radius: 14px; padding: 28px; margin-bottom: 20px; }
+  .q-num { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #64748b; margin-bottom: 10px; }
+  .q-text { font-size: 1rem; font-weight: 600; color: #f1f5f9; line-height: 1.55; margin-bottom: 20px; }
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .opt { padding: 12px 18px; border-radius: 9px; border: 1.5px solid #334155; background: #0f172a; cursor: pointer; font-size: 0.9rem; color: #cbd5e1; transition: all 0.15s; display: flex; align-items: flex-start; gap: 10px; }
+  .opt:hover:not(.disabled) { border-color: #3b82f6; color: #e2e8f0; background: #1e3a5f; }
+  .opt.correct { border-color: #22c55e; background: #14532d22; color: #4ade80; }
+  .opt.wrong   { border-color: #ef4444; background: #7f1d1d22; color: #f87171; }
+  .opt.disabled { cursor: default; pointer-events: none; }
+  .opt-letter { font-weight: 700; opacity: 0.5; min-width: 18px; }
+  .explanation { margin-top: 14px; padding: 12px 16px; border-radius: 8px; background: #0f172a; border-left: 3px solid #3b82f6; font-size: 0.85rem; color: #94a3b8; line-height: 1.5; display: none; }
+  .explanation.show { display: block; }
+
+  .quiz-results { text-align: center; padding: 40px 20px; }
+  .score-big { font-size: 4rem; font-weight: 800; color: #60a5fa; line-height: 1; }
+  .score-sub { font-size: 1rem; color: #64748b; margin-top: 8px; }
+  .score-msg { font-size: 1.1rem; font-weight: 600; margin-top: 16px; }
+
+  .section-divider { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #3b82f6; background: #1e3a5f22; border: 1px solid #1e40af33; border-radius: 6px; padding: 5px 14px; display: inline-block; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>FL 2-15 Exam Prep</h1>
+  <p>Chapter 6 — Premiums, Settlements, Beneficiaries & Taxation</p>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('flashcards')">Flashcards</div>
+  <div class="tab" onclick="showTab('quiz')">Practice Test</div>
+</div>
+
+<div id="tab-flashcards" class="content">
+  <div class="fc-container">
+    <div class="fc-progress" id="fc-progress">Card 1 of 1</div>
+    <div class="fc-card-wrap" onclick="flipCard()">
+      <div class="fc-card" id="fc-card">
+        <div class="fc-face fc-front">
+          <div class="fc-label">Term</div>
+          <div class="fc-text" id="fc-front-text"></div>
+          <div class="fc-hint">click to reveal definition</div>
+        </div>
+        <div class="fc-face fc-back">
+          <div class="fc-label">Definition</div>
+          <div class="fc-text" id="fc-back-text"></div>
+        </div>
+      </div>
+    </div>
+    <div class="fc-controls">
+      <button class="btn btn-ghost btn-sm" onclick="prevCard()">Prev</button>
+      <button class="btn btn-primary" onclick="nextCard()">Next</button>
+      <button class="btn btn-ghost btn-sm" onclick="shuffleCards()">Shuffle</button>
+    </div>
+  </div>
+</div>
+
+<div id="tab-quiz" class="content" style="display:none;">
+  <div id="quiz-area"></div>
+</div>
+
+<script>
+// ──────────────────────────────────────────
+// FLASHCARD DATA — Chapter 6: Premiums, Settlements, Beneficiaries & Taxation
+// ──────────────────────────────────────────
+const cards = [
+
+  // ── LO 1: Premiums & Premium Calculation ──
+  { s: "LO1 — Premiums", q: "Premium (purpose)", a: "Payment for insurance coverage. Constitutes part of the policyholder's CONSIDERATION — the binding force in the contract between insurer and policy owner." },
+  { s: "LO1 — Premiums", q: "What happens if premium is not paid?", a: "If the premium is NOT PAID before the end of the GRACE PERIOD, the policy will LAPSE." },
+  { s: "LO1 — Premiums", q: "How are life insurance premiums calculated?", a: "Life insurance premiums are calculated per $1,000 OF COVERAGE." },
+  { s: "LO1 — Premiums", q: "Three factors in premium calculation", a: "(1) MORTALITY FACTOR: probability of death at each age (mortality tables). (2) INTEREST/INVESTMENT FACTOR: insurer's return on invested premiums. (3) EXPENSE FACTOR (loading charge): operating expenses, commissions, admin costs." },
+  { s: "LO1 — Premiums", q: "Mortality Factor", a: "Based on MORTALITY TABLES showing the probability of death at each age. Higher probability of death = HIGHER premium." },
+  { s: "LO1 — Premiums", q: "Interest/Investment Factor", a: "Reflects the insurer's expected RETURN ON INVESTMENTS of collected premiums. Higher returns allow LOWER premiums." },
+  { s: "LO1 — Premiums", q: "Expense Factor (Loading Charge)", a: "Derived from OPERATING EXPENSES including death benefits, COMMISSIONS, and ADMINISTRATIVE COSTS." },
+  { s: "LO1 — Premiums", q: "Additional factors influencing premium cost", a: "AGE (older = higher), SEX/GENDER (women pay less — longer life expectancy), HEALTH HISTORY, OCCUPATION (hazardous = higher), PERSONAL ACTIVITIES/HOBBIES, PERSONAL HABITS (tobacco, DWI/DUI)." },
+  { s: "LO1 — Premiums", q: "Net (Single) Premium", a: "Covers MORTALITY COST and INTEREST only. Does not include insurer expenses." },
+  { s: "LO1 — Premiums", q: "Net Level Annual Premium", a: "The amount required ANNUALLY to ensure future benefits. Spreads the net single premium over payment years." },
+  { s: "LO1 — Premiums", q: "Gross Premium", a: "The ACTUAL premium paid by the policyholder. Gross = NET PREMIUM + INSURER EXPENSES (loading)." },
+  { s: "LO1 — Premiums", q: "Gross vs. Net Premium", a: "NET = mortality + interest only. GROSS = net + expenses (loading). The gross premium is what you actually pay." },
+
+  // ── LO 2: Premium Funding Methods ──
+  { s: "LO2 — Premium Funding", q: "Single Premium Funding", a: "ONE-TIME LUMP SUM payment covering the ENTIRE policy. Full coverage from day one with no further payments." },
+  { s: "LO2 — Premium Funding", q: "Fixed/Level Premium Funding", a: "Premiums are spread EVENLY over the policy period. Same amount every payment — the most common method." },
+  { s: "LO2 — Premium Funding", q: "Modified Premium Funding", a: "LOWER initial premium for a SET PERIOD, then INCREASES to a HIGHER CONSTANT amount for the remainder." },
+  { s: "LO2 — Premium Funding", q: "Graded Premium Funding", a: "Begins with LOWER premiums that INCREASE ANNUALLY for a specified period, then STABILIZES at a level amount." },
+  { s: "LO2 — Premium Funding", q: "Flexible Premium Funding", a: "Allows ADJUSTABLE payments throughout the policy's life. The policyholder can vary the amount and timing of premiums." },
+  { s: "LO2 — Premium Funding", q: "Modified vs. Graded Premium", a: "MODIFIED: low for a set period, then jumps to ONE higher constant amount. GRADED: increases ANNUALLY over a period, then levels off. Both start low." },
+  { s: "LO2 — Premium Funding", q: "Premium Mode", a: "The FREQUENCY of premium payments: monthly, quarterly, semi-annually, or annually. HIGHER frequency = HIGHER total premiums paid." },
+  { s: "LO2 — Premium Funding", q: "Earned vs. Unearned Premium", a: "EARNED: amount insurer is ENTITLED TO for coverage already provided. UNEARNED: amount paid but coverage NOT YET provided." },
+  { s: "LO2 — Premium Funding", q: "Reserves", a: "Funds the insurer SETS ASIDE to pay CURRENT and FUTURE claims. A liability on the insurer's books." },
+  { s: "LO2 — Premium Funding", q: "Minimum Deposit (Financed) Insurance", a: "Uses POLICY LOANS to pay premiums. Policyholder borrows against cash value to fund premium payments." },
+
+  // ── LO 3: Cost Comparison Methods ──
+  { s: "LO3 — Cost Comparison", q: "Interest-Adjusted Net Cost Method", a: "Considers PREMIUMS, DEATH BENEFITS, CASH VALUE, and DIVIDENDS. The most comprehensive cost comparison method." },
+  { s: "LO3 — Cost Comparison", q: "Surrender Cost Index", a: "Determines the AVERAGE COST PER THOUSAND for a policy SURRENDERED for cash value. Useful if you plan to cancel." },
+  { s: "LO3 — Cost Comparison", q: "Net Payment Cost Index", a: "Estimates AVERAGE ANNUAL PREMIUM outlay WITHOUT assuming surrender. Useful if you plan to keep the policy until death." },
+  { s: "LO3 — Cost Comparison", q: "Comparative Interest Rate Method", a: "Determines the RATE OF RETURN required on an investment to yield the SAME RETURN as a cash value policy." },
+  { s: "LO3 — Cost Comparison", q: "Surrender Cost Index vs. Net Payment Cost Index", a: "SURRENDER: assumes you CANCEL and take cash value. NET PAYMENT: assumes you KEEP the policy. Both help compare policy costs." },
+
+  // ── LO 4: Viatical & Life Settlements ──
+  { s: "LO4 — Settlements", q: "Viatical Settlement", a: "Individual with a CHRONIC or TERMINAL ILLNESS sells their existing policy to a third party. Viator receives a PERCENTAGE of the face value. Buyer continues premiums and collects death benefit." },
+  { s: "LO4 — Settlements", q: "Viatical Settlement — Tax Treatment", a: "Payments are TAX-FREE if the viator is CHRONICALLY or TERMINALLY ILL. Special license required for viatical settlement providers." },
+  { s: "LO4 — Settlements", q: "Life Settlement", a: "Sale of existing policy to a third party for MORE than surrender value but LESS than death benefit. NO requirement for the insured to be chronically or terminally ill." },
+  { s: "LO4 — Settlements", q: "Life Settlement — Key Rules", a: "Brokers must hold appropriate LICENSE. Disclosure requirements include RIGHT OF RESCISSION within 15 DAYS." },
+  { s: "LO4 — Settlements", q: "Viatical vs. Life Settlement", a: "VIATICAL: viator is chronically/terminally ILL, payments tax-free. LIFE: no illness requirement, proceeds may be taxable. Both pay more than surrender value, less than death benefit." },
+  { s: "LO4 — Settlements", q: "What is NOT a life settlement?", a: "Policy LOANS, 1035 EXCHANGES, and ASSIGNMENTS AS COLLATERAL are NOT considered life settlements." },
+
+  // ── LO 5: Death Benefit Settlement Options ──
+  { s: "LO5 — Settlement Options", q: "Lump-Sum (Cash Payment)", a: "ENTIRE death benefit paid AT ONCE. The MOST COMMON and DEFAULT settlement option." },
+  { s: "LO5 — Settlement Options", q: "Interest Only", a: "Insurer HOLDS the death benefit and pays only the EARNED INTEREST to the beneficiary. Principal remains with insurer." },
+  { s: "LO5 — Settlement Options", q: "Fixed Amount", a: "Proceeds paid in SPECIFIED INSTALLMENT AMOUNTS until PRINCIPAL AND INTEREST are exhausted. Beneficiary chooses the amount." },
+  { s: "LO5 — Settlement Options", q: "Fixed Period", a: "EQUAL INSTALLMENTS paid over a SET PERIOD OF YEARS. Insurer calculates the amount based on the period chosen." },
+  { s: "LO5 — Settlement Options", q: "Life Income", a: "Guarantees payments to the beneficiary for the BENEFICIARY'S LIFETIME. Several sub-options exist." },
+  { s: "LO5 — Settlement Options", q: "Single/Pure/Straight Life Income", a: "Payments end upon BENEFICIARY'S DEATH with NO REFUND. Highest periodic payment but nothing left for heirs." },
+  { s: "LO5 — Settlement Options", q: "Life Income with Period Certain", a: "Payments continue to a SECONDARY BENEFICIARY if the primary dies BEFORE the guaranteed period ends." },
+  { s: "LO5 — Settlement Options", q: "Refund Life Income", a: "Guarantees payment of the REMAINING death benefit if the beneficiary dies PREMATURELY. Heirs get the balance." },
+  { s: "LO5 — Settlement Options", q: "Joint and Survivor", a: "Guarantees benefits to TWO OR MORE people on a LIFE-LONG basis. Payments continue as long as any beneficiary is alive." },
+  { s: "LO5 — Settlement Options", q: "Five Settlement Options Summary", a: "(1) LUMP SUM: all at once. (2) INTEREST ONLY: hold principal, pay interest. (3) FIXED AMOUNT: set dollar installments. (4) FIXED PERIOD: set time period. (5) LIFE INCOME: for beneficiary's lifetime." },
+
+  // ── LO 6: Beneficiary Designations ──
+  { s: "LO6 — Beneficiaries", q: "Primary Beneficiary", a: "FIRST in line to receive policy proceeds upon the insured's death." },
+  { s: "LO6 — Beneficiaries", q: "Secondary/Contingent Beneficiary", a: "Receives proceeds if the PRIMARY beneficiary PREDECEASES the insured." },
+  { s: "LO6 — Beneficiaries", q: "Tertiary Beneficiary", a: "THIRD in line to receive proceeds — after primary and secondary beneficiaries." },
+  { s: "LO6 — Beneficiaries", q: "Revocable Beneficiary", a: "CAN BE CHANGED by the policy owner WITHOUT notifying the beneficiary." },
+  { s: "LO6 — Beneficiaries", q: "Irrevocable Beneficiary", a: "CANNOT be changed without the BENEFICIARY'S WRITTEN CONSENT. Beneficiary has a vested interest in the policy." },
+  { s: "LO6 — Beneficiaries", q: "Per Capita Distribution", a: "EVENLY distributes benefits among all NAMED LIVING beneficiaries. Equal shares to survivors." },
+  { s: "LO6 — Beneficiaries", q: "Per Stirpes Distribution", a: "Distributes according to FAMILY LINE. A deceased beneficiary's share goes to THEIR HEIRS." },
+  { s: "LO6 — Beneficiaries", q: "Per Capita vs. Per Stirpes", a: "PER CAPITA: equal shares to LIVING beneficiaries only. PER STIRPES: by FAMILY LINE — deceased beneficiary's share passes to their children/heirs." },
+  { s: "LO6 — Beneficiaries", q: "Distribution to Estate", a: "Proceeds become subject to ESTATE TAXES, PROBATE FEES, and CREDITOR CLAIMS. Generally the least favorable option." },
+  { s: "LO6 — Beneficiaries", q: "Distribution to Minor", a: "Typically requires a GUARDIAN or TRUSTEE to manage the proceeds on the minor's behalf." },
+  { s: "LO6 — Beneficiaries", q: "Distribution to Trust", a: "TRUST manages proceeds. Especially ADVANTAGEOUS for minor beneficiaries — avoids guardianship requirements." },
+
+  // ── LO 7: Special Provisions ──
+  { s: "LO7 — Special Provisions", q: "Uniform Simultaneous Death Act", a: "If insured and beneficiary die TOGETHER and the order CANNOT BE DETERMINED, the INSURED is considered to have SURVIVED. Proceeds go to contingent beneficiary." },
+  { s: "LO7 — Special Provisions", q: "Common Disaster Provision", a: "Requires the beneficiary to SURVIVE the insured by a SPECIFIED PERIOD (typically 14-30 DAYS). Protects contingent beneficiaries." },
+  { s: "LO7 — Special Provisions", q: "Spendthrift Clause", a: "PROTECTS proceeds against CREDITORS when left with the insurer. Beneficiary cannot assign or pledge the proceeds." },
+  { s: "LO7 — Special Provisions", q: "Facility of Payment", a: "Permits insurer to pay a portion of proceeds to ANYONE EQUITABLY ENTITLED — typically for funeral/burial expenses." },
+
+  // ── LO 8: Tax Consequences ──
+  { s: "LO8 — Taxation", q: "Tax Treatment of Premiums", a: "Individual life insurance premiums are PERSONAL EXPENSES and NOT TAX-DEDUCTIBLE. Exceptions: charity-owned policies, court-ordered alimony, or employee benefits." },
+  { s: "LO8 — Taxation", q: "Tax Treatment of Death Benefits", a: "Lump-sum death benefits are INCOME TAX-FREE to the beneficiary. Exception: TRANSFER-FOR-VALUE rule when policy is sold before death." },
+  { s: "LO8 — Taxation", q: "Transfer-for-Value Rule", a: "If a policy is SOLD before the insured's death, the death benefit becomes TAXABLE to the new owner. Exception to the general tax-free rule." },
+  { s: "LO8 — Taxation", q: "Estate Tax on Life Insurance", a: "Policy values are included in the OWNER'S ESTATE for estate tax purposes. Installment payments: PRINCIPAL is tax-free, INTEREST is taxable." },
+  { s: "LO8 — Taxation", q: "Cash Value — Tax Treatment", a: "Cash value interest accumulates TAX-DEFERRED. On SURRENDER: amount exceeding COST BASIS is taxable as ORDINARY INCOME." },
+  { s: "LO8 — Taxation", q: "Policy Loans — Tax Treatment", a: "Generally NO TAX CONSEQUENCES unless the policy is a MEC (Modified Endowment Contract)." },
+  { s: "LO8 — Taxation", q: "Accelerated Death Benefits — Tax Treatment", a: "TAX-FREE for TERMINALLY ILL individuals (death expected within 2 YEARS)." },
+  { s: "LO8 — Taxation", q: "Dividends — Tax Treatment", a: "Generally TAX-EXEMPT because they are considered a RETURN OF EXCESS PREMIUMS, not income." },
+  { s: "LO8 — Taxation", q: "Modified Endowment Contract (MEC)", a: "A life insurance policy that is OVERFUNDED. Subject to DIFFERENT TAX TREATMENT — loans and withdrawals are taxed as income and may incur a 10% penalty if before age 59 1/2." },
+  { s: "LO8 — Taxation", q: "1035 Exchange", a: "TAX-FREE exchange of LIKE-KIND insurance products. Example: life policy to annuity. Cannot exchange an annuity for a life policy." },
+  { s: "LO8 — Taxation", q: "Tax Rules Summary", a: "Premiums: NOT deductible. Death benefits: TAX-FREE (lump sum). Cash value: TAX-DEFERRED. Dividends: TAX-EXEMPT. Loans: no tax (unless MEC). Surrender gain: TAXABLE. 1035: TAX-FREE exchange." },
+];
+
+let currentIdx = 0;
+let flipped = false;
+let shuffled = [...cards];
+
+function renderCard() {
+  const c = shuffled[currentIdx];
+  document.getElementById('fc-front-text').textContent = c.q;
+  document.getElementById('fc-back-text').textContent  = c.a;
+  document.getElementById('fc-progress').textContent = `Card ${currentIdx + 1} of ${shuffled.length}`;
+  const card = document.getElementById('fc-card');
+  card.classList.remove('flipped');
+  flipped = false;
+}
+
+function flipCard() {
+  const card = document.getElementById('fc-card');
+  flipped = !flipped;
+  card.classList.toggle('flipped', flipped);
+}
+
+function nextCard() {
+  if (currentIdx < shuffled.length - 1) currentIdx++;
+  else currentIdx = 0;
+  renderCard();
+}
+
+function prevCard() {
+  if (currentIdx > 0) currentIdx--;
+  else currentIdx = shuffled.length - 1;
+  renderCard();
+}
+
+function shuffleCards() {
+  shuffled = [...cards].sort(() => Math.random() - 0.5);
+  currentIdx = 0;
+  renderCard();
+}
+
+renderCard();
+
+// ──────────────────────────────────────────
+// QUIZ DATA
+// ──────────────────────────────────────────
+const questions = [
+  {
+    section: "Premiums & Premium Calculation",
+    q: "Life insurance premiums are calculated per:",
+    opts: ["$100 of coverage","$500 of coverage","$1,000 of coverage","$10,000 of coverage"],
+    ans: 2,
+    exp: "Life insurance premiums are calculated per $1,000 of coverage."
+  },
+  {
+    section: "Premiums & Premium Calculation",
+    q: "Which of the following are the THREE factors used to calculate life insurance premiums?",
+    opts: ["Age, gender, and occupation","Mortality, interest, and expenses","Cash value, dividends, and reserves","Risk, peril, and hazard"],
+    ans: 1,
+    exp: "The three factors in premium calculation are: mortality factor, interest/investment factor, and expense factor (loading charge)."
+  },
+  {
+    section: "Premiums & Premium Calculation",
+    q: "The expense factor in premium calculation is also known as the:",
+    opts: ["Mortality charge","Investment factor","Loading charge","Reserve factor"],
+    ans: 2,
+    exp: "The expense factor is also called the loading charge, derived from operating expenses including commissions and administrative costs."
+  },
+  {
+    section: "Premiums & Premium Calculation",
+    q: "The gross premium equals:",
+    opts: ["Net premium minus dividends","Net premium plus insurer expenses","Mortality cost only","Cash value plus interest"],
+    ans: 1,
+    exp: "Gross premium = net premium + insurer expenses (loading). It is the actual premium paid by the policyholder."
+  },
+  {
+    section: "Premiums & Premium Calculation",
+    q: "Which factor explains why women typically pay lower life insurance premiums than men?",
+    opts: ["Occupation","Mortality — women have longer life expectancy","Investment returns","Loading charges"],
+    ans: 1,
+    exp: "Women typically pay lower premiums because they have a longer life expectancy, which means a lower probability of death at any given age."
+  },
+  {
+    section: "Premiums & Premium Calculation",
+    q: "The premium is part of the policyholder's:",
+    opts: ["Dividend","Consideration","Cash value","Reserve"],
+    ans: 1,
+    exp: "The premium constitutes part of the policyholder's consideration — the binding force in the insurance contract."
+  },
+  {
+    section: "Premiums & Premium Calculation",
+    q: "If a premium is not paid before the end of the grace period, the policy will:",
+    opts: ["Be renewed automatically","Lapse","Convert to term insurance","Pay reduced benefits"],
+    ans: 1,
+    exp: "If the premium is not paid before the end of the grace period, the policy will lapse — coverage terminates."
+  },
+  {
+    section: "Premiums & Premium Calculation",
+    q: "The net single premium covers:",
+    opts: ["Mortality cost and interest only","Mortality, interest, and expenses","Expenses and dividends","Cash value and reserves"],
+    ans: 0,
+    exp: "The net (single) premium covers mortality cost and interest only — it does not include insurer expenses."
+  },
+  {
+    section: "Premium Funding Methods",
+    q: "Which premium funding method requires only one payment?",
+    opts: ["Level premium","Modified premium","Single premium","Graded premium"],
+    ans: 2,
+    exp: "Single premium funding is a one-time lump sum payment that covers the entire policy."
+  },
+  {
+    section: "Premium Funding Methods",
+    q: "A modified premium policy features:",
+    opts: ["Premiums that increase annually","A lower initial premium that increases to a higher constant amount","Flexible payments chosen by the policyholder","Equal premiums throughout the policy"],
+    ans: 1,
+    exp: "Modified premium begins lower for a set period, then increases to a higher constant amount for the remainder of the policy."
+  },
+  {
+    section: "Premium Funding Methods",
+    q: "Which premium funding method allows the policyholder to vary payment amounts?",
+    opts: ["Level premium","Graded premium","Modified premium","Flexible premium"],
+    ans: 3,
+    exp: "Flexible premium funding allows adjustable payments throughout the policy's life."
+  },
+  {
+    section: "Premium Funding Methods",
+    q: "Graded premium funding differs from modified premium funding because graded premiums:",
+    opts: ["Remain the same throughout the policy","Increase annually for a period then stabilize","Decrease over time","Are paid as a single lump sum"],
+    ans: 1,
+    exp: "Graded premiums increase annually for a specified period, then stabilize. Modified premiums jump once to a higher constant amount."
+  },
+  {
+    section: "Premium Funding Methods",
+    q: "Higher frequency of premium payments results in:",
+    opts: ["Lower total premiums","Higher total premiums","No change in total premiums","Higher death benefits"],
+    ans: 1,
+    exp: "Paying more frequently (monthly vs. annually) results in higher total premiums due to administrative costs."
+  },
+  {
+    section: "Premium Funding Methods",
+    q: "The portion of premium for which the insurer has already provided coverage is called:",
+    opts: ["Unearned premium","Gross premium","Earned premium","Net premium"],
+    ans: 2,
+    exp: "Earned premium is the amount the insurer is entitled to for coverage already provided."
+  },
+  {
+    section: "Premium Funding Methods",
+    q: "Minimum deposit insurance uses what to pay premiums?",
+    opts: ["Dividends only","Policy loans","Government subsidies","Employer contributions"],
+    ans: 1,
+    exp: "Minimum deposit (financed) insurance uses policy loans — borrowing against cash value to fund premium payments."
+  },
+  {
+    section: "Cost Comparison Methods",
+    q: "Which cost comparison method is the most comprehensive?",
+    opts: ["Surrender Cost Index","Net Payment Cost Index","Interest-Adjusted Net Cost Method","Comparative Interest Rate Method"],
+    ans: 2,
+    exp: "The Interest-Adjusted Net Cost Method is the most comprehensive — it considers premiums, death benefits, cash value, and dividends."
+  },
+  {
+    section: "Cost Comparison Methods",
+    q: "The Surrender Cost Index is most useful when you plan to:",
+    opts: ["Keep the policy until death","Cancel the policy and take cash value","Convert term to whole life","Transfer ownership"],
+    ans: 1,
+    exp: "The Surrender Cost Index determines the average cost per thousand for a policy surrendered for its cash value."
+  },
+  {
+    section: "Cost Comparison Methods",
+    q: "The Net Payment Cost Index assumes the policyholder will:",
+    opts: ["Surrender the policy","Keep the policy until death","Convert to an annuity","Sell the policy"],
+    ans: 1,
+    exp: "The Net Payment Cost Index estimates average annual premium outlay without assuming surrender — it assumes you keep the policy."
+  },
+  {
+    section: "Viatical & Life Settlements",
+    q: "A viatical settlement involves the sale of a policy by someone who is:",
+    opts: ["Retiring from work","Chronically or terminally ill","Changing insurance companies","Under age 65"],
+    ans: 1,
+    exp: "A viatical settlement enables an individual with a chronic or terminal illness to sell their existing policy to a third party."
+  },
+  {
+    section: "Viatical & Life Settlements",
+    q: "In a viatical settlement, who continues to pay the premiums?",
+    opts: ["The viator","The insurer","The new owner (buyer)","The state"],
+    ans: 2,
+    exp: "The new owner continues premium payments and collects the death benefit when the insured dies."
+  },
+  {
+    section: "Viatical & Life Settlements",
+    q: "Viatical settlement payments are tax-free when the viator is:",
+    opts: ["Over age 65","Chronically or terminally ill","A minor","Disabled for at least 12 months"],
+    ans: 1,
+    exp: "Tax-free payments require the viator to be chronically or terminally ill."
+  },
+  {
+    section: "Viatical & Life Settlements",
+    q: "A life settlement differs from a viatical settlement primarily because:",
+    opts: ["It pays more than the death benefit","The insured does not need to be ill","It is not regulated","No license is required"],
+    ans: 1,
+    exp: "A life settlement has no requirement for the insured to be chronically or terminally ill, unlike a viatical settlement."
+  },
+  {
+    section: "Viatical & Life Settlements",
+    q: "Which of the following is NOT considered a life settlement?",
+    opts: ["Sale of a policy to a third party","A 1035 exchange","A viatical settlement","Sale for more than surrender value"],
+    ans: 1,
+    exp: "Policy loans, 1035 exchanges, and assignments as collateral are NOT considered life settlements."
+  },
+  {
+    section: "Viatical & Life Settlements",
+    q: "A life settlement provides the right of rescission within:",
+    opts: ["7 days","10 days","15 days","30 days"],
+    ans: 2,
+    exp: "Life settlement disclosure requirements include the right of rescission within 15 days."
+  },
+  {
+    section: "Settlement Options",
+    q: "The most common and default death benefit settlement option is:",
+    opts: ["Interest only","Fixed amount","Lump-sum cash payment","Life income"],
+    ans: 2,
+    exp: "Lump-sum (cash payment) is the most common and default settlement option — the entire death benefit is paid at once."
+  },
+  {
+    section: "Settlement Options",
+    q: "Under the interest only settlement option, the insurer:",
+    opts: ["Pays the full death benefit immediately","Holds the principal and pays only earned interest","Pays fixed installments over a set period","Guarantees lifetime payments"],
+    ans: 1,
+    exp: "Under the interest only option, the insurer holds the death benefit and pays only the earned interest to the beneficiary."
+  },
+  {
+    section: "Settlement Options",
+    q: "Under the fixed amount option, payments continue until:",
+    opts: ["The beneficiary dies","A set number of years passes","Principal and interest are exhausted","The insurer decides to stop"],
+    ans: 2,
+    exp: "Fixed amount pays specified installment amounts until the principal and interest are exhausted."
+  },
+  {
+    section: "Settlement Options",
+    q: "Which settlement option provides the HIGHEST periodic payment but leaves nothing for heirs?",
+    opts: ["Fixed period","Life income with period certain","Single/Pure/Straight life income","Joint and survivor"],
+    ans: 2,
+    exp: "Single/Pure/Straight life income provides the highest periodic payments because there is no refund — payments end upon the beneficiary's death."
+  },
+  {
+    section: "Settlement Options",
+    q: "Life income with period certain protects against:",
+    opts: ["Inflation","The beneficiary dying before the guaranteed period ends","Policy lapse","Premium increases"],
+    ans: 1,
+    exp: "If the primary beneficiary dies before the period certain ends, payments continue to a secondary beneficiary for the remaining period."
+  },
+  {
+    section: "Settlement Options",
+    q: "The joint and survivor settlement option guarantees benefits to:",
+    opts: ["One beneficiary for life","Two or more people on a lifelong basis","The estate of the insured","Minor children only"],
+    ans: 1,
+    exp: "Joint and survivor guarantees benefits to two or more people on a lifelong basis — payments continue as long as any beneficiary is alive."
+  },
+  {
+    section: "Beneficiary Designations",
+    q: "A revocable beneficiary:",
+    opts: ["Cannot be changed without consent","Can be changed by the policy owner without notifying the beneficiary","Must be a family member","Receives dividends during the insured's lifetime"],
+    ans: 1,
+    exp: "A revocable beneficiary can be changed by the policy owner without notifying the beneficiary."
+  },
+  {
+    section: "Beneficiary Designations",
+    q: "An irrevocable beneficiary:",
+    opts: ["Can be changed at any time","Cannot be changed without the beneficiary's written consent","Is always the spouse","Automatically becomes revocable after 10 years"],
+    ans: 1,
+    exp: "An irrevocable beneficiary cannot be changed without the beneficiary's written consent — they have a vested interest in the policy."
+  },
+  {
+    section: "Beneficiary Designations",
+    q: "Per stirpes distribution means:",
+    opts: ["Equal shares to all living beneficiaries","Distribution by family line — a deceased beneficiary's share goes to their heirs","All proceeds go to the estate","The oldest beneficiary receives the largest share"],
+    ans: 1,
+    exp: "Per stirpes distributes according to family line — if a beneficiary predeceases the insured, their share passes to their children/heirs."
+  },
+  {
+    section: "Beneficiary Designations",
+    q: "Per capita distribution means:",
+    opts: ["Distribution by family line","Equal shares to all named LIVING beneficiaries","Proceeds go to the estate","The youngest beneficiary receives the most"],
+    ans: 1,
+    exp: "Per capita evenly distributes benefits among all named living beneficiaries. Deceased beneficiaries' shares are not passed to heirs."
+  },
+  {
+    section: "Beneficiary Designations",
+    q: "Distribution of life insurance proceeds to the insured's estate is generally unfavorable because:",
+    opts: ["The estate receives less than the face value","Proceeds become subject to estate taxes, probate fees, and creditor claims","The insurer keeps a portion","Beneficiaries must wait 5 years"],
+    ans: 1,
+    exp: "When proceeds go to the estate, they are subject to estate taxes, probate fees, and creditor claims — reducing the amount heirs receive."
+  },
+  {
+    section: "Special Provisions",
+    q: "Under the Uniform Simultaneous Death Act, if the insured and beneficiary die together and the order cannot be determined:",
+    opts: ["The beneficiary is assumed to have survived","The policy is voided","The insured is considered to have survived","Proceeds are split equally"],
+    ans: 2,
+    exp: "The insured is considered to have survived — proceeds go to the contingent beneficiary or the insured's estate."
+  },
+  {
+    section: "Special Provisions",
+    q: "The common disaster provision requires the beneficiary to survive the insured by:",
+    opts: ["24 hours","7 days","14 to 30 days","One year"],
+    ans: 2,
+    exp: "The common disaster provision requires the beneficiary to survive the insured by a specified period, typically 14 to 30 days."
+  },
+  {
+    section: "Special Provisions",
+    q: "The spendthrift clause:",
+    opts: ["Allows the insurer to reduce the death benefit","Protects proceeds against creditors when left with the insurer","Requires the beneficiary to be over 18","Converts the policy to term insurance"],
+    ans: 1,
+    exp: "The spendthrift clause protects proceeds against creditors when the funds are left with the insurer."
+  },
+  {
+    section: "Tax Consequences",
+    q: "Individual life insurance premiums are:",
+    opts: ["Tax-deductible","Tax-deferred","Not tax-deductible (personal expense)","Tax-free"],
+    ans: 2,
+    exp: "Individual life insurance premiums are personal expenses and are NOT tax-deductible."
+  },
+  {
+    section: "Tax Consequences",
+    q: "Lump-sum death benefits paid to a beneficiary are:",
+    opts: ["Taxable as ordinary income","Subject to capital gains tax","Income tax-free","Taxable above $50,000"],
+    ans: 2,
+    exp: "Death benefits paid as a lump sum are income tax-free to the beneficiary."
+  },
+  {
+    section: "Tax Consequences",
+    q: "The transfer-for-value rule applies when:",
+    opts: ["A policy is surrendered for cash value","A policy is sold before the insured's death","Dividends exceed premiums paid","A 1035 exchange is completed"],
+    ans: 1,
+    exp: "The transfer-for-value rule makes death benefits taxable when a policy is sold before the insured's death."
+  },
+  {
+    section: "Tax Consequences",
+    q: "Cash value in a life insurance policy grows:",
+    opts: ["Tax-free","Tax-deferred","Fully taxable each year","Tax-exempt"],
+    ans: 1,
+    exp: "Cash value interest accumulates tax-deferred — you don't pay taxes until you surrender the policy."
+  },
+  {
+    section: "Tax Consequences",
+    q: "Policy dividends are generally:",
+    opts: ["Taxable as income","Tax-exempt as a return of excess premiums","Subject to capital gains tax","Tax-deferred"],
+    ans: 1,
+    exp: "Dividends are generally tax-exempt because they are considered a return of excess premiums, not income."
+  },
+  {
+    section: "Tax Consequences",
+    q: "A 1035 exchange allows:",
+    opts: ["Tax-free exchange of like-kind insurance products","Tax-free withdrawal of cash value","Conversion of an annuity to a life policy","Penalty-free early surrender"],
+    ans: 0,
+    exp: "A 1035 exchange is a tax-free exchange of like-kind insurance products — e.g., life policy to annuity. You cannot exchange an annuity for a life policy."
+  },
+  {
+    section: "Tax Consequences",
+    q: "A Modified Endowment Contract (MEC) results in:",
+    opts: ["Lower premiums","Tax-free loans and withdrawals","Loans and withdrawals taxed as income with possible 10% penalty before 59 1/2","Higher death benefits"],
+    ans: 2,
+    exp: "MECs are overfunded policies subject to different tax treatment — loans and withdrawals are taxed as income and may incur a 10% penalty before age 59 1/2."
+  },
+  {
+    section: "Tax Consequences",
+    q: "Accelerated death benefits are tax-free when the insured is:",
+    opts: ["Over age 65","Terminally ill with death expected within 2 years","Permanently disabled","Chronically ill for more than 90 days"],
+    ans: 1,
+    exp: "Accelerated death benefits are tax-free for terminally ill individuals whose death is expected within 2 years."
+  },
+  {
+    section: "Tax Consequences",
+    q: "When a life insurance policy is surrendered, the taxable amount is:",
+    opts: ["The entire cash value","The amount exceeding the cost basis","The death benefit","The premium paid"],
+    ans: 1,
+    exp: "On surrender, the amount exceeding the cost basis (total premiums paid) is taxable as ordinary income."
+  },
+];
+
+// ── Quiz Engine ──
+let answered = {};
+let submitted = false;
+let score = 0;
+
+function buildQuiz() {
+  answered = {};
+  submitted = false;
+  score = 0;
+  const area = document.getElementById('quiz-area');
+  let html = `<div class="quiz-header"><div class="quiz-meta">${questions.length} Questions</div><div class="score-badge" id="score-live">0/${questions.length} answered</div></div>`;
+  let lastSection = '';
+
+  questions.forEach((q, i) => {
+    if (q.section !== lastSection) {
+      html += `<div class="section-divider">${q.section}</div>`;
+      lastSection = q.section;
+    }
+    html += `<div class="q-card" id="qcard-${i}">
+      <div class="q-num">Question ${i + 1}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="options">`;
+    const letters = ['A','B','C','D'];
+    q.opts.forEach((opt, j) => {
+      html += `<div class="opt" id="opt-${i}-${j}" onclick="selectAnswer(${i},${j})">
+        <span class="opt-letter">${letters[j]}</span><span>${opt}</span>
+      </div>`;
+    });
+    html += `</div><div class="explanation" id="exp-${i}">${q.exp}</div></div>`;
+  });
+
+  html += `<div style="text-align:center; margin-top:32px;">
+    <button class="btn btn-primary" onclick="submitQuiz()" id="submit-btn">Submit & Score</button>
+  </div><div id="results-area"></div>`;
+  area.innerHTML = html;
+}
+
+function selectAnswer(qIdx, optIdx) {
+  if (submitted) return;
+  answered[qIdx] = optIdx;
+  questions[qIdx].opts.forEach((_, j) => {
+    const el = document.getElementById(`opt-${qIdx}-${j}`);
+    el.style.borderColor = j === optIdx ? '#3b82f6' : '';
+    el.style.background  = j === optIdx ? '#1e3a5f' : '';
+    el.style.color       = j === optIdx ? '#e2e8f0' : '';
+  });
+  updateLiveScore();
+}
+
+function updateLiveScore() {
+  let correct = 0;
+  Object.keys(answered).forEach(i => { if (answered[i] === questions[i].ans) correct++; });
+  document.getElementById('score-live').textContent = `${correct}/${Object.keys(answered).length} answered`;
+}
+
+function submitQuiz() {
+  submitted = true;
+  score = 0;
+  questions.forEach((q, i) => {
+    q.opts.forEach((_, j) => {
+      const el = document.getElementById(`opt-${i}-${j}`);
+      el.classList.add('disabled');
+      if (j === q.ans) {
+        el.classList.add('correct');
+      } else if (answered[i] === j) {
+        el.classList.add('wrong');
+      }
+    });
+    document.getElementById(`exp-${i}`).classList.add('show');
+    if (answered[i] === q.ans) score++;
+  });
+
+  const pct = Math.round((score / questions.length) * 100);
+  let msg, color;
+  if (pct >= 90)      { msg = "Excellent! You're exam-ready on this chapter."; color = "#4ade80"; }
+  else if (pct >= 70) { msg = "Above passing threshold. Review missed questions."; color = "#facc15"; }
+  else                { msg = "Below passing threshold. Review and retry!"; color = "#f87171"; }
+
+  document.getElementById('score-live').textContent = `Score: ${score}/${questions.length} (${pct}%)`;
+  document.getElementById('submit-btn').outerHTML = `<button class="btn btn-ghost" onclick="buildQuiz()">Retake Quiz</button>`;
+  document.getElementById('results-area').innerHTML = `
+    <div class="quiz-results">
+      <div class="score-big" style="color:${color}">${pct}%</div>
+      <div class="score-sub">${score} correct out of ${questions.length}</div>
+      <div class="score-msg" style="color:${color}">${msg}</div>
+      <div style="margin-top:8px;font-size:0.85rem;color:#64748b;">Pass threshold: 70% · Scroll up to review explanations</div>
+    </div>`;
+  window.scrollTo({ top: document.getElementById('results-area').offsetTop - 80, behavior: 'smooth' });
+}
+
+function showTab(t) {
+  document.getElementById('tab-flashcards').style.display = t === 'flashcards' ? '' : 'none';
+  document.getElementById('tab-quiz').style.display       = t === 'quiz' ? '' : 'none';
+  document.querySelectorAll('.tab').forEach((el, i) => {
+    el.classList.toggle('active', (i === 0 && t === 'flashcards') || (i === 1 && t === 'quiz'));
+  });
+  if (t === 'quiz' && !document.querySelector('.q-card')) buildQuiz();
+}
+</script>
+</body>
+</html>
