@@ -15,6 +15,10 @@ router = APIRouter()
 templates = Jinja2Templates(directory=BASE_DIR / "app" / "templates")
 
 
+def _render(name: str, request: Request, **ctx):
+    return templates.TemplateResponse(request, name, ctx)
+
+
 @router.get("/", response_class=RedirectResponse)
 async def root():
     return RedirectResponse(url="/dashboard", status_code=302)
@@ -22,7 +26,6 @@ async def root():
 
 @router.get("/dashboard", response_class=HTMLResponse)
 async def dashboard(request: Request, db: AsyncSession = Depends(get_db)):
-    # Gather per-chapter stats
     chapters_result = await db.execute(
         select(Chapter).order_by(Chapter.id)
     )
@@ -34,7 +37,6 @@ async def dashboard(request: Request, db: AsyncSession = Depends(get_db)):
     total_cards = 0
 
     for ch in chapters:
-        # Due flashcards
         due_count = (await db.execute(
             select(func.count()).select_from(CardSchedule)
             .join(Flashcard).where(
@@ -43,7 +45,6 @@ async def dashboard(request: Request, db: AsyncSession = Depends(get_db)):
             )
         )).scalar() or 0
 
-        # Total flashcards and mastered (box >= 3)
         ch_total = (await db.execute(
             select(func.count()).select_from(Flashcard).where(Flashcard.chapter_id == ch.id)
         )).scalar() or 0
@@ -56,7 +57,6 @@ async def dashboard(request: Request, db: AsyncSession = Depends(get_db)):
             )
         )).scalar() or 0
 
-        # Quiz accuracy
         quiz_stats = (await db.execute(
             select(
                 func.sum(QuizQuestionState.times_seen),
@@ -83,19 +83,17 @@ async def dashboard(request: Request, db: AsyncSession = Depends(get_db)):
             "quiz_seen": seen,
         })
 
-    # Readiness score (simplified)
     mastery_score = total_mastered / total_cards if total_cards > 0 else 0
     readiness = round(mastery_score * 100)
 
-    return templates.TemplateResponse("pages/dashboard.html", {
-        "request": request,
-        "active_tab": "dashboard",
-        "chapter_stats": chapter_stats,
-        "total_due": total_due,
-        "readiness": readiness,
-        "total_mastered": total_mastered,
-        "total_cards": total_cards,
-    })
+    return _render("pages/dashboard.html", request,
+        active_tab="dashboard",
+        chapter_stats=chapter_stats,
+        total_due=total_due,
+        readiness=readiness,
+        total_mastered=total_mastered,
+        total_cards=total_cards,
+    )
 
 
 @router.get("/study", response_class=HTMLResponse)
@@ -117,15 +115,13 @@ async def study_launcher(request: Request, db: AsyncSession = Depends(get_db)):
         )).scalar() or 0
         chapter_info.append({"id": ch.id, "title": ch.title, "due": due, "total": total})
 
-    # Total due across all chapters
     total_due = sum(c["due"] for c in chapter_info)
 
-    return templates.TemplateResponse("pages/study.html", {
-        "request": request,
-        "active_tab": "study",
-        "chapters": chapter_info,
-        "total_due": total_due,
-    })
+    return _render("pages/study.html", request,
+        active_tab="study",
+        chapters=chapter_info,
+        total_due=total_due,
+    )
 
 
 @router.get("/study/{chapter_id}", response_class=HTMLResponse)
@@ -134,20 +130,18 @@ async def study_session(request: Request, chapter_id: int, db: AsyncSession = De
     if not chapter:
         return RedirectResponse(url="/study", status_code=302)
 
-    return templates.TemplateResponse("pages/study_session.html", {
-        "request": request,
-        "active_tab": "study",
-        "chapter": chapter,
-    })
+    return _render("pages/study_session.html", request,
+        active_tab="study",
+        chapter=chapter,
+    )
 
 
 @router.get("/study/due/all", response_class=HTMLResponse)
 async def study_due(request: Request):
-    return templates.TemplateResponse("pages/study_session.html", {
-        "request": request,
-        "active_tab": "study",
-        "chapter": None,  # None = all due cards
-    })
+    return _render("pages/study_session.html", request,
+        active_tab="study",
+        chapter=None,
+    )
 
 
 @router.get("/quiz", response_class=HTMLResponse)
@@ -162,11 +156,10 @@ async def quiz_launcher(request: Request, db: AsyncSession = Depends(get_db)):
         )).scalar() or 0
         chapter_info.append({"id": ch.id, "title": ch.title, "total": total})
 
-    return templates.TemplateResponse("pages/quiz.html", {
-        "request": request,
-        "active_tab": "quiz",
-        "chapters": chapter_info,
-    })
+    return _render("pages/quiz.html", request,
+        active_tab="quiz",
+        chapters=chapter_info,
+    )
 
 
 @router.get("/quiz/{chapter_id}", response_class=HTMLResponse)
@@ -175,24 +168,17 @@ async def quiz_session(request: Request, chapter_id: int, db: AsyncSession = Dep
     if not chapter:
         return RedirectResponse(url="/quiz", status_code=302)
 
-    return templates.TemplateResponse("pages/quiz_session.html", {
-        "request": request,
-        "active_tab": "quiz",
-        "chapter": chapter,
-    })
+    return _render("pages/quiz_session.html", request,
+        active_tab="quiz",
+        chapter=chapter,
+    )
 
 
 @router.get("/exam", response_class=HTMLResponse)
 async def exam(request: Request):
-    return templates.TemplateResponse("pages/exam.html", {
-        "request": request,
-        "active_tab": "quiz",
-    })
+    return _render("pages/exam.html", request, active_tab="quiz")
 
 
 @router.get("/analytics", response_class=HTMLResponse)
 async def analytics(request: Request):
-    return templates.TemplateResponse("pages/analytics.html", {
-        "request": request,
-        "active_tab": "stats",
-    })
+    return _render("pages/analytics.html", request, active_tab="stats")
