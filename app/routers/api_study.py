@@ -3,7 +3,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import selectinload
 
 from app.config import BASE_DIR
 from app.database import get_db
@@ -60,7 +60,7 @@ async def next_card(request: Request, chapter_id: int | None = None, db: AsyncSe
     # Find due cards (reviewed at least once, position reached)
     query = (
         select(CardSchedule)
-        .options(joinedload(CardSchedule.flashcard))
+        .options(selectinload(CardSchedule.flashcard))
         .where(
             CardSchedule.review_after_position <= current_pos,
             CardSchedule.total_reviews > 0,
@@ -77,7 +77,7 @@ async def next_card(request: Request, chapter_id: int | None = None, db: AsyncSe
         # No due cards — check if there are unseen cards
         unseen_query = (
             select(CardSchedule)
-            .options(joinedload(CardSchedule.flashcard))
+            .options(selectinload(CardSchedule.flashcard))
             .where(CardSchedule.box == 0, CardSchedule.total_reviews == 0)
             .order_by(CardSchedule.flashcard_id)
             .limit(1)
@@ -89,7 +89,7 @@ async def next_card(request: Request, chapter_id: int | None = None, db: AsyncSe
 
     if not schedule:
         # Count total cards for this chapter
-        total_query = select(CardSchedule).options(joinedload(CardSchedule.flashcard))
+        total_query = select(CardSchedule).options(selectinload(CardSchedule.flashcard))
         if chapter_id:
             total_query = total_query.join(Flashcard).where(Flashcard.chapter_id == chapter_id)
         total_result = await db.execute(total_query)
