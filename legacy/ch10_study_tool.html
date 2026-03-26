@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FL 2-15 Exam | Chapter 10 Study Tool</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+  .header { background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%); padding: 24px 32px; border-bottom: 1px solid #1e40af44; }
+  .header h1 { font-size: 1.5rem; font-weight: 700; color: #60a5fa; letter-spacing: -0.02em; }
+  .header p { font-size: 0.875rem; color: #94a3b8; margin-top: 4px; }
+  .tabs { display: flex; gap: 0; padding: 20px 32px 0; border-bottom: 1px solid #1e293b; }
+  .tab { padding: 10px 24px; border-radius: 8px 8px 0 0; cursor: pointer; font-size: 0.875rem; font-weight: 600; border: 1px solid transparent; border-bottom: none; transition: all 0.2s; color: #64748b; }
+  .tab.active { background: #1e293b; color: #60a5fa; border-color: #1e40af44; }
+  .tab:hover:not(.active) { color: #94a3b8; }
+  .content { padding: 32px; max-width: 860px; margin: 0 auto; }
+  .fc-container { display: flex; flex-direction: column; align-items: center; gap: 24px; }
+  .fc-progress { font-size: 0.8rem; color: #64748b; letter-spacing: 0.05em; text-transform: uppercase; }
+  .fc-card-wrap { width: 100%; max-width: 640px; perspective: 1200px; cursor: pointer; user-select: none; }
+  .fc-card { position: relative; width: 100%; height: 220px; transition: transform 0.55s cubic-bezier(.4,2,.6,1); transform-style: preserve-3d; }
+  .fc-card.flipped { transform: rotateY(180deg); }
+  .fc-face { position: absolute; inset: 0; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 28px 36px; text-align: center; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+  .fc-front { background: linear-gradient(135deg, #1e3a5f, #1e293b); border: 1px solid #2563eb44; box-shadow: 0 8px 32px #0004; }
+  .fc-back  { background: linear-gradient(135deg, #14532d, #1e293b); border: 1px solid #16a34a44; box-shadow: 0 8px 32px #0004; transform: rotateY(180deg); }
+  .fc-label { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px; opacity: 0.5; }
+  .fc-text  { font-size: 1.15rem; font-weight: 600; line-height: 1.5; color: #f1f5f9; }
+  .fc-hint  { font-size: 0.75rem; color: #64748b; margin-top: 14px; }
+  .fc-controls { display: flex; gap: 12px; align-items: center; }
+  .btn { padding: 10px 22px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; transition: all 0.15s; }
+  .btn-primary { background: #2563eb; color: #fff; }
+  .btn-primary:hover { background: #1d4ed8; }
+  .btn-ghost { background: #1e293b; color: #94a3b8; border: 1px solid #334155; }
+  .btn-ghost:hover { background: #334155; color: #e2e8f0; }
+  .btn-sm { padding: 7px 16px; font-size: 0.8rem; }
+  .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+  .quiz-meta { font-size: 0.8rem; color: #64748b; }
+  .score-badge { background: #1e293b; border: 1px solid #334155; border-radius: 999px; padding: 4px 14px; font-size: 0.8rem; font-weight: 700; color: #94a3b8; }
+  .q-card { background: #1e293b; border: 1px solid #334155; border-radius: 14px; padding: 28px; margin-bottom: 20px; }
+  .q-num { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #64748b; margin-bottom: 10px; }
+  .q-text { font-size: 1rem; font-weight: 600; color: #f1f5f9; line-height: 1.55; margin-bottom: 20px; }
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .opt { padding: 12px 18px; border-radius: 9px; border: 1.5px solid #334155; background: #0f172a; cursor: pointer; font-size: 0.9rem; color: #cbd5e1; transition: all 0.15s; display: flex; align-items: flex-start; gap: 10px; }
+  .opt:hover:not(.disabled) { border-color: #3b82f6; color: #e2e8f0; background: #1e3a5f; }
+  .opt.correct { border-color: #22c55e; background: #14532d22; color: #4ade80; }
+  .opt.wrong   { border-color: #ef4444; background: #7f1d1d22; color: #f87171; }
+  .opt.disabled { cursor: default; pointer-events: none; }
+  .opt-letter { font-weight: 700; opacity: 0.5; min-width: 18px; }
+  .explanation { margin-top: 14px; padding: 12px 16px; border-radius: 8px; background: #0f172a; border-left: 3px solid #3b82f6; font-size: 0.85rem; color: #94a3b8; line-height: 1.5; display: none; }
+  .explanation.show { display: block; }
+  .quiz-results { text-align: center; padding: 40px 20px; }
+  .score-big { font-size: 4rem; font-weight: 800; color: #60a5fa; line-height: 1; }
+  .score-sub { font-size: 1rem; color: #64748b; margin-top: 8px; }
+  .score-msg { font-size: 1.1rem; font-weight: 600; margin-top: 16px; }
+  .section-divider { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #3b82f6; background: #1e3a5f22; border: 1px solid #1e40af33; border-radius: 6px; padding: 5px 14px; display: inline-block; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>FL 2-15 Exam Prep</h1>
+  <p>Chapter 10 — Uses of Life Insurance & Business Planning</p>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('flashcards')">Flashcards</div>
+  <div class="tab" onclick="showTab('quiz')">Practice Test</div>
+</div>
+
+<div id="tab-flashcards" class="content">
+  <div class="fc-container">
+    <div class="fc-progress" id="fc-progress">Card 1 of 1</div>
+    <div class="fc-card-wrap" onclick="flipCard()">
+      <div class="fc-card" id="fc-card">
+        <div class="fc-face fc-front">
+          <div class="fc-label">Term</div>
+          <div class="fc-text" id="fc-front-text"></div>
+          <div class="fc-hint">click to reveal definition</div>
+        </div>
+        <div class="fc-face fc-back">
+          <div class="fc-label">Definition</div>
+          <div class="fc-text" id="fc-back-text"></div>
+        </div>
+      </div>
+    </div>
+    <div class="fc-controls">
+      <button class="btn btn-ghost btn-sm" onclick="prevCard()">Prev</button>
+      <button class="btn btn-primary" onclick="nextCard()">Next</button>
+      <button class="btn btn-ghost btn-sm" onclick="shuffleCards()">Shuffle</button>
+    </div>
+  </div>
+</div>
+
+<div id="tab-quiz" class="content" style="display:none;">
+  <div id="quiz-area"></div>
+</div>
+
+<script>
+const cards = [
+
+  // ── LO 1: Determining Coverage Amount ──
+  { s: "LO1 — Coverage Approaches", q: "Human Life Value Approach", a: "Calculates the CAPITALIZED VALUE of an individual's NET FUTURE EARNINGS. Formula: Present value of (projected earnings - expenses) x years until retirement. Focuses ONLY on income replacement." },
+  { s: "LO1 — Coverage Approaches", q: "Needs Approach", a: "Determines insurance based on personal/family FINANCIAL GOALS and OBJECTIVES. Formula: TOTAL CAPITAL NEEDS - LIQUID ASSETS = insurance needed. Considers debt, education, emergency funds, bequests." },
+  { s: "LO1 — Coverage Approaches", q: "Human Life Value vs. Needs Approach", a: "HUMAN LIFE VALUE: focuses on INCOME REPLACEMENT only (earnings-based). NEEDS: focuses on SPECIFIC FINANCIAL GOALS (needs-based). Needs approach is more comprehensive." },
+  { s: "LO1 — Coverage Approaches", q: "Single Needs Method", a: "Based on SPECIFIC NEEDS: loans, education, taxes, final expenses. A subset of the needs approach." },
+  { s: "LO1 — Coverage Approaches", q: "Capital Needs Analysis", a: "Determines IMMEDIATE CASH NEEDS at death: final expenses, taxes, income replacement. A more detailed version of the needs approach." },
+  { s: "LO1 — Coverage Approaches", q: "Blackout Period", a: "The gap in Social Security benefits between when the youngest child turns 16 and when the surviving spouse reaches age 60. No survivor benefits during this period." },
+  { s: "LO1 — Coverage Approaches", q: "Multiple Earnings Method", a: "Selects a NUMBER OF YEARS to replace annual salary (e.g., 5x or 10x salary). Quick and simple but not precise." },
+  { s: "LO1 — Coverage Approaches", q: "Interest-Only Method", a: "MAINTAINS the principal for future payments — only interest is used for income. The principal is never spent." },
+  { s: "LO1 — Coverage Approaches", q: "Seat-of-the-Pants Method", a: "ARBITRARILY selects an amount of insurance without calculation. Not recommended — no analytical basis." },
+
+  // ── LO 2: Personal Uses of Life Insurance ──
+  { s: "LO2 — Personal Uses", q: "Life insurance as an asset", a: "Life insurance is both an ASSET and PROTECTION against loss. Creates an IMMEDIATE ESTATE at death. Policy is included in the owner's estate for tax purposes." },
+  { s: "LO2 — Personal Uses", q: "Insurable interest and policy transfers", a: "Life insurance can be BOUGHT AND SOLD. Initial purchase requires INSURABLE INTEREST, but insurable interest need NOT PERSIST for the policy to remain valid." },
+  { s: "LO2 — Personal Uses", q: "Lump-Sum (Immediate Cash) Needs", a: "FINAL EXPENSES (funeral, burial). DEBT REPAYMENT (medical bills, personal debts). EMERGENCY FUNDS. MORTGAGE REDEMPTION. ESTATE PROTECTION. CHARITABLE CONTRIBUTIONS." },
+  { s: "LO2 — Personal Uses", q: "Income Needs", a: "SURVIVOR PROTECTION (monthly income for dependents). EDUCATION EXPENSES. RETIREMENT INCOME supplement. CASH ACCUMULATION and liquidity." },
+  { s: "LO2 — Personal Uses", q: "Mortgage Redemption", a: "Pays the REMAINING MORTGAGE BALANCE to assure HOUSING for survivors. One of the most common personal uses of life insurance." },
+  { s: "LO2 — Personal Uses", q: "Cash value policies — access to funds", a: "Cash value policies allow access to funds through POLICY LOANS during the insured's lifetime. Provides liquidity without surrendering the policy." },
+
+  // ── LO 3: Business Continuation Planning ──
+  { s: "LO3 — Business Uses", q: "Business uses of life insurance", a: "FUNDING for business continuation agreements. BUSINESS INTERRUPTION insurance. EMPLOYEE BENEFIT protecting families. Key person protection." },
+  { s: "LO3 — Business Uses", q: "Buy-Sell Agreement", a: "LEGAL AGREEMENT providing for ORDERLY business continuation and payment to the deceased's survivors. Guarantees CASH AVAILABILITY to purchase the deceased owner's interest." },
+  { s: "LO3 — Business Uses", q: "Buy-Sell for Sole Proprietors", a: "TWO-STEP PLAN: (1) employee takes over MANAGEMENT, (2) employee purchases the business. Funded with life insurance on the owner." },
+  { s: "LO3 — Business Uses", q: "Buy-Sell for Partnerships", a: "Can use an ENTITY PLAN (partnership buys) or CROSS-PURCHASE PLAN (partners buy from each other). Funded with life insurance on each partner." },
+  { s: "LO3 — Business Uses", q: "Buy-Sell for Corporations", a: "STOCK REDEMPTION PLAN (entity — corporation buys back shares) or CROSS-PURCHASE PLAN (stockholders buy from each other)." },
+
+  // ── LO 4: Entity vs. Cross-Purchase Plans ──
+  { s: "LO4 — Plan Types", q: "Entity Plan", a: "Agreement between the BUSINESS and each owner. BUSINESS is obligated to buy the deceased owner's interest. Business purchases, owns, and pays for policies on each owner. SIMPLER with many partners (fewer policies needed)." },
+  { s: "LO4 — Plan Types", q: "Cross-Purchase Plan", a: "Agreement between the OWNERS THEMSELVES. Each owner purchases policies on the OTHER owners. Each receives proceeds to buy the deceased's interest. PREFERRED with few partners." },
+  { s: "LO4 — Plan Types", q: "Cross-Purchase — Number of Policies", a: "Formula: n x (n-1) where n = number of owners. 2 partners = 2 policies. 3 partners = 6 policies. 4 partners = 12 policies. Increases RAPIDLY with more partners." },
+  { s: "LO4 — Plan Types", q: "Entity Plan vs. Cross-Purchase Plan", a: "ENTITY: business buys policies, fewer policies needed, simpler with many owners. CROSS-PURCHASE: owners buy policies on each other, preferred with few owners, n x (n-1) policies needed." },
+
+  // ── LO 5: Key Employee Life Insurance ──
+  { s: "LO5 — Key Employee", q: "Key Employee Insurance (purpose)", a: "Compensates the BUSINESS for LOSS OF EARNINGS due to death/disability of a key employee. Covers individuals with special MANAGERIAL or TECHNICAL skills. Provides funds to FIND AND TRAIN replacements." },
+  { s: "LO5 — Key Employee", q: "Four purposes of key employee insurance", a: "(1) BUSINESS INDEMNIFICATION: compensates for financial loss. (2) RESERVE FUND: living benefit through cash value. (3) BUSINESS CREDIT: loan repayment guarantee. (4) FAVORABLE TAX: death proceeds tax-free." },
+  { s: "LO5 — Key Employee", q: "Key employee insurance — ownership structure", a: "BUSINESS is the applicant, policyowner, premium payor, AND beneficiary. Business has INSURABLE INTEREST in key employees (third-party ownership)." },
+  { s: "LO5 — Key Employee", q: "Key employee insurance — tax treatment", a: "Premiums are NOT TAX-DEDUCTIBLE. But proceeds received are TAX-FREE to the business. Death proceeds are NOT included in the employee's estate (if no ownership interest)." },
+  { s: "LO5 — Key Employee", q: "Key employee insurance — funding", a: "Commonly funded with WHOLE LIFE or UNIVERSAL LIFE (for cash value). TERM insurance used for SHORT-TERM needs." },
+
+  // ── LO 6: Employee Benefit Plans ──
+  { s: "LO6 — Employee Benefits", q: "Corporate-Owned Life Insurance (COLI)", a: "COMPANY purchases and owns a policy on key employees. Corporation is the PRIMARY BENEFICIARY. May include CHANGE OF INSURED provision for replacement. Premiums NOT deductible; proceeds TAX-FREE." },
+  { s: "LO6 — Employee Benefits", q: "Deferred Compensation", a: "NON-QUALIFIED retirement plan for HIGHLY PAID employees. Compensation is PAID LATER — at disability, retirement, or death. Funded by the employer." },
+  { s: "LO6 — Employee Benefits", q: "Salary Continuation", a: "CORPORATE-SPONSORED benefit replacing EXECUTIVE INCOME. Funded entirely by the EMPLOYER, not the employee." },
+  { s: "LO6 — Employee Benefits", q: "Executive Bonus Plan (Section 162)", a: "Employer pays a BONUS used by the employee to purchase INSURANCE PREMIUMS. TAX-DEDUCTIBLE to employer. TAXABLE to employee as income." },
+  { s: "LO6 — Employee Benefits", q: "Split-Dollar Plan", a: "EMPLOYER-EMPLOYEE arrangement SPLITTING the death benefit and cash value. Combines the employee's NEED with the employer's ABILITY TO PAY." },
+  { s: "LO6 — Employee Benefits", q: "Employee benefit plans — key distinctions", a: "DEFERRED COMP: paid later, non-qualified. SALARY CONTINUATION: employer-funded income replacement. EXECUTIVE BONUS (162): employer bonus for premiums, deductible to employer, taxable to employee. SPLIT-DOLLAR: split death benefit/cash value." },
+];
+
+let currentIdx = 0;
+let flipped = false;
+let shuffled = [...cards];
+
+function renderCard() {
+  const c = shuffled[currentIdx];
+  document.getElementById('fc-front-text').textContent = c.q;
+  document.getElementById('fc-back-text').textContent  = c.a;
+  document.getElementById('fc-progress').textContent = `Card ${currentIdx + 1} of ${shuffled.length}`;
+  const card = document.getElementById('fc-card');
+  card.classList.remove('flipped');
+  flipped = false;
+}
+
+function flipCard() {
+  const card = document.getElementById('fc-card');
+  flipped = !flipped;
+  card.classList.toggle('flipped', flipped);
+}
+
+function nextCard() {
+  if (currentIdx < shuffled.length - 1) currentIdx++;
+  else currentIdx = 0;
+  renderCard();
+}
+
+function prevCard() {
+  if (currentIdx > 0) currentIdx--;
+  else currentIdx = shuffled.length - 1;
+  renderCard();
+}
+
+function shuffleCards() {
+  shuffled = [...cards].sort(() => Math.random() - 0.5);
+  currentIdx = 0;
+  renderCard();
+}
+
+renderCard();
+
+// ──────────────────────────────────────────
+// QUIZ DATA
+// ──────────────────────────────────────────
+const questions = [
+  {
+    section: "Determining Coverage Amount",
+    q: "The human life value approach calculates insurance needs based on:",
+    opts: ["Specific family financial goals","The capitalized value of net future earnings","The total amount of outstanding debts","The cost of funeral and burial expenses"],
+    ans: 1,
+    exp: "The human life value approach calculates the capitalized value of an individual's net future earnings as the measure of insurance needed."
+  },
+  {
+    section: "Determining Coverage Amount",
+    q: "The needs approach determines insurance based on:",
+    opts: ["Future earning capacity only","Personal and family financial goals and objectives","The multiple of annual salary","An arbitrary amount selected by the agent"],
+    ans: 1,
+    exp: "The needs approach determines insurance amount based on personal/family financial goals: debt elimination, education, emergency funds, etc."
+  },
+  {
+    section: "Determining Coverage Amount",
+    q: "The formula for the needs approach is:",
+    opts: ["Future earnings x years to retirement","Total capital needs minus liquid assets","Annual salary x 10","Cash value plus death benefit"],
+    ans: 1,
+    exp: "The needs approach formula: Total capital needs - liquid assets = insurance needed."
+  },
+  {
+    section: "Determining Coverage Amount",
+    q: "The blackout period refers to:",
+    opts: ["A period when the policy has no cash value","The gap in Social Security benefits between youngest child turning 16 and spouse reaching age 60","The contestability period","The grace period after a missed premium"],
+    ans: 1,
+    exp: "The blackout period is the gap in Social Security survivor benefits — no payments between when the youngest child turns 16 and the surviving spouse reaches 60."
+  },
+  {
+    section: "Determining Coverage Amount",
+    q: "Which method arbitrarily selects an amount of insurance without calculation?",
+    opts: ["Human life value","Needs approach","Multiple earnings method","Seat-of-the-pants method"],
+    ans: 3,
+    exp: "The seat-of-the-pants method arbitrarily selects an amount of insurance without any analytical basis — not recommended."
+  },
+  {
+    section: "Determining Coverage Amount",
+    q: "The multiple earnings method determines insurance by:",
+    opts: ["Calculating future earnings present value","Selecting a number of years to replace annual salary","Analyzing specific family needs","Maintaining principal for interest payments"],
+    ans: 1,
+    exp: "The multiple earnings method simply selects a number of years to replace the annual salary (e.g., 5x or 10x salary)."
+  },
+  {
+    section: "Personal Uses of Life Insurance",
+    q: "Life insurance creates an immediate:",
+    opts: ["Tax deduction","Estate at death","Investment portfolio","Annuity"],
+    ans: 1,
+    exp: "Life insurance creates an immediate estate at death — the death benefit is available to beneficiaries regardless of how long the policy has been in force."
+  },
+  {
+    section: "Personal Uses of Life Insurance",
+    q: "Once a life insurance policy is purchased, insurable interest:",
+    opts: ["Must exist at all times","Must exist at the time of claim","Need not persist for the policy to remain valid","Must be renewed annually"],
+    ans: 2,
+    exp: "While insurable interest is required at the time of purchase, it need not persist for the policy to remain valid. Life insurance can be bought and sold."
+  },
+  {
+    section: "Personal Uses of Life Insurance",
+    q: "Which of the following is a lump-sum (immediate cash) need?",
+    opts: ["Retirement income supplement","Education expenses for children","Mortgage redemption","Monthly income for dependents"],
+    ans: 2,
+    exp: "Mortgage redemption is a lump-sum need — paying off the remaining mortgage balance to assure housing for survivors."
+  },
+  {
+    section: "Personal Uses of Life Insurance",
+    q: "Cash value policies provide liquidity through:",
+    opts: ["Dividend payments only","Policy loans","Automatic premium increases","Death benefit advances only"],
+    ans: 1,
+    exp: "Cash value policies allow access to funds through policy loans during the insured's lifetime without surrendering the policy."
+  },
+  {
+    section: "Business Continuation Planning",
+    q: "A buy-sell agreement provides for:",
+    opts: ["Employee salary increases","Orderly business continuation and payment to deceased's survivors","Tax-free business income","Unlimited business credit"],
+    ans: 1,
+    exp: "A buy-sell agreement is a legal agreement providing for orderly business continuation and guaranteeing cash availability to purchase the deceased owner's interest."
+  },
+  {
+    section: "Business Continuation Planning",
+    q: "A buy-sell agreement for a sole proprietorship typically uses a:",
+    opts: ["Cross-purchase plan","Stock redemption plan","Two-step plan","Entity plan"],
+    ans: 2,
+    exp: "Sole proprietorship buy-sell uses a two-step plan: (1) employee takes over management, (2) employee purchases the business."
+  },
+  {
+    section: "Business Continuation Planning",
+    q: "Buy-sell agreements for partnerships can use:",
+    opts: ["Only entity plans","Only cross-purchase plans","Either entity plans or cross-purchase plans","Stock redemption plans only"],
+    ans: 2,
+    exp: "Partnership buy-sell agreements can use either an entity plan (partnership buys) or a cross-purchase plan (partners buy from each other)."
+  },
+  {
+    section: "Entity vs. Cross-Purchase Plans",
+    q: "In an entity plan, who purchases the life insurance policies?",
+    opts: ["Each individual owner","The business itself","The deceased owner's family","The insurance agent"],
+    ans: 1,
+    exp: "In an entity plan, the business purchases, owns, and pays for policies on each owner."
+  },
+  {
+    section: "Entity vs. Cross-Purchase Plans",
+    q: "In a cross-purchase plan, who purchases the life insurance policies?",
+    opts: ["The business entity","Each owner on the other owners","The beneficiaries","The insurance company"],
+    ans: 1,
+    exp: "In a cross-purchase plan, each owner purchases policies on the other owners."
+  },
+  {
+    section: "Entity vs. Cross-Purchase Plans",
+    q: "How many policies are needed in a cross-purchase plan with 4 partners?",
+    opts: ["4 policies","8 policies","12 policies","16 policies"],
+    ans: 2,
+    exp: "Cross-purchase formula: n x (n-1). With 4 partners: 4 x 3 = 12 policies."
+  },
+  {
+    section: "Entity vs. Cross-Purchase Plans",
+    q: "Which plan type is simpler when there are many partners?",
+    opts: ["Cross-purchase plan","Entity plan","Split-dollar plan","Executive bonus plan"],
+    ans: 1,
+    exp: "Entity plans are simpler with many partners because the business buys fewer policies — one per owner rather than n x (n-1)."
+  },
+  {
+    section: "Entity vs. Cross-Purchase Plans",
+    q: "A stock redemption plan is a type of:",
+    opts: ["Cross-purchase plan","Entity plan for corporations","Deferred compensation plan","Split-dollar plan"],
+    ans: 1,
+    exp: "A stock redemption plan is an entity plan for closely held corporations — the corporation buys back the deceased stockholder's shares."
+  },
+  {
+    section: "Key Employee Life Insurance",
+    q: "Key employee insurance compensates the business for:",
+    opts: ["Employee salary demands","Loss of earnings due to death or disability of a key employee","General operating expenses","Employee vacation costs"],
+    ans: 1,
+    exp: "Key employee insurance compensates the business for the loss of earnings due to the death or disability of a key employee with special skills."
+  },
+  {
+    section: "Key Employee Life Insurance",
+    q: "In key employee insurance, who is the beneficiary?",
+    opts: ["The key employee","The employee's family","The business","The insurance agent"],
+    ans: 2,
+    exp: "The business is the applicant, policyowner, premium payor, AND beneficiary of key employee insurance."
+  },
+  {
+    section: "Key Employee Life Insurance",
+    q: "Key employee insurance premiums are:",
+    opts: ["Tax-deductible to the business","Not tax-deductible","Tax-deductible to the employee","Partially tax-deductible"],
+    ans: 1,
+    exp: "Key employee insurance premiums are NOT tax-deductible, but the death proceeds received by the business are tax-free."
+  },
+  {
+    section: "Key Employee Life Insurance",
+    q: "Which of the following is NOT a purpose of key employee insurance?",
+    opts: ["Business indemnification","Reserve fund through cash value","Providing the employee a salary increase","Business credit guarantee"],
+    ans: 2,
+    exp: "The four purposes are: business indemnification, reserve fund (cash value), business credit (loan guarantee), and favorable tax treatment."
+  },
+  {
+    section: "Employee Benefit Plans",
+    q: "Corporate-Owned Life Insurance (COLI) names the _____ as the primary beneficiary:",
+    opts: ["Employee","Employee's spouse","Corporation","State insurance department"],
+    ans: 2,
+    exp: "In COLI, the company purchases and owns the policy, and the corporation is the primary beneficiary."
+  },
+  {
+    section: "Employee Benefit Plans",
+    q: "A deferred compensation plan is a:",
+    opts: ["Qualified retirement plan","Non-qualified retirement plan for highly paid employees","Government-mandated benefit","Tax-free employee bonus"],
+    ans: 1,
+    exp: "Deferred compensation is a non-qualified retirement plan for highly paid employees — compensation is paid later at disability, retirement, or death."
+  },
+  {
+    section: "Employee Benefit Plans",
+    q: "An executive bonus plan (Section 162) is:",
+    opts: ["Tax-deductible to the employer and taxable to the employee","Tax-free to both parties","Tax-deductible to the employee only","Not tax-deductible to anyone"],
+    ans: 0,
+    exp: "Executive bonus (Section 162): employer pays a bonus for insurance premiums — tax-deductible to the employer, taxable to the employee as income."
+  },
+  {
+    section: "Employee Benefit Plans",
+    q: "A split-dollar plan involves:",
+    opts: ["Splitting the premium between two insurance companies","An employer-employee arrangement splitting the death benefit and cash value","Dividing coverage between two employees","Splitting the policy into term and whole life"],
+    ans: 1,
+    exp: "A split-dollar plan is an employer-employee arrangement that splits the death benefit and cash value between them."
+  },
+  {
+    section: "Employee Benefit Plans",
+    q: "Salary continuation is funded by:",
+    opts: ["The employee only","The employer only","Both employer and employee","The government"],
+    ans: 1,
+    exp: "Salary continuation is a corporate-sponsored benefit funded entirely by the employer — it replaces executive income."
+  },
+  {
+    section: "Employee Benefit Plans",
+    q: "COLI premiums are generally:",
+    opts: ["Tax-deductible with tax-free proceeds","Not tax-deductible but proceeds are tax-free","Tax-deductible with taxable proceeds","Not tax-deductible with taxable proceeds"],
+    ans: 1,
+    exp: "COLI premiums are generally not tax-deductible, but the proceeds are paid tax-free to the corporation."
+  },
+];
+
+// ── Quiz Engine ──
+let answered = {};
+let submitted = false;
+let score = 0;
+
+function buildQuiz() {
+  answered = {};
+  submitted = false;
+  score = 0;
+  const area = document.getElementById('quiz-area');
+  let html = `<div class="quiz-header"><div class="quiz-meta">${questions.length} Questions</div><div class="score-badge" id="score-live">0/${questions.length} answered</div></div>`;
+  let lastSection = '';
+
+  questions.forEach((q, i) => {
+    if (q.section !== lastSection) {
+      html += `<div class="section-divider">${q.section}</div>`;
+      lastSection = q.section;
+    }
+    html += `<div class="q-card" id="qcard-${i}">
+      <div class="q-num">Question ${i + 1}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="options">`;
+    const letters = ['A','B','C','D'];
+    q.opts.forEach((opt, j) => {
+      html += `<div class="opt" id="opt-${i}-${j}" onclick="selectAnswer(${i},${j})">
+        <span class="opt-letter">${letters[j]}</span><span>${opt}</span>
+      </div>`;
+    });
+    html += `</div><div class="explanation" id="exp-${i}">${q.exp}</div></div>`;
+  });
+
+  html += `<div style="text-align:center; margin-top:32px;">
+    <button class="btn btn-primary" onclick="submitQuiz()" id="submit-btn">Submit & Score</button>
+  </div><div id="results-area"></div>`;
+  area.innerHTML = html;
+}
+
+function selectAnswer(qIdx, optIdx) {
+  if (submitted) return;
+  answered[qIdx] = optIdx;
+  questions[qIdx].opts.forEach((_, j) => {
+    const el = document.getElementById(`opt-${qIdx}-${j}`);
+    el.style.borderColor = j === optIdx ? '#3b82f6' : '';
+    el.style.background  = j === optIdx ? '#1e3a5f' : '';
+    el.style.color       = j === optIdx ? '#e2e8f0' : '';
+  });
+  updateLiveScore();
+}
+
+function updateLiveScore() {
+  let correct = 0;
+  Object.keys(answered).forEach(i => { if (answered[i] === questions[i].ans) correct++; });
+  document.getElementById('score-live').textContent = `${correct}/${Object.keys(answered).length} answered`;
+}
+
+function submitQuiz() {
+  submitted = true;
+  score = 0;
+  questions.forEach((q, i) => {
+    q.opts.forEach((_, j) => {
+      const el = document.getElementById(`opt-${i}-${j}`);
+      el.classList.add('disabled');
+      if (j === q.ans) {
+        el.classList.add('correct');
+      } else if (answered[i] === j) {
+        el.classList.add('wrong');
+      }
+    });
+    document.getElementById(`exp-${i}`).classList.add('show');
+    if (answered[i] === q.ans) score++;
+  });
+
+  const pct = Math.round((score / questions.length) * 100);
+  let msg, color;
+  if (pct >= 90)      { msg = "Excellent! You're exam-ready on this chapter."; color = "#4ade80"; }
+  else if (pct >= 70) { msg = "Above passing threshold. Review missed questions."; color = "#facc15"; }
+  else                { msg = "Below passing threshold. Review and retry!"; color = "#f87171"; }
+
+  document.getElementById('score-live').textContent = `Score: ${score}/${questions.length} (${pct}%)`;
+  document.getElementById('submit-btn').outerHTML = `<button class="btn btn-ghost" onclick="buildQuiz()">Retake Quiz</button>`;
+  document.getElementById('results-area').innerHTML = `
+    <div class="quiz-results">
+      <div class="score-big" style="color:${color}">${pct}%</div>
+      <div class="score-sub">${score} correct out of ${questions.length}</div>
+      <div class="score-msg" style="color:${color}">${msg}</div>
+      <div style="margin-top:8px;font-size:0.85rem;color:#64748b;">Pass threshold: 70% · Scroll up to review explanations</div>
+    </div>`;
+  window.scrollTo({ top: document.getElementById('results-area').offsetTop - 80, behavior: 'smooth' });
+}
+
+function showTab(t) {
+  document.getElementById('tab-flashcards').style.display = t === 'flashcards' ? '' : 'none';
+  document.getElementById('tab-quiz').style.display       = t === 'quiz' ? '' : 'none';
+  document.querySelectorAll('.tab').forEach((el, i) => {
+    el.classList.toggle('active', (i === 0 && t === 'flashcards') || (i === 1 && t === 'quiz'));
+  });
+  if (t === 'quiz' && !document.querySelector('.q-card')) buildQuiz();
+}
+</script>
+</body>
+</html>
