@@ -19,6 +19,7 @@ CHAPTERS = {
     5: "Life Insurance Policy Provisions, Riders & Exclusions",
     6: "Premiums, Settlements, Beneficiaries & Taxation",
     7: "Life Insurance Solicitation, Underwriting & Policy Delivery",
+    8: "Group Life Insurance",
 }
 
 

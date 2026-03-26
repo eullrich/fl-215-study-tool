@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FL 2-15 Exam | Chapter 8 Study Tool</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+  .header { background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%); padding: 24px 32px; border-bottom: 1px solid #1e40af44; }
+  .header h1 { font-size: 1.5rem; font-weight: 700; color: #60a5fa; letter-spacing: -0.02em; }
+  .header p { font-size: 0.875rem; color: #94a3b8; margin-top: 4px; }
+  .tabs { display: flex; gap: 0; padding: 20px 32px 0; border-bottom: 1px solid #1e293b; }
+  .tab { padding: 10px 24px; border-radius: 8px 8px 0 0; cursor: pointer; font-size: 0.875rem; font-weight: 600; border: 1px solid transparent; border-bottom: none; transition: all 0.2s; color: #64748b; }
+  .tab.active { background: #1e293b; color: #60a5fa; border-color: #1e40af44; }
+  .tab:hover:not(.active) { color: #94a3b8; }
+  .content { padding: 32px; max-width: 860px; margin: 0 auto; }
+  .fc-container { display: flex; flex-direction: column; align-items: center; gap: 24px; }
+  .fc-progress { font-size: 0.8rem; color: #64748b; letter-spacing: 0.05em; text-transform: uppercase; }
+  .fc-card-wrap { width: 100%; max-width: 640px; perspective: 1200px; cursor: pointer; user-select: none; }
+  .fc-card { position: relative; width: 100%; height: 220px; transition: transform 0.55s cubic-bezier(.4,2,.6,1); transform-style: preserve-3d; }
+  .fc-card.flipped { transform: rotateY(180deg); }
+  .fc-face { position: absolute; inset: 0; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 28px 36px; text-align: center; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+  .fc-front { background: linear-gradient(135deg, #1e3a5f, #1e293b); border: 1px solid #2563eb44; box-shadow: 0 8px 32px #0004; }
+  .fc-back  { background: linear-gradient(135deg, #14532d, #1e293b); border: 1px solid #16a34a44; box-shadow: 0 8px 32px #0004; transform: rotateY(180deg); }
+  .fc-label { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px; opacity: 0.5; }
+  .fc-text  { font-size: 1.15rem; font-weight: 600; line-height: 1.5; color: #f1f5f9; }
+  .fc-hint  { font-size: 0.75rem; color: #64748b; margin-top: 14px; }
+  .fc-controls { display: flex; gap: 12px; align-items: center; }
+  .btn { padding: 10px 22px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; transition: all 0.15s; }
+  .btn-primary { background: #2563eb; color: #fff; }
+  .btn-primary:hover { background: #1d4ed8; }
+  .btn-ghost { background: #1e293b; color: #94a3b8; border: 1px solid #334155; }
+  .btn-ghost:hover { background: #334155; color: #e2e8f0; }
+  .btn-sm { padding: 7px 16px; font-size: 0.8rem; }
+  .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+  .quiz-meta { font-size: 0.8rem; color: #64748b; }
+  .score-badge { background: #1e293b; border: 1px solid #334155; border-radius: 999px; padding: 4px 14px; font-size: 0.8rem; font-weight: 700; color: #94a3b8; }
+  .q-card { background: #1e293b; border: 1px solid #334155; border-radius: 14px; padding: 28px; margin-bottom: 20px; }
+  .q-num { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #64748b; margin-bottom: 10px; }
+  .q-text { font-size: 1rem; font-weight: 600; color: #f1f5f9; line-height: 1.55; margin-bottom: 20px; }
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .opt { padding: 12px 18px; border-radius: 9px; border: 1.5px solid #334155; background: #0f172a; cursor: pointer; font-size: 0.9rem; color: #cbd5e1; transition: all 0.15s; display: flex; align-items: flex-start; gap: 10px; }
+  .opt:hover:not(.disabled) { border-color: #3b82f6; color: #e2e8f0; background: #1e3a5f; }
+  .opt.correct { border-color: #22c55e; background: #14532d22; color: #4ade80; }
+  .opt.wrong   { border-color: #ef4444; background: #7f1d1d22; color: #f87171; }
+  .opt.disabled { cursor: default; pointer-events: none; }
+  .opt-letter { font-weight: 700; opacity: 0.5; min-width: 18px; }
+  .explanation { margin-top: 14px; padding: 12px 16px; border-radius: 8px; background: #0f172a; border-left: 3px solid #3b82f6; font-size: 0.85rem; color: #94a3b8; line-height: 1.5; display: none; }
+  .explanation.show { display: block; }
+  .quiz-results { text-align: center; padding: 40px 20px; }
+  .score-big { font-size: 4rem; font-weight: 800; color: #60a5fa; line-height: 1; }
+  .score-sub { font-size: 1rem; color: #64748b; margin-top: 8px; }
+  .score-msg { font-size: 1.1rem; font-weight: 600; margin-top: 16px; }
+  .section-divider { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #3b82f6; background: #1e3a5f22; border: 1px solid #1e40af33; border-radius: 6px; padding: 5px 14px; display: inline-block; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>FL 2-15 Exam Prep</h1>
+  <p>Chapter 8 — Group Life Insurance</p>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('flashcards')">Flashcards</div>
+  <div class="tab" onclick="showTab('quiz')">Practice Test</div>
+</div>
+
+<div id="tab-flashcards" class="content">
+  <div class="fc-container">
+    <div class="fc-progress" id="fc-progress">Card 1 of 1</div>
+    <div class="fc-card-wrap" onclick="flipCard()">
+      <div class="fc-card" id="fc-card">
+        <div class="fc-face fc-front">
+          <div class="fc-label">Term</div>
+          <div class="fc-text" id="fc-front-text"></div>
+          <div class="fc-hint">click to reveal definition</div>
+        </div>
+        <div class="fc-face fc-back">
+          <div class="fc-label">Definition</div>
+          <div class="fc-text" id="fc-back-text"></div>
+        </div>
+      </div>
+    </div>
+    <div class="fc-controls">
+      <button class="btn btn-ghost btn-sm" onclick="prevCard()">Prev</button>
+      <button class="btn btn-primary" onclick="nextCard()">Next</button>
+      <button class="btn btn-ghost btn-sm" onclick="shuffleCards()">Shuffle</button>
+    </div>
+  </div>
+</div>
+
+<div id="tab-quiz" class="content" style="display:none;">
+  <div id="quiz-area"></div>
+</div>
+
+<script>
+// ──────────────────────────────────────────
+// FLASHCARD DATA — Chapter 8: Group Life Insurance
+// ──────────────────────────────────────────
+const cards = [
+
+  // ── LO 1: Individual vs. Group Life Insurance ──
+  { s: "LO1 — Individual vs. Group", q: "Group Life Insurance", a: "Covers MULTIPLE INDIVIDUALS under a SINGLE CONTRACT (master policy). Typically provided by EMPLOYERS for employees. Most often written as ANNUAL RENEWABLE TERM insurance." },
+  { s: "LO1 — Individual vs. Group", q: "Master Policy", a: "The contract issued to the EMPLOYER containing ALL insuring clauses. The employer is the POLICY OWNER." },
+  { s: "LO1 — Individual vs. Group", q: "Certificate of Insurance", a: "The document issued to EMPLOYEES outlining their coverage. Employees receive certificates — NOT individual policies." },
+  { s: "LO1 — Individual vs. Group", q: "Certificate Holder", a: "The COVERED EMPLOYEE or plan participant who receives the certificate of insurance." },
+  { s: "LO1 — Individual vs. Group", q: "Who owns the group policy?", a: "The EMPLOYER (group sponsor) owns the master policy. The employer has all ownership rights EXCEPT naming beneficiaries — that right belongs to the EMPLOYEE." },
+  { s: "LO1 — Individual vs. Group", q: "Group vs. Individual insurance — key differences", a: "GROUP: single master policy, certificates to employees, term insurance, less expensive, fewer restrictions. INDIVIDUAL: separate policy per person, can be term or permanent, more expensive, individually underwritten." },
+
+  // ── LO 2: Contributory vs. Noncontributory ──
+  { s: "LO2 — Plan Types", q: "Contributory Plan", a: "EMPLOYEES SHARE in the cost of premiums. Requires at least 75% of eligible employees to participate. Employees must approve AUTOMATIC PAYROLL DEDUCTION." },
+  { s: "LO2 — Plan Types", q: "Noncontributory Plan", a: "EMPLOYER PAYS the entire cost. Requires 100% of eligible employees to participate. Helps insurers AVOID ADVERSE SELECTION." },
+  { s: "LO2 — Plan Types", q: "Contributory vs. Noncontributory — participation", a: "CONTRIBUTORY: 75% minimum participation. NONCONTRIBUTORY: 100% participation required. Higher participation = less adverse selection." },
+
+  // ── LO 3: Group & Member Eligibility ──
+  { s: "LO3 — Eligibility", q: "Natural Group requirement", a: "A group must be a NATURAL GROUP — formed for a PURPOSE OTHER THAN purchasing insurance. Securing coverage must be INCIDENTAL to the group's formation." },
+  { s: "LO3 — Eligibility", q: "Eligible group types", a: "EMPLOYMENT-BASED groups (single/multiple employer). LABOR UNIONS and trade associations. FINANCIAL groups (credit unions, customer groups). FRATERNAL organizations and trustee groups." },
+  { s: "LO3 — Eligibility", q: "Employee eligibility requirements", a: "Must be FULL-TIME and ACTIVELY WORKING. New employee PROBATIONARY PERIOD typically 1-6 MONTHS. ENROLLMENT PERIOD of 31 DAYS to sign up without evidence of insurability." },
+  { s: "LO3 — Eligibility", q: "Enrollment Period", a: "31-DAY window for eligible employees to enroll WITHOUT evidence of insurability. After this period, proof of insurability may be required." },
+  { s: "LO3 — Eligibility", q: "State requirements for groups", a: "States may require groups to have existed for MORE THAN TWO YEARS. States may require a MINIMUM NUMBER OF MEMBERS." },
+
+  // ── LO 4: Group Underwriting ──
+  { s: "LO4 — Group Underwriting", q: "Group underwriting focus", a: "Focuses on CHARACTERISTICS OF THE GROUP rather than individuals. Leverages the LAW OF LARGE NUMBERS to balance risk. Cannot EXCLUDE employees with physical impairments." },
+  { s: "LO4 — Group Underwriting", q: "How group underwriting reduces adverse selection", a: "MINIMUM PARTICIPATION requirements ensure a mix of risks. Underwriting the GROUP (not individuals) prevents cherry-picking. SMALLER groups face MORE STRINGENT requirements." },
+  { s: "LO4 — Group Underwriting", q: "Persistency", a: "The PERCENTAGE OF POLICIES that remain in force over time. Higher persistency = more stable and profitable group for the insurer." },
+
+  // ── LO 5: Conversion Privileges ──
+  { s: "LO5 — Conversion", q: "Conversion Privilege", a: "Allows employees to CONVERT group term coverage to INDIVIDUAL PERMANENT insurance upon termination. Must occur within 31 DAYS. NO proof of insurability required." },
+  { s: "LO5 — Conversion", q: "31-Day conversion period", a: "Employee must convert within 31 DAYS following termination. Coverage CONTINUES under the group policy during this period. Death during conversion period is paid under the GROUP policy." },
+  { s: "LO5 — Conversion", q: "Conversion premium basis", a: "Premiums for the converted individual policy are based on the insured's ATTAINED AGE at the time of conversion — not the original issue age." },
+  { s: "LO5 — Conversion", q: "Dependent conversion rights", a: "DEPENDENTS may also convert their coverage WITHOUT proof of insurability within the 31-day period." },
+  { s: "LO5 — Conversion", q: "Group policy termination — conversion rights", a: "Available to members covered for at least FIVE CONSECUTIVE YEARS. Must apply within 31-60 DAYS following group policy termination. Converted policy may provide coverage up to face value (subject to limits)." },
+  { s: "LO5 — Conversion", q: "Key conversion rule", a: "Conversion always changes TEMPORARY (term) protection to PERMANENT (whole life) protection. This is a fundamental principle of group conversion." },
+
+  // ── LO 6: Types of Group Life Insurance ──
+  { s: "LO6 — Group Types", q: "Group Credit Life Insurance", a: "Established by BANKS and FINANCE COMPANIES. Pays off the LOAN BALANCE if a borrower dies. Premiums based on CLAIMS EXPERIENCE, not borrower's age. Uses DECREASING TERM insurance." },
+  { s: "LO6 — Group Types", q: "Blanket Life Insurance", a: "Covers groups exposed to the SAME HAZARD (airline passengers, students). NO individuals are NAMED. NO certificates issued. Coverage limited to SPECIFIED COMMON HAZARDS." },
+  { s: "LO6 — Group Types", q: "Retired Lives Reserve", a: "Provides continuing life insurance protection AFTER RETIREMENT. Combines ANNUAL RENEWABLE TERM with a RESERVE ACCOUNT. Employer contributions are TAX-DEDUCTIBLE. Reserve funds pay premiums during retirement." },
+  { s: "LO6 — Group Types", q: "Group Credit Life vs. Blanket Life", a: "CREDIT LIFE: covers borrowers, pays off loans, decreasing term, individuals identified. BLANKET: covers groups facing same hazard, no individuals named, no certificates." },
+
+  // ── LO 7: Military & Federal Employee Insurance ──
+  { s: "LO7 — Government Programs", q: "SGLI (Servicemembers' Group Life Insurance)", a: "Up to $500,000 coverage in $50,000 INCREMENTS. Available to FULL-TIME armed services members. AUTOMATIC coverage unless member opts out. GROUP TERM life insurance." },
+  { s: "LO7 — Government Programs", q: "FSGLI (Family SGLI)", a: "Covers SPOUSES and CHILDREN of servicemembers insured under SGLI. Spouses: up to $100,000. Dependent children: $10,000 at NO COST. Spousal premiums based on AGE and coverage amount." },
+  { s: "LO7 — Government Programs", q: "VGLI (Veterans' Group Life Insurance)", a: "CONVERSION of SGLI after separation from service. RENEWABLE TERM policy. NO proof of insurability required." },
+  { s: "LO7 — Government Programs", q: "FEGLI (Federal Employees Group Life Insurance)", a: "GROUP TERM life for FEDERAL EMPLOYEES/civil service workers. Basic coverage = ANNUAL SALARY + $2,000. AUTOMATIC enrollment unless waived." },
+  { s: "LO7 — Government Programs", q: "Military insurance progression", a: "Active duty: SGLI (automatic, up to $500K). Family: FSGLI (spouse $100K, children $10K). After service: VGLI (conversion, no proof of insurability)." },
+
+  // ── LO 8: Tax Treatment ──
+  { s: "LO8 — Taxation", q: "Employer-paid group life premiums — tax treatment", a: "EMPLOYER: premiums are TAX-DEDUCTIBLE as a business expense. EMPLOYEE: first $50,000 of coverage is TAX-EXEMPT. Coverage EXCEEDING $50,000 is taxable as ORDINARY INCOME (imputed income)." },
+  { s: "LO8 — Taxation", q: "The $50,000 rule", a: "The first $50,000 of EMPLOYER-PROVIDED group life coverage is TAX-EXEMPT to the employee. Cost of coverage ABOVE $50,000 is reportable as IMPUTED INCOME." },
+  { s: "LO8 — Taxation", q: "Employee-paid group life premiums", a: "Employee-paid premiums are NOT TAX-DEDUCTIBLE — they are personal expenses." },
+  { s: "LO8 — Taxation", q: "Sole proprietors/partners — group life premiums", a: "CANNOT deduct premiums on their OWN lives. Can deduct premiums for employees." },
+  { s: "LO8 — Taxation", q: "Group life insurance proceeds — tax treatment", a: "LUMP SUM proceeds are TAX-FREE. INSTALLMENT proceeds: principal is tax-free, INTEREST portion is TAXABLE." },
+  { s: "LO8 — Taxation", q: "Group life tax summary", a: "Employer premiums: DEDUCTIBLE. First $50K to employee: TAX-EXEMPT. Over $50K: IMPUTED INCOME. Employee premiums: NOT deductible. Lump-sum proceeds: TAX-FREE. Interest on installments: TAXABLE." },
+];
+
+let currentIdx = 0;
+let flipped = false;
+let shuffled = [...cards];
+
+function renderCard() {
+  const c = shuffled[currentIdx];
+  document.getElementById('fc-front-text').textContent = c.q;
+  document.getElementById('fc-back-text').textContent  = c.a;
+  document.getElementById('fc-progress').textContent = `Card ${currentIdx + 1} of ${shuffled.length}`;
+  const card = document.getElementById('fc-card');
+  card.classList.remove('flipped');
+  flipped = false;
+}
+
+function flipCard() {
+  const card = document.getElementById('fc-card');
+  flipped = !flipped;
+  card.classList.toggle('flipped', flipped);
+}
+
+function nextCard() {
+  if (currentIdx < shuffled.length - 1) currentIdx++;
+  else currentIdx = 0;
+  renderCard();
+}
+
+function prevCard() {
+  if (currentIdx > 0) currentIdx--;
+  else currentIdx = shuffled.length - 1;
+  renderCard();
+}
+
+function shuffleCards() {
+  shuffled = [...cards].sort(() => Math.random() - 0.5);
+  currentIdx = 0;
+  renderCard();
+}
+
+renderCard();
+
+// ──────────────────────────────────────────
+// QUIZ DATA
+// ──────────────────────────────────────────
+const questions = [
+  {
+    section: "Individual vs. Group Life Insurance",
+    q: "Group life insurance is most commonly written as:",
+    opts: ["Whole life insurance","Universal life insurance","Annual renewable term insurance","Variable life insurance"],
+    ans: 2,
+    exp: "Group life insurance is most often written as annual renewable term insurance."
+  },
+  {
+    section: "Individual vs. Group Life Insurance",
+    q: "The master policy in group life insurance is issued to the:",
+    opts: ["Employee","Beneficiary","Employer","Insurance commissioner"],
+    ans: 2,
+    exp: "The employer is the policy owner and receives the master policy containing all insuring clauses."
+  },
+  {
+    section: "Individual vs. Group Life Insurance",
+    q: "Employees covered under a group life insurance plan receive:",
+    opts: ["Individual policies","Master policies","Certificates of insurance","Binders"],
+    ans: 2,
+    exp: "Employees receive certificates of insurance outlining their coverage, not individual policies."
+  },
+  {
+    section: "Individual vs. Group Life Insurance",
+    q: "In group life insurance, who has the right to name the beneficiary?",
+    opts: ["The employer","The insurer","The employee","The state insurance department"],
+    ans: 2,
+    exp: "The employer has all ownership rights except naming beneficiaries — that right belongs to the employee (certificate holder)."
+  },
+  {
+    section: "Contributory vs. Noncontributory Plans",
+    q: "A contributory group insurance plan requires participation of at least:",
+    opts: ["50% of eligible employees","75% of eligible employees","90% of eligible employees","100% of eligible employees"],
+    ans: 1,
+    exp: "Contributory plans, where employees share in the cost, require at least 75% of eligible employees to participate."
+  },
+  {
+    section: "Contributory vs. Noncontributory Plans",
+    q: "A noncontributory group insurance plan requires participation of:",
+    opts: ["50% of eligible employees","75% of eligible employees","90% of eligible employees","100% of eligible employees"],
+    ans: 3,
+    exp: "Noncontributory plans, where the employer pays the entire cost, require 100% of eligible employees to participate."
+  },
+  {
+    section: "Contributory vs. Noncontributory Plans",
+    q: "Which type of plan best helps insurers avoid adverse selection?",
+    opts: ["Contributory plan","Noncontributory plan","Voluntary plan","Supplemental plan"],
+    ans: 1,
+    exp: "Noncontributory plans require 100% participation, which ensures a balanced mix of healthy and unhealthy individuals, reducing adverse selection."
+  },
+  {
+    section: "Group & Member Eligibility",
+    q: "A group must be formed for a purpose other than purchasing insurance. This is known as the:",
+    opts: ["Participation requirement","Natural group requirement","Minimum size requirement","Conversion requirement"],
+    ans: 1,
+    exp: "A group must be a natural group — formed for a purpose other than purchasing insurance. Securing coverage must be incidental."
+  },
+  {
+    section: "Group & Member Eligibility",
+    q: "The enrollment period for new group members to sign up without evidence of insurability is typically:",
+    opts: ["10 days","15 days","31 days","60 days"],
+    ans: 2,
+    exp: "Eligible employees have a 31-day enrollment period to sign up without providing evidence of insurability."
+  },
+  {
+    section: "Group & Member Eligibility",
+    q: "To be eligible for group life insurance, an employee must be:",
+    opts: ["Part-time and actively working","Full-time and actively working","Full-time or part-time","Any employee regardless of status"],
+    ans: 1,
+    exp: "Employees must be full-time and actively working to be eligible for group life insurance."
+  },
+  {
+    section: "Group & Member Eligibility",
+    q: "The probationary period for new employees in group insurance is typically:",
+    opts: ["1-6 months","6-12 months","1-2 years","30 days"],
+    ans: 0,
+    exp: "The new employee probationary period before becoming eligible for group coverage is typically 1-6 months."
+  },
+  {
+    section: "Group Underwriting",
+    q: "Group underwriting focuses primarily on:",
+    opts: ["Each individual's health history","Characteristics of the group as a whole","The employer's financial statements","The agent's recommendation"],
+    ans: 1,
+    exp: "Group underwriting focuses on characteristics of the group rather than individuals, leveraging the law of large numbers."
+  },
+  {
+    section: "Group Underwriting",
+    q: "Group life insurance plans cannot exclude employees based on:",
+    opts: ["Employment status","Physical impairments","Full-time vs. part-time status","Length of employment"],
+    ans: 1,
+    exp: "Group life plans cannot exclude employees with physical impairments — the group is underwritten as a whole."
+  },
+  {
+    section: "Group Underwriting",
+    q: "Smaller groups typically face:",
+    opts: ["Less stringent underwriting","More stringent underwriting","No underwriting","The same underwriting as large groups"],
+    ans: 1,
+    exp: "Smaller groups face more stringent underwriting requirements because there are fewer members to balance risk."
+  },
+  {
+    section: "Conversion Privileges",
+    q: "An employee who leaves a group plan must convert their coverage within:",
+    opts: ["10 days","15 days","31 days","60 days"],
+    ans: 2,
+    exp: "Conversion must occur within 31 days following termination of employment."
+  },
+  {
+    section: "Conversion Privileges",
+    q: "During the 31-day conversion period, if the terminated employee dies:",
+    opts: ["No benefits are paid","Benefits are paid under the individual policy","Benefits are paid under the group policy","Benefits are split between group and individual"],
+    ans: 2,
+    exp: "Death during the conversion period results in payment under the group policy — coverage continues during the 31-day window."
+  },
+  {
+    section: "Conversion Privileges",
+    q: "Conversion from group to individual coverage requires:",
+    opts: ["A medical examination","Proof of insurability","No proof of insurability","Employer approval"],
+    ans: 2,
+    exp: "No proof of insurability is required during the 31-day conversion period."
+  },
+  {
+    section: "Conversion Privileges",
+    q: "Premiums for a converted individual policy are based on the insured's:",
+    opts: ["Original issue age","Age at group enrollment","Attained age at conversion","Standard age 25 rate"],
+    ans: 2,
+    exp: "Premiums for converted policies are based on the insured's attained age at the time of conversion."
+  },
+  {
+    section: "Conversion Privileges",
+    q: "When a group policy itself terminates, conversion rights are available to members who were covered for at least:",
+    opts: ["One year","Three consecutive years","Five consecutive years","Ten consecutive years"],
+    ans: 2,
+    exp: "When the group policy terminates, conversion rights are available to members covered for at least five consecutive years."
+  },
+  {
+    section: "Conversion Privileges",
+    q: "Conversion of group life insurance always changes coverage from:",
+    opts: ["Permanent to term","Term to permanent","Whole life to universal life","Individual to group"],
+    ans: 1,
+    exp: "Conversion always changes temporary (term) protection to permanent (whole life) protection."
+  },
+  {
+    section: "Types of Group Life Insurance",
+    q: "Group credit life insurance typically uses what type of coverage?",
+    opts: ["Increasing term","Level term","Decreasing term","Whole life"],
+    ans: 2,
+    exp: "Group credit life uses decreasing term insurance because the loan balance decreases over time as payments are made."
+  },
+  {
+    section: "Types of Group Life Insurance",
+    q: "Blanket life insurance differs from other group insurance because:",
+    opts: ["It covers named individuals","No individuals are named and no certificates are issued","It provides permanent coverage","It requires 100% participation"],
+    ans: 1,
+    exp: "Blanket life insurance covers groups exposed to the same hazard — no individuals are named and no certificates are issued."
+  },
+  {
+    section: "Types of Group Life Insurance",
+    q: "A retired lives reserve provides:",
+    opts: ["Coverage only during employment","Continuing life insurance after retirement","Disability income benefits","Health insurance for retirees"],
+    ans: 1,
+    exp: "A retired lives reserve provides continuing life insurance protection after retirement, using a reserve account funded by employer contributions."
+  },
+  {
+    section: "Types of Group Life Insurance",
+    q: "Group credit life insurance premiums are based on:",
+    opts: ["The borrower's age","Claims experience","The borrower's health","The loan interest rate"],
+    ans: 1,
+    exp: "Group credit life premiums are based on claims experience, not necessarily the borrower's age."
+  },
+  {
+    section: "Military & Federal Employee Insurance",
+    q: "SGLI provides maximum coverage of:",
+    opts: ["$100,000","$250,000","$400,000","$500,000"],
+    ans: 3,
+    exp: "SGLI provides up to $500,000 coverage in $50,000 increments for full-time members of the armed services."
+  },
+  {
+    section: "Military & Federal Employee Insurance",
+    q: "SGLI coverage is:",
+    opts: ["Voluntary — members must opt in","Automatic — members must opt out to decline","Available only to officers","Limited to combat zones"],
+    ans: 1,
+    exp: "SGLI coverage is automatic unless the member opts out."
+  },
+  {
+    section: "Military & Federal Employee Insurance",
+    q: "Under FSGLI, dependent children of servicemembers are covered for:",
+    opts: ["$5,000 at no cost","$10,000 at no cost","$25,000 with a small premium","$50,000 with a small premium"],
+    ans: 1,
+    exp: "Dependent children are covered for $10,000 at no cost under FSGLI."
+  },
+  {
+    section: "Military & Federal Employee Insurance",
+    q: "VGLI is a conversion of SGLI that:",
+    opts: ["Requires proof of insurability","Provides whole life coverage","Requires no proof of insurability","Is only available for 5 years"],
+    ans: 2,
+    exp: "VGLI is a conversion of SGLI after separation from service — a renewable term policy requiring no proof of insurability."
+  },
+  {
+    section: "Military & Federal Employee Insurance",
+    q: "FEGLI basic coverage equals:",
+    opts: ["$50,000 flat amount","Twice the annual salary","Annual salary plus $2,000","Annual salary plus $10,000"],
+    ans: 2,
+    exp: "FEGLI basic coverage equals the federal employee's annual salary plus $2,000."
+  },
+  {
+    section: "Tax Treatment",
+    q: "The first how much of employer-provided group life coverage is tax-exempt to the employee?",
+    opts: ["$10,000","$25,000","$50,000","$100,000"],
+    ans: 2,
+    exp: "The first $50,000 of employer-provided group life coverage is tax-exempt to the employee."
+  },
+  {
+    section: "Tax Treatment",
+    q: "Employer-provided group life coverage exceeding $50,000 is:",
+    opts: ["Tax-free to the employee","Taxable as capital gains","Taxable as ordinary income (imputed income)","Tax-deferred"],
+    ans: 2,
+    exp: "The cost of coverage exceeding $50,000 is taxable to the employee as ordinary income — this is called imputed income."
+  },
+  {
+    section: "Tax Treatment",
+    q: "Employer-paid group life insurance premiums are:",
+    opts: ["Not tax-deductible","Tax-deductible as a business expense","Taxable to the employer","Subject to capital gains tax"],
+    ans: 1,
+    exp: "Employer-paid group life premiums are tax-deductible as a business expense."
+  },
+  {
+    section: "Tax Treatment",
+    q: "Employee-paid group life insurance premiums are:",
+    opts: ["Tax-deductible","Not tax-deductible","Tax-deferred","Tax-exempt"],
+    ans: 1,
+    exp: "Employee-paid premiums are not tax-deductible — they are considered personal expenses."
+  },
+  {
+    section: "Tax Treatment",
+    q: "Group life insurance death benefits paid as a lump sum are:",
+    opts: ["Fully taxable","Partially taxable","Income tax-free","Subject to estate tax only"],
+    ans: 2,
+    exp: "Lump-sum group life insurance proceeds are income tax-free to the beneficiary."
+  },
+  {
+    section: "Tax Treatment",
+    q: "A sole proprietor who provides group life insurance for employees:",
+    opts: ["Can deduct premiums on their own life and employees' lives","Can deduct premiums on employees' lives but not their own","Cannot deduct any premiums","Can deduct only 50% of all premiums"],
+    ans: 1,
+    exp: "Sole proprietors and partners can deduct premiums for employees but cannot deduct premiums on their own lives."
+  },
+];
+
+// ── Quiz Engine ──
+let answered = {};
+let submitted = false;
+let score = 0;
+
+function buildQuiz() {
+  answered = {};
+  submitted = false;
+  score = 0;
+  const area = document.getElementById('quiz-area');
+  let html = `<div class="quiz-header"><div class="quiz-meta">${questions.length} Questions</div><div class="score-badge" id="score-live">0/${questions.length} answered</div></div>`;
+  let lastSection = '';
+
+  questions.forEach((q, i) => {
+    if (q.section !== lastSection) {
+      html += `<div class="section-divider">${q.section}</div>`;
+      lastSection = q.section;
+    }
+    html += `<div class="q-card" id="qcard-${i}">
+      <div class="q-num">Question ${i + 1}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="options">`;
+    const letters = ['A','B','C','D'];
+    q.opts.forEach((opt, j) => {
+      html += `<div class="opt" id="opt-${i}-${j}" onclick="selectAnswer(${i},${j})">
+        <span class="opt-letter">${letters[j]}</span><span>${opt}</span>
+      </div>`;
+    });
+    html += `</div><div class="explanation" id="exp-${i}">${q.exp}</div></div>`;
+  });
+
+  html += `<div style="text-align:center; margin-top:32px;">
+    <button class="btn btn-primary" onclick="submitQuiz()" id="submit-btn">Submit & Score</button>
+  </div><div id="results-area"></div>`;
+  area.innerHTML = html;
+}
+
+function selectAnswer(qIdx, optIdx) {
+  if (submitted) return;
+  answered[qIdx] = optIdx;
+  questions[qIdx].opts.forEach((_, j) => {
+    const el = document.getElementById(`opt-${qIdx}-${j}`);
+    el.style.borderColor = j === optIdx ? '#3b82f6' : '';
+    el.style.background  = j === optIdx ? '#1e3a5f' : '';
+    el.style.color       = j === optIdx ? '#e2e8f0' : '';
+  });
+  updateLiveScore();
+}
+
+function updateLiveScore() {
+  let correct = 0;
+  Object.keys(answered).forEach(i => { if (answered[i] === questions[i].ans) correct++; });
+  document.getElementById('score-live').textContent = `${correct}/${Object.keys(answered).length} answered`;
+}
+
+function submitQuiz() {
+  submitted = true;
+  score = 0;
+  questions.forEach((q, i) => {
+    q.opts.forEach((_, j) => {
+      const el = document.getElementById(`opt-${i}-${j}`);
+      el.classList.add('disabled');
+      if (j === q.ans) {
+        el.classList.add('correct');
+      } else if (answered[i] === j) {
+        el.classList.add('wrong');
+      }
+    });
+    document.getElementById(`exp-${i}`).classList.add('show');
+    if (answered[i] === q.ans) score++;
+  });
+
+  const pct = Math.round((score / questions.length) * 100);
+  let msg, color;
+  if (pct >= 90)      { msg = "Excellent! You're exam-ready on this chapter."; color = "#4ade80"; }
+  else if (pct >= 70) { msg = "Above passing threshold. Review missed questions."; color = "#facc15"; }
+  else                { msg = "Below passing threshold. Review and retry!"; color = "#f87171"; }
+
+  document.getElementById('score-live').textContent = `Score: ${score}/${questions.length} (${pct}%)`;
+  document.getElementById('submit-btn').outerHTML = `<button class="btn btn-ghost" onclick="buildQuiz()">Retake Quiz</button>`;
+  document.getElementById('results-area').innerHTML = `
+    <div class="quiz-results">
+      <div class="score-big" style="color:${color}">${pct}%</div>
+      <div class="score-sub">${score} correct out of ${questions.length}</div>
+      <div class="score-msg" style="color:${color}">${msg}</div>
+      <div style="margin-top:8px;font-size:0.85rem;color:#64748b;">Pass threshold: 70% · Scroll up to review explanations</div>
+    </div>`;
+  window.scrollTo({ top: document.getElementById('results-area').offsetTop - 80, behavior: 'smooth' });
+}
+
+function showTab(t) {
+  document.getElementById('tab-flashcards').style.display = t === 'flashcards' ? '' : 'none';
+  document.getElementById('tab-quiz').style.display       = t === 'quiz' ? '' : 'none';
+  document.querySelectorAll('.tab').forEach((el, i) => {
+    el.classList.toggle('active', (i === 0 && t === 'flashcards') || (i === 1 && t === 'quiz'));
+  });
+  if (t === 'quiz' && !document.querySelector('.q-card')) buildQuiz();
+}
+</script>
+</body>
+</html>
