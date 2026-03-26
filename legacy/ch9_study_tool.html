@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FL 2-15 Exam | Chapter 9 Study Tool</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+  .header { background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%); padding: 24px 32px; border-bottom: 1px solid #1e40af44; }
+  .header h1 { font-size: 1.5rem; font-weight: 700; color: #60a5fa; letter-spacing: -0.02em; }
+  .header p { font-size: 0.875rem; color: #94a3b8; margin-top: 4px; }
+  .tabs { display: flex; gap: 0; padding: 20px 32px 0; border-bottom: 1px solid #1e293b; }
+  .tab { padding: 10px 24px; border-radius: 8px 8px 0 0; cursor: pointer; font-size: 0.875rem; font-weight: 600; border: 1px solid transparent; border-bottom: none; transition: all 0.2s; color: #64748b; }
+  .tab.active { background: #1e293b; color: #60a5fa; border-color: #1e40af44; }
+  .tab:hover:not(.active) { color: #94a3b8; }
+  .content { padding: 32px; max-width: 860px; margin: 0 auto; }
+  .fc-container { display: flex; flex-direction: column; align-items: center; gap: 24px; }
+  .fc-progress { font-size: 0.8rem; color: #64748b; letter-spacing: 0.05em; text-transform: uppercase; }
+  .fc-card-wrap { width: 100%; max-width: 640px; perspective: 1200px; cursor: pointer; user-select: none; }
+  .fc-card { position: relative; width: 100%; height: 220px; transition: transform 0.55s cubic-bezier(.4,2,.6,1); transform-style: preserve-3d; }
+  .fc-card.flipped { transform: rotateY(180deg); }
+  .fc-face { position: absolute; inset: 0; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 28px 36px; text-align: center; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+  .fc-front { background: linear-gradient(135deg, #1e3a5f, #1e293b); border: 1px solid #2563eb44; box-shadow: 0 8px 32px #0004; }
+  .fc-back  { background: linear-gradient(135deg, #14532d, #1e293b); border: 1px solid #16a34a44; box-shadow: 0 8px 32px #0004; transform: rotateY(180deg); }
+  .fc-label { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px; opacity: 0.5; }
+  .fc-text  { font-size: 1.15rem; font-weight: 600; line-height: 1.5; color: #f1f5f9; }
+  .fc-hint  { font-size: 0.75rem; color: #64748b; margin-top: 14px; }
+  .fc-controls { display: flex; gap: 12px; align-items: center; }
+  .btn { padding: 10px 22px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; transition: all 0.15s; }
+  .btn-primary { background: #2563eb; color: #fff; }
+  .btn-primary:hover { background: #1d4ed8; }
+  .btn-ghost { background: #1e293b; color: #94a3b8; border: 1px solid #334155; }
+  .btn-ghost:hover { background: #334155; color: #e2e8f0; }
+  .btn-sm { padding: 7px 16px; font-size: 0.8rem; }
+  .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+  .quiz-meta { font-size: 0.8rem; color: #64748b; }
+  .score-badge { background: #1e293b; border: 1px solid #334155; border-radius: 999px; padding: 4px 14px; font-size: 0.8rem; font-weight: 700; color: #94a3b8; }
+  .q-card { background: #1e293b; border: 1px solid #334155; border-radius: 14px; padding: 28px; margin-bottom: 20px; }
+  .q-num { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #64748b; margin-bottom: 10px; }
+  .q-text { font-size: 1rem; font-weight: 600; color: #f1f5f9; line-height: 1.55; margin-bottom: 20px; }
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .opt { padding: 12px 18px; border-radius: 9px; border: 1.5px solid #334155; background: #0f172a; cursor: pointer; font-size: 0.9rem; color: #cbd5e1; transition: all 0.15s; display: flex; align-items: flex-start; gap: 10px; }
+  .opt:hover:not(.disabled) { border-color: #3b82f6; color: #e2e8f0; background: #1e3a5f; }
+  .opt.correct { border-color: #22c55e; background: #14532d22; color: #4ade80; }
+  .opt.wrong   { border-color: #ef4444; background: #7f1d1d22; color: #f87171; }
+  .opt.disabled { cursor: default; pointer-events: none; }
+  .opt-letter { font-weight: 700; opacity: 0.5; min-width: 18px; }
+  .explanation { margin-top: 14px; padding: 12px 16px; border-radius: 8px; background: #0f172a; border-left: 3px solid #3b82f6; font-size: 0.85rem; color: #94a3b8; line-height: 1.5; display: none; }
+  .explanation.show { display: block; }
+  .quiz-results { text-align: center; padding: 40px 20px; }
+  .score-big { font-size: 4rem; font-weight: 800; color: #60a5fa; line-height: 1; }
+  .score-sub { font-size: 1rem; color: #64748b; margin-top: 8px; }
+  .score-msg { font-size: 1.1rem; font-weight: 600; margin-top: 16px; }
+  .section-divider { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #3b82f6; background: #1e3a5f22; border: 1px solid #1e40af33; border-radius: 6px; padding: 5px 14px; display: inline-block; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>FL 2-15 Exam Prep</h1>
+  <p>Chapter 9 — Annuities</p>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('flashcards')">Flashcards</div>
+  <div class="tab" onclick="showTab('quiz')">Practice Test</div>
+</div>
+
+<div id="tab-flashcards" class="content">
+  <div class="fc-container">
+    <div class="fc-progress" id="fc-progress">Card 1 of 1</div>
+    <div class="fc-card-wrap" onclick="flipCard()">
+      <div class="fc-card" id="fc-card">
+        <div class="fc-face fc-front">
+          <div class="fc-label">Term</div>
+          <div class="fc-text" id="fc-front-text"></div>
+          <div class="fc-hint">click to reveal definition</div>
+        </div>
+        <div class="fc-face fc-back">
+          <div class="fc-label">Definition</div>
+          <div class="fc-text" id="fc-back-text"></div>
+        </div>
+      </div>
+    </div>
+    <div class="fc-controls">
+      <button class="btn btn-ghost btn-sm" onclick="prevCard()">Prev</button>
+      <button class="btn btn-primary" onclick="nextCard()">Next</button>
+      <button class="btn btn-ghost btn-sm" onclick="shuffleCards()">Shuffle</button>
+    </div>
+  </div>
+</div>
+
+<div id="tab-quiz" class="content" style="display:none;">
+  <div id="quiz-area"></div>
+</div>
+
+<script>
+const cards = [
+
+  // ── LO 1: What Is an Annuity ──
+  { s: "LO1 — Annuity Basics", q: "Annuity", a: "A financial product designed to provide a STEADY INCOME STREAM. Only LIFE INSURANCE COMPANIES can offer annuities. Primary purpose: protect against OUTLIVING ASSETS." },
+  { s: "LO1 — Annuity Basics", q: "Annuity vs. Life Insurance", a: "LIFE INSURANCE: creates an estate (protects against dying too soon). ANNUITY: systematically LIQUIDATES an estate (protects against living too long)." },
+  { s: "LO1 — Annuity Basics", q: "Accumulation Phase", a: "The period when PREMIUMS ARE PAID and funds grow TAX-DEFERRED. Also called the pay-in phase." },
+  { s: "LO1 — Annuity Basics", q: "Annuitization", a: "Converting accumulated funds into a GUARANTEED INCOME STREAM. This is IRREVERSIBLE — once annuitized, you cannot get the lump sum back." },
+  { s: "LO1 — Annuity Basics", q: "Risk Sharing Contract", a: "PREMATURE DEATH benefits the insurer (fewer payments made). LONGEVITY benefits the annuitant (more payments received). Risk is shared between both parties." },
+
+  // ── LO 2: Premium Payment Types ──
+  { s: "LO2 — Premium Types", q: "Single Premium Annuity", a: "Funded with ONE LUMP-SUM payment. Principal created IMMEDIATELY. No additional deposits permitted. Can be IMMEDIATE or DEFERRED." },
+  { s: "LO2 — Premium Types", q: "Level Premium Annuity", a: "CONSTANT payment amounts on a FIXED SCHEDULE. A type of periodic premium annuity." },
+  { s: "LO2 — Premium Types", q: "Flexible Premium Annuity", a: "VARIABLE payment amounts determined by the OWNER. Most popular type: Flexible Premium Deferred Annuity (FPDA)." },
+  { s: "LO2 — Premium Types", q: "Can periodic premium annuities provide immediate income?", a: "NO. Periodic premium annuities CANNOT provide immediate income — they must complete the pay-in phase first. Only SINGLE PREMIUM annuities can be immediate." },
+
+  // ── LO 3: Immediate vs. Deferred ──
+  { s: "LO3 — Immediate vs. Deferred", q: "Immediate Annuity", a: "Benefits begin within 30 DAYS to 12 MONTHS of purchase. Must be funded with SINGLE PREMIUM ONLY. NO accumulation period. Payments include both PRINCIPAL and INTEREST." },
+  { s: "LO3 — Immediate vs. Deferred", q: "Deferred Annuity", a: "Benefits begin MORE THAN ONE YEAR in the future. Can be funded with ANY premium payment plan. Includes an ACCUMULATION PERIOD. Emphasizes SAFETY OF PRINCIPAL and TAX-DEFERRED growth." },
+  { s: "LO3 — Immediate vs. Deferred", q: "Deferred annuity distribution options", a: "(1) LUMP-SUM distribution. (2) SYSTEMATIC WITHDRAWALS. (3) ANNUITIZATION (convert to income stream)." },
+  { s: "LO3 — Immediate vs. Deferred", q: "Who should buy an immediate annuity?", a: "Those needing IMMEDIATE INCOME — typically RETIREES or DISABLED individuals who want guaranteed payments right away." },
+
+  // ── LO 4: Fixed, Variable & Indexed ──
+  { s: "LO4 — Annuity Types", q: "Fixed Annuity", a: "Guarantees a PREDETERMINED income amount. INSURANCE COMPANY assumes investment risk. Funds in insurer's GENERAL ACCOUNT. Conservative, guaranteed principal. Most affected by INFLATION." },
+  { s: "LO4 — Annuity Types", q: "Variable Annuity", a: "Payments FLUCTUATE based on INVESTMENT PERFORMANCE. CONTRACT OWNER assumes investment risk. Includes a SEPARATE ACCOUNT for investments. Requires SECURITIES LICENSE (Series 6 or 7) to sell." },
+  { s: "LO4 — Annuity Types", q: "Variable Annuity — Units", a: "ACCUMULATION UNITS: used during the pay-in phase (like shares being purchased). ANNUITY UNITS: used during the payout phase (determine payment amounts). Better INFLATION PROTECTION potential." },
+  { s: "LO4 — Annuity Types", q: "Equity-Indexed Annuity", a: "A FIXED annuity with interest linked to a MARKET INDEX (e.g., S&P 500). PRINCIPAL GUARANTEED with minimum return. Participate in market GAINS without risk of market DECLINE." },
+  { s: "LO4 — Annuity Types", q: "Participation Rate", a: "Limits the PERCENTAGE of index gains credited to an equity-indexed annuity. Example: 80% participation rate means you receive 80% of the index's gain." },
+  { s: "LO4 — Annuity Types", q: "Fixed vs. Variable — Who bears risk?", a: "FIXED: INSURER bears investment risk, guarantees returns. VARIABLE: OWNER bears investment risk, returns fluctuate. Fixed = general account. Variable = separate account." },
+  { s: "LO4 — Annuity Types", q: "Who can sell variable annuities?", a: "Requires a SECURITIES LICENSE (Series 6 or 7) in addition to an insurance license. Because the separate account is considered a security." },
+
+  // ── LO 5: Settlement Options ──
+  { s: "LO5 — Settlement Options", q: "Straight Life Annuity (Pure Life)", a: "Payments for the ANNUITANT'S LIFETIME ONLY. NO refund or survivorship benefits. HIGHEST monthly payment amount. Payments CEASE upon death." },
+  { s: "LO5 — Settlement Options", q: "Annuity (Period) Certain", a: "Payments for a SPECIFIED PERIOD ONLY. If annuitant dies before period ends, beneficiary receives remaining payments. Payments STOP after the period even if annuitant is still alive." },
+  { s: "LO5 — Settlement Options", q: "Life Annuity with Period Certain", a: "Guaranteed payments for LIFE or a SPECIFIED PERIOD, whichever is LONGER. Beneficiary gets remaining payments if annuitant dies during the period. No payments to beneficiary if annuitant outlives the period." },
+  { s: "LO5 — Settlement Options", q: "Life with Installment Refund", a: "Guarantees RETURN OF PRINCIPAL. Continues the SAME MONTHLY PAYMENTS to the beneficiary until total principal is repaid." },
+  { s: "LO5 — Settlement Options", q: "Life with Cash Refund", a: "Guarantees RETURN OF PRINCIPAL. Pays the REMAINING PRINCIPAL in a LUMP SUM to the beneficiary." },
+  { s: "LO5 — Settlement Options", q: "Installment Refund vs. Cash Refund", a: "Both guarantee return of principal. INSTALLMENT: continues same monthly payments to beneficiary. CASH: pays remaining balance as a lump sum. Both are subtypes of life with refund option." },
+  { s: "LO5 — Settlement Options", q: "Which settlement option has the highest payment?", a: "STRAIGHT LIFE (pure life) has the HIGHEST monthly payment because there is NO refund or survivor benefit — all risk of early death is on the annuitant." },
+
+  // ── LO 6: Parties to an Annuity ──
+  { s: "LO6 — Parties", q: "Annuity Contract Owner", a: "The person who PURCHASES the annuity and controls CONTRACT RIGHTS (withdrawals, beneficiary changes, etc.)." },
+  { s: "LO6 — Parties", q: "Annuitant", a: "The person whose LIFE EXPECTANCY determines benefit payments. Only the ANNUITANT'S AGE is considered for payment calculations." },
+  { s: "LO6 — Parties", q: "Owner vs. Annuitant", a: "Can be the SAME or DIFFERENT people. The OWNER controls the contract. The ANNUITANT'S life determines payments. If no beneficiary named, proceeds go to the OWNER'S ESTATE." },
+
+  // ── LO 7: Surrender Charges ──
+  { s: "LO7 — Surrender Charges", q: "Surrender Charges (Back-End Loads)", a: "Assessed when the owner CANCELS the annuity or withdraws EXCESS funds. Typically DECREASE over time (e.g., 8% year 1, decreasing 1% annually). Designed to DISCOURAGE early withdrawals." },
+  { s: "LO7 — Surrender Charges", q: "Free Withdrawal Allowance", a: "Usually permitted up to a SPECIFIED PERCENTAGE (e.g., 10%) of the contract value per year without surrender charges." },
+  { s: "LO7 — Surrender Charges", q: "Surrender charges vs. tax penalty", a: "SURRENDER CHARGE: charged by the insurer, decreases over time. TAX PENALTY: 10% FEDERAL penalty for withdrawals before age 59 1/2. These are SEPARATE — both may apply." },
+  { s: "LO7 — Surrender Charges", q: "Surrender charge waivers", a: "May be waived for DEATH, DISABILITY, or EXTENDED MEDICAL CARE." },
+  { s: "LO7 — Surrender Charges", q: "Non-Forfeiture Value", a: "Fund value MINUS surrender charges. Before annuitization: equals premiums paid + interest - withdrawals/charges." },
+
+  // ── LO 8: Annuity Taxation ──
+  { s: "LO8 — Taxation", q: "Qualified vs. Non-Qualified Annuities", a: "QUALIFIED: premiums may be TAX-DEDUCTIBLE (part of a qualified plan like IRA/401k). NON-QUALIFIED: premiums NOT deductible (after-tax dollars). BOTH: interest accumulates TAX-DEFERRED." },
+  { s: "LO8 — Taxation", q: "Exclusion Ratio", a: "Determines the TAX-FREE portion of annuity payments. Formula: INVESTMENT IN CONTRACT / EXPECTED RETURN. The excluded portion represents return of principal (not taxable)." },
+  { s: "LO8 — Taxation", q: "Early Withdrawal Penalty", a: "Withdrawals before age 59 1/2 are subject to 10% PENALTY plus ORDINARY INCOME TAX. Exceptions: disability, death, age 59 1/2+, immediate annuity, qualified pension plan." },
+  { s: "LO8 — Taxation", q: "LIFO Taxation", a: "Post-1982 annuity withdrawals are taxed on a LIFO (Last In, First Out) basis — EARNINGS come out first and are taxable. Principal comes out last." },
+  { s: "LO8 — Taxation", q: "1035 Exchange for Annuities", a: "TAX-FREE exchange of an annuity for ANOTHER ANNUITY. Life insurance CAN be exchanged for an annuity tax-free. An annuity CANNOT be exchanged for life insurance tax-free." },
+  { s: "LO8 — Taxation", q: "Annuity tax summary", a: "Accumulation: TAX-DEFERRED. Withdrawals: LIFO (earnings first, taxable). Before 59 1/2: 10% penalty. Exclusion ratio: determines tax-free portion of payments. 1035: annuity-to-annuity or life-to-annuity only." },
+
+  // ── LO 9: Applications of Annuities ──
+  { s: "LO9 — Applications", q: "Individual uses for annuities", a: "RETIREMENT INCOME planning. TAX-DEFERRED growth. Funding IRAs and qualified plans. EDUCATION funding. STRUCTURED SETTLEMENTS for legal awards. LOTTERY WINNINGS distribution." },
+  { s: "LO9 — Applications", q: "Business uses for annuities", a: "EXECUTIVE COMPENSATION. Business SUCCESSION PLANNING. KEY PERSON protection. Corporate PENSION PLANS. Funding future obligations. Employee RETENTION." },
+
+  // ── LO 10: Suitability ──
+  { s: "LO10 — Suitability", q: "Annuity suitability factors", a: "AGE of applicant/spouse. Annual INCOME. Financial SITUATION and needs. Financial EXPERIENCE. Financial OBJECTIVES. INTENDED USE. TIME HORIZON. Existing ASSETS. LIQUIDITY needs. RISK TOLERANCE." },
+  { s: "LO10 — Suitability", q: "Senior consumer suitability", a: "Consumers age 65+ require an ADDITIONAL SUITABILITY ASSESSMENT. Producers must have REASONABLE GROUNDS for recommendations. State regulations establish special standards." },
+  { s: "LO10 — Suitability", q: "FPDA — Most Popular Annuity", a: "FLEXIBLE PREMIUM DEFERRED ANNUITY is the MOST POPULAR annuity product. Flexible payments + deferred income = maximum flexibility for accumulation." },
+];
+
+let currentIdx = 0;
+let flipped = false;
+let shuffled = [...cards];
+
+function renderCard() {
+  const c = shuffled[currentIdx];
+  document.getElementById('fc-front-text').textContent = c.q;
+  document.getElementById('fc-back-text').textContent  = c.a;
+  document.getElementById('fc-progress').textContent = `Card ${currentIdx + 1} of ${shuffled.length}`;
+  const card = document.getElementById('fc-card');
+  card.classList.remove('flipped');
+  flipped = false;
+}
+
+function flipCard() {
+  const card = document.getElementById('fc-card');
+  flipped = !flipped;
+  card.classList.toggle('flipped', flipped);
+}
+
+function nextCard() {
+  if (currentIdx < shuffled.length - 1) currentIdx++;
+  else currentIdx = 0;
+  renderCard();
+}
+
+function prevCard() {
+  if (currentIdx > 0) currentIdx--;
+  else currentIdx = shuffled.length - 1;
+  renderCard();
+}
+
+function shuffleCards() {
+  shuffled = [...cards].sort(() => Math.random() - 0.5);
+  currentIdx = 0;
+  renderCard();
+}
+
+renderCard();
+
+// ──────────────────────────────────────────
+// QUIZ DATA
+// ──────────────────────────────────────────
+const questions = [
+  {
+    section: "Annuity Basics",
+    q: "The primary purpose of an annuity is to:",
+    opts: ["Create an estate for heirs","Protect against outliving one's assets","Provide life insurance coverage","Pay off debts at death"],
+    ans: 1,
+    exp: "The primary purpose of an annuity is to protect against outliving assets through guaranteed payments — the opposite of life insurance."
+  },
+  {
+    section: "Annuity Basics",
+    q: "Which of the following can issue annuities?",
+    opts: ["Banks","Brokerage firms","Life insurance companies only","Any financial institution"],
+    ans: 2,
+    exp: "Only life insurance companies can offer annuities."
+  },
+  {
+    section: "Annuity Basics",
+    q: "Life insurance creates an estate, while an annuity:",
+    opts: ["Also creates an estate","Systematically liquidates an estate","Has no effect on an estate","Transfers an estate to the government"],
+    ans: 1,
+    exp: "Life insurance creates an estate (pays at death), while annuities systematically liquidate an estate (pays during life)."
+  },
+  {
+    section: "Annuity Basics",
+    q: "Annuitization is:",
+    opts: ["Canceling an annuity contract","Converting accumulated funds into a guaranteed income stream","Transferring ownership of an annuity","Making additional premium payments"],
+    ans: 1,
+    exp: "Annuitization converts accumulated funds into a guaranteed income stream and is irreversible."
+  },
+  {
+    section: "Premium Payment Types",
+    q: "Which type of annuity can provide immediate income?",
+    opts: ["Level premium annuity","Flexible premium annuity","Single premium annuity only","Any periodic premium annuity"],
+    ans: 2,
+    exp: "Only single premium annuities can be immediate. Periodic premium annuities must complete the pay-in phase first."
+  },
+  {
+    section: "Premium Payment Types",
+    q: "The most popular annuity product is the:",
+    opts: ["Single Premium Immediate Annuity","Fixed Premium Deferred Annuity","Flexible Premium Deferred Annuity (FPDA)","Variable Immediate Annuity"],
+    ans: 2,
+    exp: "The Flexible Premium Deferred Annuity (FPDA) is the most popular annuity product due to its flexible payments and tax-deferred growth."
+  },
+  {
+    section: "Immediate vs. Deferred",
+    q: "An immediate annuity begins paying benefits within:",
+    opts: ["7 days of purchase","30 days to 12 months of purchase","1 to 5 years of purchase","At the owner's retirement age"],
+    ans: 1,
+    exp: "Immediate annuities begin paying benefits within 30 days to 12 months of purchase."
+  },
+  {
+    section: "Immediate vs. Deferred",
+    q: "A deferred annuity emphasizes:",
+    opts: ["Immediate income","Safety of principal and tax-deferred growth","High-risk investments","Short-term liquidity"],
+    ans: 1,
+    exp: "Deferred annuities emphasize safety of principal and tax-deferred growth during the accumulation period."
+  },
+  {
+    section: "Immediate vs. Deferred",
+    q: "Which of the following is NOT a distribution option for a deferred annuity?",
+    opts: ["Lump-sum distribution","Systematic withdrawals","Annuitization","Automatic conversion to life insurance"],
+    ans: 3,
+    exp: "Deferred annuity distribution options include lump-sum, systematic withdrawals, and annuitization — not conversion to life insurance."
+  },
+  {
+    section: "Fixed, Variable & Indexed Annuities",
+    q: "In a fixed annuity, who assumes the investment risk?",
+    opts: ["The contract owner","The annuitant","The insurance company","The beneficiary"],
+    ans: 2,
+    exp: "In a fixed annuity, the insurance company assumes the investment risk and guarantees a predetermined income amount."
+  },
+  {
+    section: "Fixed, Variable & Indexed Annuities",
+    q: "Selling variable annuities requires:",
+    opts: ["Only an insurance license","A securities license (Series 6 or 7) plus insurance license","Only a Series 7 license","No special license"],
+    ans: 1,
+    exp: "Variable annuities require a securities license (Series 6 or 7) in addition to an insurance license because the separate account is a security."
+  },
+  {
+    section: "Fixed, Variable & Indexed Annuities",
+    q: "Variable annuity funds are held in the insurer's:",
+    opts: ["General account","Separate account","Trust account","Escrow account"],
+    ans: 1,
+    exp: "Variable annuity funds are held in a separate account for investments, distinct from the insurer's general account."
+  },
+  {
+    section: "Fixed, Variable & Indexed Annuities",
+    q: "Which annuity type is MOST affected by inflation?",
+    opts: ["Variable annuity","Equity-indexed annuity","Fixed annuity","All are equally affected"],
+    ans: 2,
+    exp: "Fixed annuities are most affected by inflation because the payment amount never changes, losing purchasing power over time."
+  },
+  {
+    section: "Fixed, Variable & Indexed Annuities",
+    q: "An equity-indexed annuity's participation rate determines:",
+    opts: ["The minimum guaranteed return","The percentage of index gains credited to the annuity","The surrender charge schedule","The annuitant's tax bracket"],
+    ans: 1,
+    exp: "The participation rate limits the percentage of index gains credited to the annuity (e.g., 80% participation = 80% of the gain)."
+  },
+  {
+    section: "Fixed, Variable & Indexed Annuities",
+    q: "During the pay-in phase, variable annuity values are measured in:",
+    opts: ["Annuity units","Accumulation units","Dollar amounts only","Share values"],
+    ans: 1,
+    exp: "During the pay-in phase, variable annuities use accumulation units. During the payout phase, they convert to annuity units."
+  },
+  {
+    section: "Settlement Options",
+    q: "Which annuity settlement option provides the HIGHEST monthly payment?",
+    opts: ["Life annuity with period certain","Straight life (pure life) annuity","Life with installment refund","Joint and survivor"],
+    ans: 1,
+    exp: "Straight life (pure life) provides the highest monthly payment because there are no refund or survivorship benefits."
+  },
+  {
+    section: "Settlement Options",
+    q: "An annuity period certain pays:",
+    opts: ["For the annuitant's lifetime","For a specified period only","Until the principal is exhausted","Until the annuitant reaches age 85"],
+    ans: 1,
+    exp: "An annuity period certain pays for a specified period only — payments stop after the period even if the annuitant is still alive."
+  },
+  {
+    section: "Settlement Options",
+    q: "A life annuity with period certain guarantees payments for:",
+    opts: ["The period certain only","Life only","Life or the period certain, whichever is LONGER","Life or the period certain, whichever is shorter"],
+    ans: 2,
+    exp: "Life annuity with period certain guarantees payments for life or a specified period, whichever is longer."
+  },
+  {
+    section: "Settlement Options",
+    q: "The difference between installment refund and cash refund is:",
+    opts: ["Installment refund pays more per month","Cash refund pays the remaining principal as a lump sum; installment continues monthly payments","Cash refund guarantees more total payments","There is no difference"],
+    ans: 1,
+    exp: "Cash refund pays the remaining principal in a lump sum to the beneficiary. Installment refund continues the same monthly payments until the principal is returned."
+  },
+  {
+    section: "Parties to an Annuity",
+    q: "The person whose life expectancy determines annuity payment amounts is the:",
+    opts: ["Owner","Beneficiary","Annuitant","Insurer"],
+    ans: 2,
+    exp: "The annuitant's life expectancy determines benefit payments — only the annuitant's age is considered for payment calculations."
+  },
+  {
+    section: "Parties to an Annuity",
+    q: "If no beneficiary is named on an annuity, proceeds go to:",
+    opts: ["The state","The insurer","The owner's estate","The annuitant's spouse"],
+    ans: 2,
+    exp: "If no beneficiary is named, annuity proceeds go to the owner's estate."
+  },
+  {
+    section: "Surrender Charges",
+    q: "Surrender charges on an annuity typically:",
+    opts: ["Increase over time","Remain constant","Decrease over time","Are charged only at annuitization"],
+    ans: 2,
+    exp: "Surrender charges typically decrease over time (e.g., 8% in year 1, decreasing 1% annually until they reach 0%)."
+  },
+  {
+    section: "Surrender Charges",
+    q: "Free withdrawals from an annuity are typically permitted up to:",
+    opts: ["5% of contract value","10% of contract value","25% of contract value","50% of contract value"],
+    ans: 1,
+    exp: "Free withdrawals are usually permitted up to a specified percentage, commonly 10%, of the contract value per year without surrender charges."
+  },
+  {
+    section: "Surrender Charges",
+    q: "Surrender charges may be waived for all of the following EXCEPT:",
+    opts: ["Death","Disability","Extended medical care","Job loss"],
+    ans: 3,
+    exp: "Surrender charges may be waived for death, disability, or extended medical care — but typically not for job loss."
+  },
+  {
+    section: "Annuity Taxation",
+    q: "Interest earned in an annuity during the accumulation phase is:",
+    opts: ["Taxed annually","Tax-deferred","Tax-free permanently","Taxed at capital gains rates"],
+    ans: 1,
+    exp: "All annuities — both qualified and non-qualified — accumulate interest on a tax-deferred basis."
+  },
+  {
+    section: "Annuity Taxation",
+    q: "The exclusion ratio determines:",
+    opts: ["The surrender charge amount","The tax-free portion of annuity payments","The participation rate","The penalty for early withdrawal"],
+    ans: 1,
+    exp: "The exclusion ratio (investment in contract / expected return) determines the tax-free portion of annuity payments."
+  },
+  {
+    section: "Annuity Taxation",
+    q: "Withdrawals from a non-qualified annuity before age 59 1/2 are subject to:",
+    opts: ["No penalty","A 5% penalty","A 10% penalty plus ordinary income tax","Capital gains tax only"],
+    ans: 2,
+    exp: "Early withdrawals before age 59 1/2 are subject to a 10% federal penalty plus ordinary income tax."
+  },
+  {
+    section: "Annuity Taxation",
+    q: "Post-1982 annuity withdrawals are taxed on a LIFO basis, which means:",
+    opts: ["Principal comes out first","Earnings come out first and are taxable","All withdrawals are tax-free","Only half of each withdrawal is taxable"],
+    ans: 1,
+    exp: "LIFO (Last In, First Out) means earnings come out first and are taxable. Principal comes out last."
+  },
+  {
+    section: "Annuity Taxation",
+    q: "Which of the following 1035 exchanges is NOT permitted tax-free?",
+    opts: ["Annuity to annuity","Life insurance to annuity","Annuity to life insurance","Life insurance to life insurance"],
+    ans: 2,
+    exp: "An annuity cannot be exchanged for life insurance tax-free. Life insurance to annuity and annuity to annuity are permitted."
+  },
+  {
+    section: "Annuity Taxation",
+    q: "Which of the following is an exception to the 10% early withdrawal penalty?",
+    opts: ["Job change","Home purchase","Disability","Education expenses"],
+    ans: 2,
+    exp: "Exceptions to the early withdrawal penalty include disability, death, age 59 1/2+, immediate annuity, and qualified pension plan."
+  },
+  {
+    section: "Suitability",
+    q: "Senior consumers (age 65+) purchasing annuities require:",
+    opts: ["No special considerations","An additional suitability assessment","Approval from their children","A court order"],
+    ans: 1,
+    exp: "Senior consumers age 65+ require an additional suitability assessment, and producers must have reasonable grounds for their recommendations."
+  },
+  {
+    section: "Suitability",
+    q: "All of the following are annuity suitability factors EXCEPT:",
+    opts: ["Age of applicant","Annual household income","Applicant's political affiliation","Risk tolerance"],
+    ans: 2,
+    exp: "Suitability factors include age, income, financial situation, experience, objectives, time horizon, assets, liquidity needs, and risk tolerance — not political affiliation."
+  },
+];
+
+// ── Quiz Engine ──
+let answered = {};
+let submitted = false;
+let score = 0;
+
+function buildQuiz() {
+  answered = {};
+  submitted = false;
+  score = 0;
+  const area = document.getElementById('quiz-area');
+  let html = `<div class="quiz-header"><div class="quiz-meta">${questions.length} Questions</div><div class="score-badge" id="score-live">0/${questions.length} answered</div></div>`;
+  let lastSection = '';
+
+  questions.forEach((q, i) => {
+    if (q.section !== lastSection) {
+      html += `<div class="section-divider">${q.section}</div>`;
+      lastSection = q.section;
+    }
+    html += `<div class="q-card" id="qcard-${i}">
+      <div class="q-num">Question ${i + 1}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="options">`;
+    const letters = ['A','B','C','D'];
+    q.opts.forEach((opt, j) => {
+      html += `<div class="opt" id="opt-${i}-${j}" onclick="selectAnswer(${i},${j})">
+        <span class="opt-letter">${letters[j]}</span><span>${opt}</span>
+      </div>`;
+    });
+    html += `</div><div class="explanation" id="exp-${i}">${q.exp}</div></div>`;
+  });
+
+  html += `<div style="text-align:center; margin-top:32px;">
+    <button class="btn btn-primary" onclick="submitQuiz()" id="submit-btn">Submit & Score</button>
+  </div><div id="results-area"></div>`;
+  area.innerHTML = html;
+}
+
+function selectAnswer(qIdx, optIdx) {
+  if (submitted) return;
+  answered[qIdx] = optIdx;
+  questions[qIdx].opts.forEach((_, j) => {
+    const el = document.getElementById(`opt-${qIdx}-${j}`);
+    el.style.borderColor = j === optIdx ? '#3b82f6' : '';
+    el.style.background  = j === optIdx ? '#1e3a5f' : '';
+    el.style.color       = j === optIdx ? '#e2e8f0' : '';
+  });
+  updateLiveScore();
+}
+
+function updateLiveScore() {
+  let correct = 0;
+  Object.keys(answered).forEach(i => { if (answered[i] === questions[i].ans) correct++; });
+  document.getElementById('score-live').textContent = `${correct}/${Object.keys(answered).length} answered`;
+}
+
+function submitQuiz() {
+  submitted = true;
+  score = 0;
+  questions.forEach((q, i) => {
+    q.opts.forEach((_, j) => {
+      const el = document.getElementById(`opt-${i}-${j}`);
+      el.classList.add('disabled');
+      if (j === q.ans) {
+        el.classList.add('correct');
+      } else if (answered[i] === j) {
+        el.classList.add('wrong');
+      }
+    });
+    document.getElementById(`exp-${i}`).classList.add('show');
+    if (answered[i] === q.ans) score++;
+  });
+
+  const pct = Math.round((score / questions.length) * 100);
+  let msg, color;
+  if (pct >= 90)      { msg = "Excellent! You're exam-ready on this chapter."; color = "#4ade80"; }
+  else if (pct >= 70) { msg = "Above passing threshold. Review missed questions."; color = "#facc15"; }
+  else                { msg = "Below passing threshold. Review and retry!"; color = "#f87171"; }
+
+  document.getElementById('score-live').textContent = `Score: ${score}/${questions.length} (${pct}%)`;
+  document.getElementById('submit-btn').outerHTML = `<button class="btn btn-ghost" onclick="buildQuiz()">Retake Quiz</button>`;
+  document.getElementById('results-area').innerHTML = `
+    <div class="quiz-results">
+      <div class="score-big" style="color:${color}">${pct}%</div>
+      <div class="score-sub">${score} correct out of ${questions.length}</div>
+      <div class="score-msg" style="color:${color}">${msg}</div>
+      <div style="margin-top:8px;font-size:0.85rem;color:#64748b;">Pass threshold: 70% · Scroll up to review explanations</div>
+    </div>`;
+  window.scrollTo({ top: document.getElementById('results-area').offsetTop - 80, behavior: 'smooth' });
+}
+
+function showTab(t) {
+  document.getElementById('tab-flashcards').style.display = t === 'flashcards' ? '' : 'none';
+  document.getElementById('tab-quiz').style.display       = t === 'quiz' ? '' : 'none';
+  document.querySelectorAll('.tab').forEach((el, i) => {
+    el.classList.toggle('active', (i === 0 && t === 'flashcards') || (i === 1 && t === 'quiz'));
+  });
+  if (t === 'quiz' && !document.querySelector('.q-card')) buildQuiz();
+}
+</script>
+</body>
+</html>

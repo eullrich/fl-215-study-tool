@@ -20,6 +20,7 @@ CHAPTERS = {
     6: "Premiums, Settlements, Beneficiaries & Taxation",
     7: "Life Insurance Solicitation, Underwriting & Policy Delivery",
     8: "Group Life Insurance",
+    9: "Annuities",
 }
 
 
