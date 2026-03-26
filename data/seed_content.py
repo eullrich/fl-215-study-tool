@@ -24,6 +24,7 @@ CHAPTERS = {
     10: "Uses of Life Insurance & Business Planning",
     11: "Retirement Plans & IRAs",
     12: "Social Security",
+    13: "Health & Accident Insurance Fundamentals",
 }
 
 

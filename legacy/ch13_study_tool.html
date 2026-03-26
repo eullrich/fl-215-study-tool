@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FL 2-15 Exam | Chapter 13 Study Tool</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+  .header { background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%); padding: 24px 32px; border-bottom: 1px solid #1e40af44; }
+  .header h1 { font-size: 1.5rem; font-weight: 700; color: #60a5fa; letter-spacing: -0.02em; }
+  .header p { font-size: 0.875rem; color: #94a3b8; margin-top: 4px; }
+  .tabs { display: flex; gap: 0; padding: 20px 32px 0; border-bottom: 1px solid #1e293b; }
+  .tab { padding: 10px 24px; border-radius: 8px 8px 0 0; cursor: pointer; font-size: 0.875rem; font-weight: 600; border: 1px solid transparent; border-bottom: none; transition: all 0.2s; color: #64748b; }
+  .tab.active { background: #1e293b; color: #60a5fa; border-color: #1e40af44; }
+  .tab:hover:not(.active) { color: #94a3b8; }
+  .content { padding: 32px; max-width: 860px; margin: 0 auto; }
+  .fc-container { display: flex; flex-direction: column; align-items: center; gap: 24px; }
+  .fc-progress { font-size: 0.8rem; color: #64748b; letter-spacing: 0.05em; text-transform: uppercase; }
+  .fc-card-wrap { width: 100%; max-width: 640px; perspective: 1200px; cursor: pointer; user-select: none; }
+  .fc-card { position: relative; width: 100%; height: 220px; transition: transform 0.55s cubic-bezier(.4,2,.6,1); transform-style: preserve-3d; }
+  .fc-card.flipped { transform: rotateY(180deg); }
+  .fc-face { position: absolute; inset: 0; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 28px 36px; text-align: center; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+  .fc-front { background: linear-gradient(135deg, #1e3a5f, #1e293b); border: 1px solid #2563eb44; box-shadow: 0 8px 32px #0004; }
+  .fc-back  { background: linear-gradient(135deg, #14532d, #1e293b); border: 1px solid #16a34a44; box-shadow: 0 8px 32px #0004; transform: rotateY(180deg); }
+  .fc-label { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px; opacity: 0.5; }
+  .fc-text  { font-size: 1.15rem; font-weight: 600; line-height: 1.5; color: #f1f5f9; }
+  .fc-hint  { font-size: 0.75rem; color: #64748b; margin-top: 14px; }
+  .fc-controls { display: flex; gap: 12px; align-items: center; }
+  .btn { padding: 10px 22px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; transition: all 0.15s; }
+  .btn-primary { background: #2563eb; color: #fff; }
+  .btn-primary:hover { background: #1d4ed8; }
+  .btn-ghost { background: #1e293b; color: #94a3b8; border: 1px solid #334155; }
+  .btn-ghost:hover { background: #334155; color: #e2e8f0; }
+  .btn-sm { padding: 7px 16px; font-size: 0.8rem; }
+  .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+  .quiz-meta { font-size: 0.8rem; color: #64748b; }
+  .score-badge { background: #1e293b; border: 1px solid #334155; border-radius: 999px; padding: 4px 14px; font-size: 0.8rem; font-weight: 700; color: #94a3b8; }
+  .q-card { background: #1e293b; border: 1px solid #334155; border-radius: 14px; padding: 28px; margin-bottom: 20px; }
+  .q-num { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #64748b; margin-bottom: 10px; }
+  .q-text { font-size: 1rem; font-weight: 600; color: #f1f5f9; line-height: 1.55; margin-bottom: 20px; }
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .opt { padding: 12px 18px; border-radius: 9px; border: 1.5px solid #334155; background: #0f172a; cursor: pointer; font-size: 0.9rem; color: #cbd5e1; transition: all 0.15s; display: flex; align-items: flex-start; gap: 10px; }
+  .opt:hover:not(.disabled) { border-color: #3b82f6; color: #e2e8f0; background: #1e3a5f; }
+  .opt.correct { border-color: #22c55e; background: #14532d22; color: #4ade80; }
+  .opt.wrong   { border-color: #ef4444; background: #7f1d1d22; color: #f87171; }
+  .opt.disabled { cursor: default; pointer-events: none; }
+  .opt-letter { font-weight: 700; opacity: 0.5; min-width: 18px; }
+  .explanation { margin-top: 14px; padding: 12px 16px; border-radius: 8px; background: #0f172a; border-left: 3px solid #3b82f6; font-size: 0.85rem; color: #94a3b8; line-height: 1.5; display: none; }
+  .explanation.show { display: block; }
+  .quiz-results { text-align: center; padding: 40px 20px; }
+  .score-big { font-size: 4rem; font-weight: 800; color: #60a5fa; line-height: 1; }
+  .score-sub { font-size: 1rem; color: #64748b; margin-top: 8px; }
+  .score-msg { font-size: 1.1rem; font-weight: 600; margin-top: 16px; }
+  .section-divider { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #3b82f6; background: #1e3a5f22; border: 1px solid #1e40af33; border-radius: 6px; padding: 5px 14px; display: inline-block; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>FL 2-15 Exam Prep</h1>
+  <p>Chapter 13 — Health & Accident Insurance Fundamentals</p>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('flashcards')">Flashcards</div>
+  <div class="tab" onclick="showTab('quiz')">Practice Test</div>
+</div>
+
+<div id="tab-flashcards" class="content">
+  <div class="fc-container">
+    <div class="fc-progress" id="fc-progress">Card 1 of 1</div>
+    <div class="fc-card-wrap" onclick="flipCard()">
+      <div class="fc-card" id="fc-card">
+        <div class="fc-face fc-front">
+          <div class="fc-label">Term</div>
+          <div class="fc-text" id="fc-front-text"></div>
+          <div class="fc-hint">click to reveal definition</div>
+        </div>
+        <div class="fc-face fc-back">
+          <div class="fc-label">Definition</div>
+          <div class="fc-text" id="fc-back-text"></div>
+        </div>
+      </div>
+    </div>
+    <div class="fc-controls">
+      <button class="btn btn-ghost btn-sm" onclick="prevCard()">Prev</button>
+      <button class="btn btn-primary" onclick="nextCard()">Next</button>
+      <button class="btn btn-ghost btn-sm" onclick="shuffleCards()">Shuffle</button>
+    </div>
+  </div>
+</div>
+
+<div id="tab-quiz" class="content" style="display:none;">
+  <div id="quiz-area"></div>
+</div>
+
+<script>
+const cards = [
+
+  // ── LO 1: Perils — Illness vs. Accident ──
+  { s: "LO1 — Perils", q: "Morbidity", a: "The risk of loss due to ILLNESS or DISABILITY. Morbidity = sickness/disability risk. Mortality = death risk." },
+  { s: "LO1 — Perils", q: "Illness vs. Accident", a: "ILLNESS: arises from INTERNAL factors (sickness/disease), can have sudden onset or develop over time. ACCIDENT: an UNINTENDED occurrence caused by an EXTERNAL source resulting in a loss." },
+  { s: "LO1 — Perils", q: "Accidental Bodily Injury vs. Accidental Means", a: "ACCIDENTAL BODILY INJURY (accidental result): only the INJURY must be unintentional. ACCIDENTAL MEANS: BOTH the cause AND result must be unintentional. Accidental means is more restrictive." },
+
+  // ── LO 2: Five Major Loss Types ──
+  { s: "LO2 — Loss Types", q: "Medical Expense Insurance", a: "REIMBURSEMENT for hospital, surgical, and physician expenses. Covers healthcare costs incurred due to illness or injury." },
+  { s: "LO2 — Loss Types", q: "Disability Insurance", a: "INCOME REPLACEMENT for lost wages due to disabling disease or injury. Typically replaces 60-70% OF EARNINGS." },
+  { s: "LO2 — Loss Types", q: "Dental Expense Insurance", a: "Coverage for DIAGNOSTIC, PREVENTIVE, and regular dental care. Focuses on prevention and routine treatment." },
+  { s: "LO2 — Loss Types", q: "AD&D (Accidental Death & Dismemberment)", a: "Pays LUMP-SUM benefits for accidental death or dismemberment. PRINCIPAL SUM = death benefit. CAPITAL SUM = dismemberment benefit. Accident must be the SOLE CAUSE of loss." },
+  { s: "LO2 — Loss Types", q: "Long-Term Care Insurance", a: "Coverage for individuals who have lost the ability to complete DAILY TASKS. Covers physical or cognitive losses from ORGANIC causes — NOT psychological conditions." },
+  { s: "LO2 — Loss Types", q: "Five major health insurance loss types", a: "(1) MEDICAL EXPENSE: healthcare costs. (2) DISABILITY: income replacement. (3) DENTAL: diagnostic/preventive care. (4) ACCIDENTAL INJURY: AD&D lump sum. (5) LONG-TERM CARE: daily living assistance." },
+
+  // ── LO 3: Individual vs. Group Health ──
+  { s: "LO3 — Individual vs. Group", q: "Individual Health Insurance", a: "DIRECT contract between insured and company. Requires APPLICATION and EVIDENCE OF INSURABILITY. Customizable but HIGHER administrative costs." },
+  { s: "LO3 — Individual vs. Group", q: "Group Health Insurance", a: "Contract between insurer and GROUP (employer, association). STANDARDIZED coverage. Premiums based on GROUP RISK. LOWER administrative costs. Subject to COBRA regulations." },
+  { s: "LO3 — Individual vs. Group", q: "Experience Rating vs. Community Rating", a: "EXPERIENCE RATING: premiums based on the group's own claims history. COMMUNITY RATING: premiums based on the broader community's health costs." },
+
+  // ── LO 4: Private vs. Government Insurance ──
+  { s: "LO4 — Private vs. Government", q: "Private Health Insurance", a: "Purchased through COMMERCIAL INSURERS, service providers, and provider groups. Includes SELF-INSURED employers and associations." },
+  { s: "LO4 — Private vs. Government", q: "Government Health Insurance Programs", a: "MEDICARE: federal, for seniors (65+) and severely disabled. MEDICAID: joint federal-state, for LOW-INCOME individuals. SOCIAL SECURITY: disability insurance. ACA EXCHANGES: state-based marketplaces." },
+  { s: "LO4 — Private vs. Government", q: "Medicare vs. Medicaid", a: "MEDICARE: federal, age 65+/disabled, based on work history. MEDICAID: federal-state, LOW-INCOME, based on financial need." },
+
+  // ── LO 5: Comprehensive vs. Limited Policies ──
+  { s: "LO5 — Comprehensive vs. Limited", q: "Comprehensive Health Policy", a: "OPEN-PERIL policy covering a BROAD RANGE of losses. Covers wide range of services. Only EXCLUDES what is expressly stated." },
+  { s: "LO5 — Comprehensive vs. Limited", q: "Limited Health Policy", a: "Covers SPECIFIC accidents, sicknesses, or circumstances. Only covers what is EXPRESSLY LISTED. Requires NOTICE TO INSURED stating limited benefits. Often fills specific coverage gaps." },
+
+  // ── LO 6: Types of Limited Policies ──
+  { s: "LO6 — Limited Policies", q: "Accident-Only (AD&D) Policy", a: "Pays a LUMP SUM for accidental death or dismemberment. PRINCIPAL SUM = death benefit. CAPITAL SUM = dismemberment benefit." },
+  { s: "LO6 — Limited Policies", q: "Specified Disease Policy", a: "Benefits for SPECIFIC CONDITIONS like cancer. Only pays for the named disease(s)." },
+  { s: "LO6 — Limited Policies", q: "Critical Illness Policy", a: "LUMP-SUM payment upon DIAGNOSIS of a covered condition (heart attack, stroke, cancer, etc.). Payment regardless of actual expenses." },
+  { s: "LO6 — Limited Policies", q: "Hospital Indemnity Policy", a: "FIXED DAILY PAYMENT during hospital confinement. Pays a set amount per day regardless of actual hospital charges." },
+  { s: "LO6 — Limited Policies", q: "Credit Disability Insurance", a: "Makes the BORROWER'S LOAN PAYMENTS during disability. The LENDER is both the policy owner AND beneficiary." },
+  { s: "LO6 — Limited Policies", q: "Blanket Health Insurance", a: "Covers GROUPS with CHANGING MEMBERSHIP (teams, passengers, students). Members exposed to same risks but at DIFFERENT TIMES." },
+  { s: "LO6 — Limited Policies", q: "Short-Term Medical Insurance", a: "Up to 90 DAYS of coverage. CANNOT BE RENEWED. Provides temporary gap coverage." },
+  { s: "LO6 — Limited Policies", q: "Formulary", a: "A LIST OF MEDICATIONS covered by a prescription drug plan. Determines which drugs are covered and at what cost tier." },
+  { s: "LO6 — Limited Policies", q: "Principal Sum vs. Capital Sum (AD&D)", a: "PRINCIPAL SUM: the DEATH benefit payable under an AD&D policy. CAPITAL SUM: the amount payable for accidental DISMEMBERMENT." },
+
+  // ── LO 7: Dental Insurance ──
+  { s: "LO7 — Dental Insurance", q: "Dental Plan Types", a: "STANDALONE: separate deductibles and benefit limits. INTEGRATED: shared provider network and deductible with medical. COMBINATION: features of both." },
+  { s: "LO7 — Dental Insurance", q: "Dental Benefit Structures", a: "SCHEDULED (basic): benefits for specific services per a published schedule. NON-SCHEDULED (comprehensive): includes deductibles and coinsurance varying by service level." },
+  { s: "LO7 — Dental Insurance", q: "Dental Coverage Levels", a: "PREVENTIVE (cleanings, exams, X-rays): typically 100% coverage. BASIC (fillings, extractions, root canals): typically 80%. MAJOR (oral surgery, crowns): typically 50%." },
+  { s: "LO7 — Dental Insurance", q: "Dental Specialties", a: "ORAL SURGERY: extraction/surgical. ENDODONTICS: root canals. PERIODONTICS: gum disease. PROSTHODONTICS: dentures. ORTHODONTICS: braces. PEDIATRIC: children. ORAL PATHOLOGY: biopsies." },
+  { s: "LO7 — Dental Insurance", q: "Predetermination of Benefits", a: "Required for many dental procedures. Determines if services are MEDICALLY NECESSARY and COVERED before treatment begins." },
+  { s: "LO7 — Dental Insurance", q: "Dental Insurance Limitations", a: "ANNUAL BENEFIT MAXIMUMS (often less than $2,000). Exclusions for COSMETIC procedures, governmental services, and exotic procedures." },
+];
+
+let currentIdx = 0;
+let flipped = false;
+let shuffled = [...cards];
+
+function renderCard() {
+  const c = shuffled[currentIdx];
+  document.getElementById('fc-front-text').textContent = c.q;
+  document.getElementById('fc-back-text').textContent  = c.a;
+  document.getElementById('fc-progress').textContent = `Card ${currentIdx + 1} of ${shuffled.length}`;
+  const card = document.getElementById('fc-card');
+  card.classList.remove('flipped');
+  flipped = false;
+}
+
+function flipCard() {
+  const card = document.getElementById('fc-card');
+  flipped = !flipped;
+  card.classList.toggle('flipped', flipped);
+}
+
+function nextCard() {
+  if (currentIdx < shuffled.length - 1) currentIdx++;
+  else currentIdx = 0;
+  renderCard();
+}
+
+function prevCard() {
+  if (currentIdx > 0) currentIdx--;
+  else currentIdx = shuffled.length - 1;
+  renderCard();
+}
+
+function shuffleCards() {
+  shuffled = [...cards].sort(() => Math.random() - 0.5);
+  currentIdx = 0;
+  renderCard();
+}
+
+renderCard();
+
+// ──────────────────────────────────────────
+// QUIZ DATA
+// ──────────────────────────────────────────
+const questions = [
+  {
+    section: "Perils — Illness vs. Accident",
+    q: "The risk of loss due to illness or disability is called:",
+    opts: ["Mortality","Morbidity","Hazard","Peril"],
+    ans: 1,
+    exp: "Morbidity is the risk of illness or disability. Mortality is the risk of death."
+  },
+  {
+    section: "Perils — Illness vs. Accident",
+    q: "An illness arises from _____ factors, while an accident is caused by _____ sources.",
+    opts: ["External; internal","Internal; external","Financial; medical","Predictable; unpredictable"],
+    ans: 1,
+    exp: "Illness arises from internal factors (sickness/disease), while accidents are unintended occurrences caused by external sources."
+  },
+  {
+    section: "Perils — Illness vs. Accident",
+    q: "Under the accidental means definition:",
+    opts: ["Only the injury must be unintentional","Both the cause and result must be unintentional","Only the cause must be unintentional","Intent does not matter"],
+    ans: 1,
+    exp: "Accidental means requires BOTH the cause AND result to be unintentional — more restrictive than accidental bodily injury."
+  },
+  {
+    section: "Perils — Illness vs. Accident",
+    q: "Under the accidental bodily injury definition:",
+    opts: ["Both cause and result must be unintentional","Only the cause must be unintentional","Only the injury (result) must be unintentional","The injury must be intentional"],
+    ans: 2,
+    exp: "Accidental bodily injury (accidental result) requires only that the injury be unintentional — the cause can be intentional."
+  },
+  {
+    section: "Five Major Loss Types",
+    q: "Disability insurance typically replaces what percentage of earnings?",
+    opts: ["30-40%","50-55%","60-70%","90-100%"],
+    ans: 2,
+    exp: "Disability insurance typically replaces 60-70% of earnings to maintain incentive to return to work."
+  },
+  {
+    section: "Five Major Loss Types",
+    q: "The principal sum in an AD&D policy refers to the:",
+    opts: ["Dismemberment benefit","Death benefit","Premium amount","Policy deductible"],
+    ans: 1,
+    exp: "The principal sum is the death benefit payable under an AD&D policy. The capital sum is the dismemberment benefit."
+  },
+  {
+    section: "Five Major Loss Types",
+    q: "Long-term care insurance covers losses from:",
+    opts: ["Psychological conditions only","Physical or cognitive losses from organic causes","Temporary disabilities only","Accidental injuries only"],
+    ans: 1,
+    exp: "Long-term care covers physical or cognitive losses from organic causes — NOT psychological conditions."
+  },
+  {
+    section: "Five Major Loss Types",
+    q: "AD&D policies require that the accident must be the:",
+    opts: ["Primary cause of loss","Contributing cause of loss","Sole cause of loss","Indirect cause of loss"],
+    ans: 2,
+    exp: "AD&D policies require that the accident must be the sole cause of loss for benefits to be paid."
+  },
+  {
+    section: "Individual vs. Group Health",
+    q: "Group health insurance typically has:",
+    opts: ["Higher administrative costs than individual","Lower administrative costs than individual","The same costs as individual","No administrative costs"],
+    ans: 1,
+    exp: "Group health insurance has lower administrative costs due to single monthly billing and standardized coverage."
+  },
+  {
+    section: "Individual vs. Group Health",
+    q: "Individual health insurance requires:",
+    opts: ["No application process","An application and evidence of insurability","Only employer approval","Government certification"],
+    ans: 1,
+    exp: "Individual health insurance requires an application and evidence of insurability — unlike group where individual underwriting is typically not required."
+  },
+  {
+    section: "Private vs. Government Insurance",
+    q: "Medicare is a federal program primarily for:",
+    opts: ["Low-income individuals","Seniors age 65+ and the severely disabled","All employed workers","Children under 18"],
+    ans: 1,
+    exp: "Medicare is a federal program for seniors (65+) and the severely disabled."
+  },
+  {
+    section: "Private vs. Government Insurance",
+    q: "Medicaid is a program for:",
+    opts: ["Seniors over 65","Military personnel","Low-income individuals","Self-employed workers"],
+    ans: 2,
+    exp: "Medicaid is a joint federal-state program for low-income individuals, based on financial need."
+  },
+  {
+    section: "Comprehensive vs. Limited Policies",
+    q: "A comprehensive health policy:",
+    opts: ["Only covers what is expressly listed","Covers a broad range of losses and only excludes what is expressly stated","Requires a Notice to Insured","Is limited to specific diseases"],
+    ans: 1,
+    exp: "Comprehensive policies are open-peril — they cover a broad range of services and only exclude what is expressly stated."
+  },
+  {
+    section: "Comprehensive vs. Limited Policies",
+    q: "Limited health policies require:",
+    opts: ["No special disclosures","A Notice to Insured stating limited benefits","Government approval","Employer sponsorship"],
+    ans: 1,
+    exp: "Limited policies require a Notice to Insured stating that the contract is a limited benefit policy."
+  },
+  {
+    section: "Types of Limited Policies",
+    q: "A critical illness policy pays:",
+    opts: ["Monthly income replacement","Reimbursement for actual medical expenses","A lump-sum payment upon diagnosis of a covered condition","Daily hospital benefits"],
+    ans: 2,
+    exp: "Critical illness policies pay a lump-sum payment upon diagnosis of a covered condition, regardless of actual expenses."
+  },
+  {
+    section: "Types of Limited Policies",
+    q: "Hospital indemnity insurance pays:",
+    opts: ["Actual hospital charges","A fixed daily payment during hospital confinement","Only surgical expenses","A percentage of the hospital bill"],
+    ans: 1,
+    exp: "Hospital indemnity pays a fixed daily payment during hospital confinement, regardless of actual charges."
+  },
+  {
+    section: "Types of Limited Policies",
+    q: "In credit disability insurance, who is the policy owner and beneficiary?",
+    opts: ["The borrower","The lender","The insurance company","The government"],
+    ans: 1,
+    exp: "In credit disability insurance, the lender is both the policy owner and beneficiary. The policy makes the borrower's loan payments during disability."
+  },
+  {
+    section: "Types of Limited Policies",
+    q: "Short-term medical insurance provides coverage for up to:",
+    opts: ["30 days","60 days","90 days","180 days"],
+    ans: 2,
+    exp: "Short-term medical insurance provides up to 90 days of non-renewable coverage."
+  },
+  {
+    section: "Types of Limited Policies",
+    q: "Blanket health insurance covers:",
+    opts: ["Named individuals on a policy","Groups with changing membership exposed to the same risks","Only full-time employees","Specific diseases only"],
+    ans: 1,
+    exp: "Blanket insurance covers groups with changing membership (teams, passengers) exposed to the same risks but at different times."
+  },
+  {
+    section: "Types of Limited Policies",
+    q: "A formulary is:",
+    opts: ["A type of dental plan","A list of medications covered by a prescription drug plan","A medical examination form","An insurance application"],
+    ans: 1,
+    exp: "A formulary is a list of medications covered by the prescription drug plan, determining which drugs are covered and at what tier."
+  },
+  {
+    section: "Dental Insurance",
+    q: "Preventive dental services (cleanings, exams) are typically covered at:",
+    opts: ["50%","80%","90%","100%"],
+    ans: 3,
+    exp: "Preventive services like cleanings, exams, and X-rays are typically covered at 100%."
+  },
+  {
+    section: "Dental Insurance",
+    q: "Basic dental services (fillings, extractions) are typically covered at:",
+    opts: ["50%","80%","90%","100%"],
+    ans: 1,
+    exp: "Basic services like fillings, extractions, and root canals are typically covered at 80%."
+  },
+  {
+    section: "Dental Insurance",
+    q: "Major dental services (oral surgery, crowns) are typically covered at:",
+    opts: ["50%","80%","90%","100%"],
+    ans: 0,
+    exp: "Major services like oral surgery and crowns are typically covered at 50% — the lowest coverage level."
+  },
+  {
+    section: "Dental Insurance",
+    q: "Endodontics is the dental specialty dealing with:",
+    opts: ["Gum disease","Root canals and pulp treatment","Braces and alignment","Dentures and artificial devices"],
+    ans: 1,
+    exp: "Endodontics deals with root canals and pulp treatment."
+  },
+  {
+    section: "Dental Insurance",
+    q: "Periodontics is the dental specialty dealing with:",
+    opts: ["Root canals","Tooth extraction","Treatment of gum disease","Braces"],
+    ans: 2,
+    exp: "Periodontics is the treatment of gum disease."
+  },
+  {
+    section: "Dental Insurance",
+    q: "Predetermination of benefits in dental insurance:",
+    opts: ["Guarantees payment for all procedures","Determines if services are medically necessary and covered","Sets the premium amount","Eliminates the deductible"],
+    ans: 1,
+    exp: "Predetermination determines if services are medically necessary and covered before treatment begins."
+  },
+  {
+    section: "Dental Insurance",
+    q: "Annual benefit maximums for dental plans are often:",
+    opts: ["Unlimited","Less than $2,000","$5,000 to $10,000","$25,000 or more"],
+    ans: 1,
+    exp: "Dental plans typically have annual benefit maximums of less than $2,000."
+  },
+];
+
+// ── Quiz Engine ──
+let answered = {};
+let submitted = false;
+let score = 0;
+
+function buildQuiz() {
+  answered = {};
+  submitted = false;
+  score = 0;
+  const area = document.getElementById('quiz-area');
+  let html = `<div class="quiz-header"><div class="quiz-meta">${questions.length} Questions</div><div class="score-badge" id="score-live">0/${questions.length} answered</div></div>`;
+  let lastSection = '';
+
+  questions.forEach((q, i) => {
+    if (q.section !== lastSection) {
+      html += `<div class="section-divider">${q.section}</div>`;
+      lastSection = q.section;
+    }
+    html += `<div class="q-card" id="qcard-${i}">
+      <div class="q-num">Question ${i + 1}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="options">`;
+    const letters = ['A','B','C','D'];
+    q.opts.forEach((opt, j) => {
+      html += `<div class="opt" id="opt-${i}-${j}" onclick="selectAnswer(${i},${j})">
+        <span class="opt-letter">${letters[j]}</span><span>${opt}</span>
+      </div>`;
+    });
+    html += `</div><div class="explanation" id="exp-${i}">${q.exp}</div></div>`;
+  });
+
+  html += `<div style="text-align:center; margin-top:32px;">
+    <button class="btn btn-primary" onclick="submitQuiz()" id="submit-btn">Submit & Score</button>
+  </div><div id="results-area"></div>`;
+  area.innerHTML = html;
+}
+
+function selectAnswer(qIdx, optIdx) {
+  if (submitted) return;
+  answered[qIdx] = optIdx;
+  questions[qIdx].opts.forEach((_, j) => {
+    const el = document.getElementById(`opt-${qIdx}-${j}`);
+    el.style.borderColor = j === optIdx ? '#3b82f6' : '';
+    el.style.background  = j === optIdx ? '#1e3a5f' : '';
+    el.style.color       = j === optIdx ? '#e2e8f0' : '';
+  });
+  updateLiveScore();
+}
+
+function updateLiveScore() {
+  let correct = 0;
+  Object.keys(answered).forEach(i => { if (answered[i] === questions[i].ans) correct++; });
+  document.getElementById('score-live').textContent = `${correct}/${Object.keys(answered).length} answered`;
+}
+
+function submitQuiz() {
+  submitted = true;
+  score = 0;
+  questions.forEach((q, i) => {
+    q.opts.forEach((_, j) => {
+      const el = document.getElementById(`opt-${i}-${j}`);
+      el.classList.add('disabled');
+      if (j === q.ans) {
+        el.classList.add('correct');
+      } else if (answered[i] === j) {
+        el.classList.add('wrong');
+      }
+    });
+    document.getElementById(`exp-${i}`).classList.add('show');
+    if (answered[i] === q.ans) score++;
+  });
+
+  const pct = Math.round((score / questions.length) * 100);
+  let msg, color;
+  if (pct >= 90)      { msg = "Excellent! You're exam-ready on this chapter."; color = "#4ade80"; }
+  else if (pct >= 70) { msg = "Above passing threshold. Review missed questions."; color = "#facc15"; }
+  else                { msg = "Below passing threshold. Review and retry!"; color = "#f87171"; }
+
+  document.getElementById('score-live').textContent = `Score: ${score}/${questions.length} (${pct}%)`;
+  document.getElementById('submit-btn').outerHTML = `<button class="btn btn-ghost" onclick="buildQuiz()">Retake Quiz</button>`;
+  document.getElementById('results-area').innerHTML = `
+    <div class="quiz-results">
+      <div class="score-big" style="color:${color}">${pct}%</div>
+      <div class="score-sub">${score} correct out of ${questions.length}</div>
+      <div class="score-msg" style="color:${color}">${msg}</div>
+      <div style="margin-top:8px;font-size:0.85rem;color:#64748b;">Pass threshold: 70% · Scroll up to review explanations</div>
+    </div>`;
+  window.scrollTo({ top: document.getElementById('results-area').offsetTop - 80, behavior: 'smooth' });
+}
+
+function showTab(t) {
+  document.getElementById('tab-flashcards').style.display = t === 'flashcards' ? '' : 'none';
+  document.getElementById('tab-quiz').style.display       = t === 'quiz' ? '' : 'none';
+  document.querySelectorAll('.tab').forEach((el, i) => {
+    el.classList.toggle('active', (i === 0 && t === 'flashcards') || (i === 1 && t === 'quiz'));
+  });
+  if (t === 'quiz' && !document.querySelector('.q-card')) buildQuiz();
+}
+</script>
+</body>
+</html>
