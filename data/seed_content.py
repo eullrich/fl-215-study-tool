@@ -25,6 +25,7 @@ CHAPTERS = {
     11: "Retirement Plans & IRAs",
     12: "Social Security",
     13: "Health & Accident Insurance Fundamentals",
+    14: "Managed Care, Group Health & Federal Regulations",
 }
 
 

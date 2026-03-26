@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FL 2-15 Exam | Chapter 14 Study Tool</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+  .header { background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%); padding: 24px 32px; border-bottom: 1px solid #1e40af44; }
+  .header h1 { font-size: 1.5rem; font-weight: 700; color: #60a5fa; letter-spacing: -0.02em; }
+  .header p { font-size: 0.875rem; color: #94a3b8; margin-top: 4px; }
+  .tabs { display: flex; gap: 0; padding: 20px 32px 0; border-bottom: 1px solid #1e293b; }
+  .tab { padding: 10px 24px; border-radius: 8px 8px 0 0; cursor: pointer; font-size: 0.875rem; font-weight: 600; border: 1px solid transparent; border-bottom: none; transition: all 0.2s; color: #64748b; }
+  .tab.active { background: #1e293b; color: #60a5fa; border-color: #1e40af44; }
+  .tab:hover:not(.active) { color: #94a3b8; }
+  .content { padding: 32px; max-width: 860px; margin: 0 auto; }
+  .fc-container { display: flex; flex-direction: column; align-items: center; gap: 24px; }
+  .fc-progress { font-size: 0.8rem; color: #64748b; letter-spacing: 0.05em; text-transform: uppercase; }
+  .fc-card-wrap { width: 100%; max-width: 640px; perspective: 1200px; cursor: pointer; user-select: none; }
+  .fc-card { position: relative; width: 100%; height: 220px; transition: transform 0.55s cubic-bezier(.4,2,.6,1); transform-style: preserve-3d; }
+  .fc-card.flipped { transform: rotateY(180deg); }
+  .fc-face { position: absolute; inset: 0; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 28px 36px; text-align: center; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+  .fc-front { background: linear-gradient(135deg, #1e3a5f, #1e293b); border: 1px solid #2563eb44; box-shadow: 0 8px 32px #0004; }
+  .fc-back  { background: linear-gradient(135deg, #14532d, #1e293b); border: 1px solid #16a34a44; box-shadow: 0 8px 32px #0004; transform: rotateY(180deg); }
+  .fc-label { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px; opacity: 0.5; }
+  .fc-text  { font-size: 1.15rem; font-weight: 600; line-height: 1.5; color: #f1f5f9; }
+  .fc-hint  { font-size: 0.75rem; color: #64748b; margin-top: 14px; }
+  .fc-controls { display: flex; gap: 12px; align-items: center; }
+  .btn { padding: 10px 22px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; transition: all 0.15s; }
+  .btn-primary { background: #2563eb; color: #fff; }
+  .btn-primary:hover { background: #1d4ed8; }
+  .btn-ghost { background: #1e293b; color: #94a3b8; border: 1px solid #334155; }
+  .btn-ghost:hover { background: #334155; color: #e2e8f0; }
+  .btn-sm { padding: 7px 16px; font-size: 0.8rem; }
+  .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+  .quiz-meta { font-size: 0.8rem; color: #64748b; }
+  .score-badge { background: #1e293b; border: 1px solid #334155; border-radius: 999px; padding: 4px 14px; font-size: 0.8rem; font-weight: 700; color: #94a3b8; }
+  .q-card { background: #1e293b; border: 1px solid #334155; border-radius: 14px; padding: 28px; margin-bottom: 20px; }
+  .q-num { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #64748b; margin-bottom: 10px; }
+  .q-text { font-size: 1rem; font-weight: 600; color: #f1f5f9; line-height: 1.55; margin-bottom: 20px; }
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .opt { padding: 12px 18px; border-radius: 9px; border: 1.5px solid #334155; background: #0f172a; cursor: pointer; font-size: 0.9rem; color: #cbd5e1; transition: all 0.15s; display: flex; align-items: flex-start; gap: 10px; }
+  .opt:hover:not(.disabled) { border-color: #3b82f6; color: #e2e8f0; background: #1e3a5f; }
+  .opt.correct { border-color: #22c55e; background: #14532d22; color: #4ade80; }
+  .opt.wrong   { border-color: #ef4444; background: #7f1d1d22; color: #f87171; }
+  .opt.disabled { cursor: default; pointer-events: none; }
+  .opt-letter { font-weight: 700; opacity: 0.5; min-width: 18px; }
+  .explanation { margin-top: 14px; padding: 12px 16px; border-radius: 8px; background: #0f172a; border-left: 3px solid #3b82f6; font-size: 0.85rem; color: #94a3b8; line-height: 1.5; display: none; }
+  .explanation.show { display: block; }
+  .quiz-results { text-align: center; padding: 40px 20px; }
+  .score-big { font-size: 4rem; font-weight: 800; color: #60a5fa; line-height: 1; }
+  .score-sub { font-size: 1rem; color: #64748b; margin-top: 8px; }
+  .score-msg { font-size: 1.1rem; font-weight: 600; margin-top: 16px; }
+  .section-divider { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #3b82f6; background: #1e3a5f22; border: 1px solid #1e40af33; border-radius: 6px; padding: 5px 14px; display: inline-block; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>FL 2-15 Exam Prep</h1>
+  <p>Chapter 14 — Managed Care, Group Health & Federal Regulations</p>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('flashcards')">Flashcards</div>
+  <div class="tab" onclick="showTab('quiz')">Practice Test</div>
+</div>
+
+<div id="tab-flashcards" class="content">
+  <div class="fc-container">
+    <div class="fc-progress" id="fc-progress">Card 1 of 1</div>
+    <div class="fc-card-wrap" onclick="flipCard()">
+      <div class="fc-card" id="fc-card">
+        <div class="fc-face fc-front">
+          <div class="fc-label">Term</div>
+          <div class="fc-text" id="fc-front-text"></div>
+          <div class="fc-hint">click to reveal definition</div>
+        </div>
+        <div class="fc-face fc-back">
+          <div class="fc-label">Definition</div>
+          <div class="fc-text" id="fc-back-text"></div>
+        </div>
+      </div>
+    </div>
+    <div class="fc-controls">
+      <button class="btn btn-ghost btn-sm" onclick="prevCard()">Prev</button>
+      <button class="btn btn-primary" onclick="nextCard()">Next</button>
+      <button class="btn btn-ghost btn-sm" onclick="shuffleCards()">Shuffle</button>
+    </div>
+  </div>
+</div>
+
+<div id="tab-quiz" class="content" style="display:none;">
+  <div id="quiz-area"></div>
+</div>
+
+<script>
+const cards = [
+
+  // ── LO 1: Traditional vs. Managed Care ──
+  { s: "LO1 — Traditional vs. Managed Care", q: "Traditional Health Insurance (Indemnity)", a: "REIMBURSES insureds for healthcare costs after services received. FREE CHOICE of providers. NATIONAL scope. HIGHER out-of-pocket costs. FEE-FOR-SERVICE with reimbursement model." },
+  { s: "LO1 — Traditional vs. Managed Care", q: "Blue Cross / Blue Shield", a: "BLUE CROSS covers HOSPITAL expenses. BLUE SHIELD covers PHYSICIAN expenses. Operates as a SERVICE PROVIDER paying DIRECTLY to participating providers." },
+  { s: "LO1 — Traditional vs. Managed Care", q: "Managed Care Plans", a: "Control costs through NETWORKS and UTILIZATION MANAGEMENT. Emphasize PREVENTIVE CARE. LOCAL/REGIONAL networks. RESTRICTED provider choice. LOWER out-of-pocket costs." },
+  { s: "LO1 — Traditional vs. Managed Care", q: "Traditional vs. Managed Care — key differences", a: "TRADITIONAL: national scope, free provider choice, higher costs, fee-for-service. MANAGED CARE: local networks, restricted choice, lower costs, capitation/discounted fees, preventive focus." },
+
+  // ── LO 2: HMOs ──
+  { s: "LO2 — HMOs", q: "Health Maintenance Organization (HMO)", a: "Combines FINANCING and DELIVERY of healthcare. Members pay FIXED PERIODIC FEES (not fee-for-service). Emphasizes PREVENTIVE CARE. Requires selection of a PRIMARY CARE PHYSICIAN (PCP) as GATEKEEPER." },
+  { s: "LO2 — HMOs", q: "Gatekeeper System", a: "The PCP acts as a GATEKEEPER — all specialist care requires a REFERRAL from the PCP. Controls costs by managing access to specialists." },
+  { s: "LO2 — HMOs", q: "Utilization Review", a: "Three types: PROSPECTIVE (before treatment — pre-authorization). CONCURRENT (during treatment). RETROSPECTIVE (after treatment — claims review)." },
+  { s: "LO2 — HMOs", q: "Capitation", a: "FIXED per-member payment to providers regardless of services used. Provider receives the same amount whether the patient uses services or not. Incentivizes efficiency." },
+  { s: "LO2 — HMOs", q: "HMO Cost Control Methods", a: "GATEKEEPER system (PCP referrals). UTILIZATION REVIEW. CAPITATION payments. PREVENTIVE CARE emphasis. LIMITED PROVIDER NETWORKS with negotiated rates." },
+
+  // ── LO 3: HMO Structures ──
+  { s: "LO3 — HMO Models", q: "Staff Model HMO (Closed Panel)", a: "Physicians EMPLOYED DIRECTLY by the HMO. Care in HMO-OWNED facilities. Physicians are SALARIED and work EXCLUSIVELY for the HMO." },
+  { s: "LO3 — HMO Models", q: "Group Model HMO (Closed Panel)", a: "HMO CONTRACTS with PHYSICIAN GROUPS. Capitation or predetermined payment to the group. The GROUP pays individual physicians." },
+  { s: "LO3 — HMO Models", q: "Network Model HMO (Closed Panel)", a: "Similar to group model but involves MULTIPLE physician groups. Payment based on CAPITATION. Physicians work in HMO facilities." },
+  { s: "LO3 — HMO Models", q: "IPA Model HMO (Open Panel)", a: "Network of physicians working from THEIR OWN OFFICES. Physicians participate PART-TIME. BROADEST range of provider choices. Physicians may see NON-HMO patients." },
+  { s: "LO3 — HMO Models", q: "Closed Panel vs. Open Panel", a: "CLOSED PANEL (Staff, Group, Network): physicians work exclusively/primarily for HMO. OPEN PANEL (IPA): physicians maintain own practices and see non-HMO patients too." },
+  { s: "LO3 — HMO Models", q: "Four HMO Models Summary", a: "STAFF: HMO employs doctors directly. GROUP: contracts with one physician group. NETWORK: contracts with multiple groups. IPA: independent doctors in own offices, broadest choice." },
+
+  // ── LO 4: PPOs ──
+  { s: "LO4 — PPOs", q: "Preferred Provider Organization (PPO)", a: "Network of providers offering services at DISCOUNTED RATES. FINANCES healthcare but does NOT deliver it directly. FEE-FOR-SERVICE basis. Covers OUT-OF-NETWORK care at higher cost. NO gatekeeper — DIRECT specialist access." },
+  { s: "LO4 — PPOs", q: "PPO vs. HMO", a: "PPO: more provider choice, out-of-network coverage, no gatekeeper, fee-for-service, higher costs. HMO: restricted network, no out-of-network (except emergencies), PCP gatekeeper, prepaid, lower costs." },
+
+  // ── LO 5: POS Plans ──
+  { s: "LO5 — POS Plans", q: "Point-of-Service (POS) Plan", a: "HYBRID model combining HMO + traditional insurance. IN-NETWORK: coordinated through PCP like an HMO (copays). OUT-OF-NETWORK: available at HIGHER cost-sharing like indemnity (deductibles/coinsurance)." },
+  { s: "LO5 — POS Plans", q: "POS Plan features", a: "Requires PCP selection and REFERRALS for in-network specialists. MORE FLEXIBLE than HMO with out-of-network option. Cost-sharing INCREASES SIGNIFICANTLY for out-of-network care." },
+  { s: "LO5 — POS Plans", q: "HMO vs. PPO vs. POS", a: "HMO: PCP gatekeeper, no out-of-network, lowest cost. PPO: no gatekeeper, out-of-network OK, moderate cost. POS: PCP gatekeeper IN-network, out-of-network option, variable cost." },
+
+  // ── LO 6: Group Eligibility ──
+  { s: "LO6 — Group Eligibility", q: "Group health eligibility — group requirements", a: "Must be a NATURAL GROUP existing for a purpose OTHER THAN obtaining insurance. Minimum number of participants. Stable workforce. Cannot discriminate within a defined class." },
+  { s: "LO6 — Group Eligibility", q: "Individual eligibility for group health", a: "Typically FULL-TIME employees (30+ hours/week). May require PROBATIONARY PERIOD (1-3 months). Limited ENROLLMENT PERIODS. SPECIAL ENROLLMENT for qualifying life events." },
+
+  // ── LO 7: Contributory vs. Non-Contributory ──
+  { s: "LO7 — Plan Funding", q: "Contributory Group Health Plan", a: "Employees PAY A PORTION of premiums. Requires 75% PARTICIPATION. Lower employer costs. Enrollment periods control adverse selection." },
+  { s: "LO7 — Plan Funding", q: "Non-Contributory Group Health Plan", a: "EMPLOYER PAYS ENTIRE premium. Requires 100% PARTICIPATION. Higher employer costs. Less concern about adverse selection." },
+
+  // ── LO 8: Rating Methods ──
+  { s: "LO8 — Rating", q: "Experience Rating", a: "Used for LARGE groups (51+ employees). Based on the group's ACTUAL CLAIMS HISTORY. Premiums reflect the group's specific risk profile." },
+  { s: "LO8 — Rating", q: "Community Rating", a: "Used for SMALL groups (2-50 employees). Based on claims experience of SIMILAR GROUPS in the community. All small groups charged SIMILAR RATES." },
+  { s: "LO8 — Rating", q: "Experience vs. Community Rating", a: "EXPERIENCE: large groups, own claims history, variable premiums. COMMUNITY: small groups, community-wide data, similar premiums for all." },
+
+  // ── LO 9: Alternative Group Plans ──
+  { s: "LO9 — Alternative Plans", q: "MEWA (Multiple Employer Welfare Arrangement)", a: "TWO OR MORE unrelated employers providing benefits. Subject to BOTH ERISA and state regulations. Can be fully insured or SELF-FUNDED." },
+  { s: "LO9 — Alternative Plans", q: "MET (Multiple Employer Trust)", a: "FULLY INSURED MEWA established by third parties. Combines multiple employers into a SINGLE POOL. TRUST holds the master contract. Employers become trust members by subscribing." },
+  { s: "LO9 — Alternative Plans", q: "Franchise Health Plan", a: "INDIVIDUAL POLICIES issued to association/professional society members. Each participant completes a SEPARATE APPLICATION. Typically offers DISCOUNTED premium rates." },
+  { s: "LO9 — Alternative Plans", q: "Self-Funded Plans", a: "Employers FUND AND PAY CLAIMS directly under ERISA regulations. May use STOP-LOSS INSURANCE to limit financial risk. Often use THIRD-PARTY ADMINISTRATORS for claims processing." },
+  { s: "LO9 — Alternative Plans", q: "MEWA vs. MET vs. Franchise", a: "MEWA: multiple employers, can be self-funded. MET: fully insured MEWA, trust holds contract. FRANCHISE: individual policies through an association, separate applications." },
+
+  // ── LO 10: Federal Regulations ──
+  { s: "LO10 — Federal Regulations", q: "COBRA", a: "CONTINUATION coverage after qualifying events. Employment termination: 18 MONTHS. Dependents (death/divorce/aging out): 36 MONTHS. Disability: 29 MONTHS. Beneficiaries pay 102% of full premium." },
+  { s: "LO10 — Federal Regulations", q: "COBRA — 102% Premium", a: "COBRA beneficiaries pay 102% of the full premium: employee portion + employer portion + 2% ADMINISTRATIVE FEE." },
+  { s: "LO10 — Federal Regulations", q: "COBRA Continuation Periods", a: "18 months: employment TERMINATION or reduction in hours. 29 months: DISABILITY cases. 36 months: death of employee, DIVORCE, dependent AGING OUT." },
+  { s: "LO10 — Federal Regulations", q: "HIPAA", a: "Ensures PORTABILITY between health plans. Protects against new PRE-EXISTING CONDITION exclusions. Requires CREDITABLE COVERAGE with no gaps exceeding 63 DAYS. Mandates PRIVACY protections." },
+  { s: "LO10 — Federal Regulations", q: "HIPAA — Creditable Coverage", a: "No gap in coverage exceeding 63 DAYS. Gaps longer than 63 days may result in pre-existing condition exclusions in new plan." },
+  { s: "LO10 — Federal Regulations", q: "HIPAA — Notice of Privacy Practices", a: "Required at ENROLLMENT and every THREE YEARS thereafter. Explains how health information is used and protected." },
+  { s: "LO10 — Federal Regulations", q: "Pregnancy Discrimination Act", a: "Requires EQUAL TREATMENT for pregnancy-related conditions. Treats pregnancy as ANY OTHER health condition. Must cover ABORTION if the mother's life is in danger." },
+  { s: "LO10 — Federal Regulations", q: "Small Group Regulations", a: "GUARANTEED ISSUE for small groups meeting participation requirements. Cannot refuse coverage based on HEALTH HISTORY. Must offer to ALL eligible employees. Cannot discriminate by business category." },
+];
+
+let currentIdx = 0;
+let flipped = false;
+let shuffled = [...cards];
+
+function renderCard() {
+  const c = shuffled[currentIdx];
+  document.getElementById('fc-front-text').textContent = c.q;
+  document.getElementById('fc-back-text').textContent  = c.a;
+  document.getElementById('fc-progress').textContent = `Card ${currentIdx + 1} of ${shuffled.length}`;
+  const card = document.getElementById('fc-card');
+  card.classList.remove('flipped');
+  flipped = false;
+}
+
+function flipCard() {
+  const card = document.getElementById('fc-card');
+  flipped = !flipped;
+  card.classList.toggle('flipped', flipped);
+}
+
+function nextCard() {
+  if (currentIdx < shuffled.length - 1) currentIdx++;
+  else currentIdx = 0;
+  renderCard();
+}
+
+function prevCard() {
+  if (currentIdx > 0) currentIdx--;
+  else currentIdx = shuffled.length - 1;
+  renderCard();
+}
+
+function shuffleCards() {
+  shuffled = [...cards].sort(() => Math.random() - 0.5);
+  currentIdx = 0;
+  renderCard();
+}
+
+renderCard();
+
+// ──────────────────────────────────────────
+// QUIZ DATA
+// ──────────────────────────────────────────
+const questions = [
+  {
+    section: "Traditional vs. Managed Care",
+    q: "Traditional health insurance (indemnity) plans operate on a:",
+    opts: ["Capitation basis","Fee-for-service with reimbursement model","Prepaid fixed fee basis","Salary-based provider model"],
+    ans: 1,
+    exp: "Traditional plans use fee-for-service with reimbursement — the insured pays for services and is reimbursed by the insurer."
+  },
+  {
+    section: "Traditional vs. Managed Care",
+    q: "Blue Cross covers _____ expenses, while Blue Shield covers _____ expenses.",
+    opts: ["Physician; hospital","Hospital; physician","Dental; vision","Surgical; medical"],
+    ans: 1,
+    exp: "Blue Cross covers hospital expenses, Blue Shield covers physician expenses."
+  },
+  {
+    section: "Traditional vs. Managed Care",
+    q: "Managed care plans emphasize:",
+    opts: ["Unlimited provider choice","Preventive care and cost control","Fee-for-service reimbursement","National provider networks"],
+    ans: 1,
+    exp: "Managed care emphasizes preventive care and controls costs through networks and utilization management."
+  },
+  {
+    section: "HMOs",
+    q: "In an HMO, the Primary Care Physician (PCP) acts as a:",
+    opts: ["Claims adjuster","Gatekeeper for specialist referrals","Policy underwriter","Benefits coordinator"],
+    ans: 1,
+    exp: "The PCP acts as a gatekeeper — all specialist care requires a referral from the PCP."
+  },
+  {
+    section: "HMOs",
+    q: "Capitation is a payment method where providers receive:",
+    opts: ["Payment per service rendered","A fixed per-member payment regardless of services used","A percentage of the premium","Bonuses for each referral"],
+    ans: 1,
+    exp: "Capitation is a fixed per-member payment regardless of services used — incentivizing efficiency."
+  },
+  {
+    section: "HMOs",
+    q: "Prospective utilization review occurs:",
+    opts: ["After treatment","During treatment","Before treatment (pre-authorization)","At the time of claim payment"],
+    ans: 2,
+    exp: "Prospective review occurs before treatment (pre-authorization). Concurrent is during. Retrospective is after."
+  },
+  {
+    section: "HMO Structures",
+    q: "In a staff model HMO, physicians are:",
+    opts: ["Independent contractors","Employed directly by the HMO","Part of an independent practice","Contracted through physician groups"],
+    ans: 1,
+    exp: "Staff model: physicians are employed directly by the HMO, are salaried, and work exclusively for the HMO."
+  },
+  {
+    section: "HMO Structures",
+    q: "Which HMO model offers the broadest range of provider choices?",
+    opts: ["Staff model","Group model","Network model","IPA (Independent Practice Association) model"],
+    ans: 3,
+    exp: "The IPA model offers the broadest range — physicians work from their own offices and may see non-HMO patients."
+  },
+  {
+    section: "HMO Structures",
+    q: "The IPA model is classified as:",
+    opts: ["Closed panel","Open panel","Exclusive panel","Government panel"],
+    ans: 1,
+    exp: "The IPA model is open panel — physicians maintain their own practices. Staff, group, and network models are closed panel."
+  },
+  {
+    section: "HMO Structures",
+    q: "In a group model HMO, the HMO contracts with:",
+    opts: ["Individual physicians","A physician group","Multiple physician groups","The government"],
+    ans: 1,
+    exp: "Group model: the HMO contracts with a physician group. Network model contracts with multiple physician groups."
+  },
+  {
+    section: "PPOs",
+    q: "A PPO differs from an HMO because a PPO:",
+    opts: ["Requires a PCP gatekeeper","Does not cover out-of-network care","Allows direct access to specialists without referrals","Uses only capitation payments"],
+    ans: 2,
+    exp: "PPOs allow direct access to specialists without PCP referrals and provide out-of-network coverage at higher cost."
+  },
+  {
+    section: "PPOs",
+    q: "PPO providers offer services at:",
+    opts: ["Standard retail prices","Capitation rates","Discounted rates","Government-set rates"],
+    ans: 2,
+    exp: "PPO networks consist of providers who offer services at discounted rates in exchange for patient volume."
+  },
+  {
+    section: "POS Plans",
+    q: "A Point-of-Service (POS) plan is best described as a:",
+    opts: ["Pure indemnity plan","Pure HMO","Hybrid of HMO and traditional insurance","Government program"],
+    ans: 2,
+    exp: "POS plans are hybrid models — in-network care works like an HMO (PCP gatekeeper), out-of-network works like indemnity."
+  },
+  {
+    section: "POS Plans",
+    q: "Out-of-network care under a POS plan results in:",
+    opts: ["No coverage","The same cost as in-network","Higher deductibles and coinsurance","Lower copays"],
+    ans: 2,
+    exp: "Out-of-network care under POS plans has higher deductibles and coinsurance — cost-sharing increases significantly."
+  },
+  {
+    section: "Group Eligibility",
+    q: "Full-time employees for group health purposes typically work:",
+    opts: ["20+ hours per week","25+ hours per week","30+ hours per week","40+ hours per week"],
+    ans: 2,
+    exp: "Group health eligibility typically requires full-time status of 30+ hours per week."
+  },
+  {
+    section: "Contributory vs. Non-Contributory",
+    q: "A contributory group health plan requires participation of at least:",
+    opts: ["50%","75%","90%","100%"],
+    ans: 1,
+    exp: "Contributory plans require at least 75% participation. Non-contributory plans require 100%."
+  },
+  {
+    section: "Rating Methods",
+    q: "Experience rating is typically used for:",
+    opts: ["Individual policies","Small groups (2-50 employees)","Large groups (51+ employees)","Government plans"],
+    ans: 2,
+    exp: "Experience rating is used for large groups (51+ employees), based on the group's actual claims history."
+  },
+  {
+    section: "Rating Methods",
+    q: "Community rating is typically used for:",
+    opts: ["Individual policies","Small groups (2-50 employees)","Large groups (51+ employees)","Self-funded plans"],
+    ans: 1,
+    exp: "Community rating is used for small groups (2-50 employees), based on claims experience of similar groups in the community."
+  },
+  {
+    section: "Alternative Group Plans",
+    q: "A MEWA involves:",
+    opts: ["A single employer providing benefits","Two or more unrelated employers providing benefits","Government-sponsored coverage","Individual policies through an association"],
+    ans: 1,
+    exp: "A MEWA (Multiple Employer Welfare Arrangement) involves two or more unrelated employers providing benefits."
+  },
+  {
+    section: "Alternative Group Plans",
+    q: "A MET differs from a MEWA because a MET is:",
+    opts: ["Self-funded only","A fully insured MEWA established by third parties","An individual policy arrangement","A government program"],
+    ans: 1,
+    exp: "A MET (Multiple Employer Trust) is a fully insured MEWA established by third parties — the trust holds the master contract."
+  },
+  {
+    section: "Alternative Group Plans",
+    q: "Self-funded plans are regulated under:",
+    opts: ["State insurance laws only","ERISA","Medicare regulations","COBRA only"],
+    ans: 1,
+    exp: "Self-funded plans are regulated under ERISA. They may use stop-loss insurance and third-party administrators."
+  },
+  {
+    section: "Alternative Group Plans",
+    q: "A franchise health plan issues:",
+    opts: ["A master policy to the association","Individual policies to each member","Group certificates","Government vouchers"],
+    ans: 1,
+    exp: "Franchise plans issue individual policies to association members — each participant completes a separate application."
+  },
+  {
+    section: "Federal Regulations",
+    q: "COBRA continuation coverage for employment termination lasts:",
+    opts: ["12 months","18 months","24 months","36 months"],
+    ans: 1,
+    exp: "COBRA provides 18 months of continuation coverage for employment termination or reduction in hours."
+  },
+  {
+    section: "Federal Regulations",
+    q: "COBRA continuation for dependents after divorce or death of employee lasts:",
+    opts: ["18 months","24 months","29 months","36 months"],
+    ans: 3,
+    exp: "Dependents receive 36 months of COBRA continuation after death, divorce, or aging out of dependent status."
+  },
+  {
+    section: "Federal Regulations",
+    q: "COBRA beneficiaries pay what percentage of the full premium?",
+    opts: ["50%","75%","100%","102%"],
+    ans: 3,
+    exp: "COBRA beneficiaries pay 102% of the full premium — employee + employer portion + 2% administrative fee."
+  },
+  {
+    section: "Federal Regulations",
+    q: "Under HIPAA, creditable coverage requires no gap exceeding:",
+    opts: ["30 days","45 days","63 days","90 days"],
+    ans: 2,
+    exp: "HIPAA requires creditable coverage with no gaps exceeding 63 days to protect against pre-existing condition exclusions."
+  },
+  {
+    section: "Federal Regulations",
+    q: "HIPAA requires a Notice of Privacy Practices at enrollment and every:",
+    opts: ["Year","Two years","Three years","Five years"],
+    ans: 2,
+    exp: "HIPAA requires Notice of Privacy Practices at enrollment and every three years thereafter."
+  },
+  {
+    section: "Federal Regulations",
+    q: "The Pregnancy Discrimination Act requires:",
+    opts: ["Special maternity coverage at extra cost","Equal treatment for pregnancy as any other health condition","Mandatory maternity leave","Exemption from group health plans"],
+    ans: 1,
+    exp: "The Pregnancy Discrimination Act requires equal treatment for pregnancy-related conditions — pregnancy must be treated as any other health condition."
+  },
+  {
+    section: "Federal Regulations",
+    q: "Small group health regulations require:",
+    opts: ["Medical underwriting for each employee","Guaranteed issue for groups meeting participation requirements","Higher premiums for unhealthy groups","Coverage only for full-time employees"],
+    ans: 1,
+    exp: "Small groups have guaranteed issue — insurers cannot refuse coverage based on health history if participation requirements are met."
+  },
+  {
+    section: "Federal Regulations",
+    q: "COBRA continuation for disability cases lasts:",
+    opts: ["18 months","24 months","29 months","36 months"],
+    ans: 2,
+    exp: "Disability cases receive 29 months of COBRA continuation coverage."
+  },
+];
+
+// ── Quiz Engine ──
+let answered = {};
+let submitted = false;
+let score = 0;
+
+function buildQuiz() {
+  answered = {};
+  submitted = false;
+  score = 0;
+  const area = document.getElementById('quiz-area');
+  let html = `<div class="quiz-header"><div class="quiz-meta">${questions.length} Questions</div><div class="score-badge" id="score-live">0/${questions.length} answered</div></div>`;
+  let lastSection = '';
+
+  questions.forEach((q, i) => {
+    if (q.section !== lastSection) {
+      html += `<div class="section-divider">${q.section}</div>`;
+      lastSection = q.section;
+    }
+    html += `<div class="q-card" id="qcard-${i}">
+      <div class="q-num">Question ${i + 1}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="options">`;
+    const letters = ['A','B','C','D'];
+    q.opts.forEach((opt, j) => {
+      html += `<div class="opt" id="opt-${i}-${j}" onclick="selectAnswer(${i},${j})">
+        <span class="opt-letter">${letters[j]}</span><span>${opt}</span>
+      </div>`;
+    });
+    html += `</div><div class="explanation" id="exp-${i}">${q.exp}</div></div>`;
+  });
+
+  html += `<div style="text-align:center; margin-top:32px;">
+    <button class="btn btn-primary" onclick="submitQuiz()" id="submit-btn">Submit & Score</button>
+  </div><div id="results-area"></div>`;
+  area.innerHTML = html;
+}
+
+function selectAnswer(qIdx, optIdx) {
+  if (submitted) return;
+  answered[qIdx] = optIdx;
+  questions[qIdx].opts.forEach((_, j) => {
+    const el = document.getElementById(`opt-${qIdx}-${j}`);
+    el.style.borderColor = j === optIdx ? '#3b82f6' : '';
+    el.style.background  = j === optIdx ? '#1e3a5f' : '';
+    el.style.color       = j === optIdx ? '#e2e8f0' : '';
+  });
+  updateLiveScore();
+}
+
+function updateLiveScore() {
+  let correct = 0;
+  Object.keys(answered).forEach(i => { if (answered[i] === questions[i].ans) correct++; });
+  document.getElementById('score-live').textContent = `${correct}/${Object.keys(answered).length} answered`;
+}
+
+function submitQuiz() {
+  submitted = true;
+  score = 0;
+  questions.forEach((q, i) => {
+    q.opts.forEach((_, j) => {
+      const el = document.getElementById(`opt-${i}-${j}`);
+      el.classList.add('disabled');
+      if (j === q.ans) {
+        el.classList.add('correct');
+      } else if (answered[i] === j) {
+        el.classList.add('wrong');
+      }
+    });
+    document.getElementById(`exp-${i}`).classList.add('show');
+    if (answered[i] === q.ans) score++;
+  });
+
+  const pct = Math.round((score / questions.length) * 100);
+  let msg, color;
+  if (pct >= 90)      { msg = "Excellent! You're exam-ready on this chapter."; color = "#4ade80"; }
+  else if (pct >= 70) { msg = "Above passing threshold. Review missed questions."; color = "#facc15"; }
+  else                { msg = "Below passing threshold. Review and retry!"; color = "#f87171"; }
+
+  document.getElementById('score-live').textContent = `Score: ${score}/${questions.length} (${pct}%)`;
+  document.getElementById('submit-btn').outerHTML = `<button class="btn btn-ghost" onclick="buildQuiz()">Retake Quiz</button>`;
+  document.getElementById('results-area').innerHTML = `
+    <div class="quiz-results">
+      <div class="score-big" style="color:${color}">${pct}%</div>
+      <div class="score-sub">${score} correct out of ${questions.length}</div>
+      <div class="score-msg" style="color:${color}">${msg}</div>
+      <div style="margin-top:8px;font-size:0.85rem;color:#64748b;">Pass threshold: 70% · Scroll up to review explanations</div>
+    </div>`;
+  window.scrollTo({ top: document.getElementById('results-area').offsetTop - 80, behavior: 'smooth' });
+}
+
+function showTab(t) {
+  document.getElementById('tab-flashcards').style.display = t === 'flashcards' ? '' : 'none';
+  document.getElementById('tab-quiz').style.display       = t === 'quiz' ? '' : 'none';
+  document.querySelectorAll('.tab').forEach((el, i) => {
+    el.classList.toggle('active', (i === 0 && t === 'flashcards') || (i === 1 && t === 'quiz'));
+  });
+  if (t === 'quiz' && !document.querySelector('.q-card')) buildQuiz();
+}
+</script>
+</body>
+</html>
