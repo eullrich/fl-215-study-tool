@@ -32,13 +32,15 @@ async def init_db():
             await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
 
-    # Auto-seed if DB is empty
+    # Auto-seed if DB is empty or chapters are missing
     from app.models.content import Chapter
+    from sqlalchemy import func
     async with async_session() as session:
-        result = await session.execute(select(Chapter).limit(1))
-        if result.scalar_one_or_none() is None:
+        chapter_count = (await session.execute(select(func.count()).select_from(Chapter))).scalar() or 0
+        from data.seed_content import CHAPTERS
+        if chapter_count < len(CHAPTERS):
             from data.seed_content import seed
-            await seed()
+            await seed(reset=True)
 
 
 async def get_db():
