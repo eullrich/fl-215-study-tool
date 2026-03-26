@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FL 2-15 Exam | Chapter 7 Study Tool</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+  .header { background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%); padding: 24px 32px; border-bottom: 1px solid #1e40af44; }
+  .header h1 { font-size: 1.5rem; font-weight: 700; color: #60a5fa; letter-spacing: -0.02em; }
+  .header p { font-size: 0.875rem; color: #94a3b8; margin-top: 4px; }
+  .tabs { display: flex; gap: 0; padding: 20px 32px 0; border-bottom: 1px solid #1e293b; }
+  .tab { padding: 10px 24px; border-radius: 8px 8px 0 0; cursor: pointer; font-size: 0.875rem; font-weight: 600; border: 1px solid transparent; border-bottom: none; transition: all 0.2s; color: #64748b; }
+  .tab.active { background: #1e293b; color: #60a5fa; border-color: #1e40af44; }
+  .tab:hover:not(.active) { color: #94a3b8; }
+  .content { padding: 32px; max-width: 860px; margin: 0 auto; }
+  .fc-container { display: flex; flex-direction: column; align-items: center; gap: 24px; }
+  .fc-progress { font-size: 0.8rem; color: #64748b; letter-spacing: 0.05em; text-transform: uppercase; }
+  .fc-card-wrap { width: 100%; max-width: 640px; perspective: 1200px; cursor: pointer; user-select: none; }
+  .fc-card { position: relative; width: 100%; height: 220px; transition: transform 0.55s cubic-bezier(.4,2,.6,1); transform-style: preserve-3d; }
+  .fc-card.flipped { transform: rotateY(180deg); }
+  .fc-face { position: absolute; inset: 0; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 28px 36px; text-align: center; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+  .fc-front { background: linear-gradient(135deg, #1e3a5f, #1e293b); border: 1px solid #2563eb44; box-shadow: 0 8px 32px #0004; }
+  .fc-back  { background: linear-gradient(135deg, #14532d, #1e293b); border: 1px solid #16a34a44; box-shadow: 0 8px 32px #0004; transform: rotateY(180deg); }
+  .fc-label { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px; opacity: 0.5; }
+  .fc-text  { font-size: 1.15rem; font-weight: 600; line-height: 1.5; color: #f1f5f9; }
+  .fc-hint  { font-size: 0.75rem; color: #64748b; margin-top: 14px; }
+  .fc-controls { display: flex; gap: 12px; align-items: center; }
+  .btn { padding: 10px 22px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; transition: all 0.15s; }
+  .btn-primary { background: #2563eb; color: #fff; }
+  .btn-primary:hover { background: #1d4ed8; }
+  .btn-ghost { background: #1e293b; color: #94a3b8; border: 1px solid #334155; }
+  .btn-ghost:hover { background: #334155; color: #e2e8f0; }
+  .btn-sm { padding: 7px 16px; font-size: 0.8rem; }
+  .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+  .quiz-meta { font-size: 0.8rem; color: #64748b; }
+  .score-badge { background: #1e293b; border: 1px solid #334155; border-radius: 999px; padding: 4px 14px; font-size: 0.8rem; font-weight: 700; color: #94a3b8; }
+  .q-card { background: #1e293b; border: 1px solid #334155; border-radius: 14px; padding: 28px; margin-bottom: 20px; }
+  .q-num { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #64748b; margin-bottom: 10px; }
+  .q-text { font-size: 1rem; font-weight: 600; color: #f1f5f9; line-height: 1.55; margin-bottom: 20px; }
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .opt { padding: 12px 18px; border-radius: 9px; border: 1.5px solid #334155; background: #0f172a; cursor: pointer; font-size: 0.9rem; color: #cbd5e1; transition: all 0.15s; display: flex; align-items: flex-start; gap: 10px; }
+  .opt:hover:not(.disabled) { border-color: #3b82f6; color: #e2e8f0; background: #1e3a5f; }
+  .opt.correct { border-color: #22c55e; background: #14532d22; color: #4ade80; }
+  .opt.wrong   { border-color: #ef4444; background: #7f1d1d22; color: #f87171; }
+  .opt.disabled { cursor: default; pointer-events: none; }
+  .opt-letter { font-weight: 700; opacity: 0.5; min-width: 18px; }
+  .explanation { margin-top: 14px; padding: 12px 16px; border-radius: 8px; background: #0f172a; border-left: 3px solid #3b82f6; font-size: 0.85rem; color: #94a3b8; line-height: 1.5; display: none; }
+  .explanation.show { display: block; }
+  .quiz-results { text-align: center; padding: 40px 20px; }
+  .score-big { font-size: 4rem; font-weight: 800; color: #60a5fa; line-height: 1; }
+  .score-sub { font-size: 1rem; color: #64748b; margin-top: 8px; }
+  .score-msg { font-size: 1.1rem; font-weight: 600; margin-top: 16px; }
+  .section-divider { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #3b82f6; background: #1e3a5f22; border: 1px solid #1e40af33; border-radius: 6px; padding: 5px 14px; display: inline-block; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>FL 2-15 Exam Prep</h1>
+  <p>Chapter 7 — Life Insurance Solicitation, Underwriting & Policy Delivery</p>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('flashcards')">Flashcards</div>
+  <div class="tab" onclick="showTab('quiz')">Practice Test</div>
+</div>
+
+<div id="tab-flashcards" class="content">
+  <div class="fc-container">
+    <div class="fc-progress" id="fc-progress">Card 1 of 1</div>
+    <div class="fc-card-wrap" onclick="flipCard()">
+      <div class="fc-card" id="fc-card">
+        <div class="fc-face fc-front">
+          <div class="fc-label">Term</div>
+          <div class="fc-text" id="fc-front-text"></div>
+          <div class="fc-hint">click to reveal definition</div>
+        </div>
+        <div class="fc-face fc-back">
+          <div class="fc-label">Definition</div>
+          <div class="fc-text" id="fc-back-text"></div>
+        </div>
+      </div>
+    </div>
+    <div class="fc-controls">
+      <button class="btn btn-ghost btn-sm" onclick="prevCard()">Prev</button>
+      <button class="btn btn-primary" onclick="nextCard()">Next</button>
+      <button class="btn btn-ghost btn-sm" onclick="shuffleCards()">Shuffle</button>
+    </div>
+  </div>
+</div>
+
+<div id="tab-quiz" class="content" style="display:none;">
+  <div id="quiz-area"></div>
+</div>
+
+<script>
+// ──────────────────────────────────────────
+// FLASHCARD DATA — Chapter 7: Life Insurance Solicitation, Underwriting & Policy Delivery
+// ──────────────────────────────────────────
+const cards = [
+
+  // ── LO 1: Agent's Role & Responsibilities ──
+  { s: "LO1 — Agent's Role", q: "Field Underwriter", a: "The AGENT who initiates the underwriting process by completing the application, collecting information, and gathering the initial premium." },
+  { s: "LO1 — Agent's Role", q: "Fiduciary Responsibility", a: "The producer's LEGAL OBLIGATION to act in the CLIENT'S BEST INTEREST, especially when collecting premiums and dealing with the public." },
+  { s: "LO1 — Agent's Role", q: "Errors and Omissions", a: "UNINTENTIONAL errors or HONEST MISTAKES (torts) made by producers. Not fraud, but can still create liability." },
+  { s: "LO1 — Agent's Role", q: "Agent's solicitation responsibilities", a: "Agents must: act as FIELD UNDERWRITERS, act in a FIDUCIARY capacity, focus on cases within the insurer's UNDERWRITING GUIDELINES, and fulfill legal/ethical duties to BOTH insurers and clients." },
+
+  // ── LO 2: Insurable Interest ──
+  { s: "LO2 — Insurable Interest", q: "Insurable Interest (life insurance)", a: "Must exist at POLICY INCEPTION (not at time of loss). Without it, life insurance would be a WAGERING CONTRACT. Exists when the insured's death would cause FINANCIAL IMPACT on the policy owner." },
+  { s: "LO2 — Insurable Interest", q: "When must insurable interest exist?", a: "At the TIME OF APPLICATION (policy inception) — NOT at the time of loss. This is different from property insurance where it must exist at time of loss." },
+  { s: "LO2 — Insurable Interest", q: "Automatic insurable interest relationships", a: "Individual in OWN LIFE. SPOUSES in each other. PARENTS in children. CHILDREN in parents/grandparents. BUSINESSES in key employees/officers/directors. PARTNERS in each other. CREDITORS in debtors (limited to debt)." },
+  { s: "LO2 — Insurable Interest", q: "Creditor's insurable interest in debtor", a: "A creditor has insurable interest in a debtor, but it is LIMITED TO THE AMOUNT OF THE DEBT." },
+
+  // ── LO 3: Underwriting Purpose & Adverse Selection ──
+  { s: "LO3 — Underwriting", q: "Underwriting (purpose)", a: "The process of REVIEWING RISK PROFILES to determine INSURABILITY and appropriate RATES. Primary purpose: protect insurers against ADVERSE SELECTION." },
+  { s: "LO3 — Underwriting", q: "Adverse Selection", a: "Occurs when POORER RISKS seek insurance or insurers ACCEPT BAD RISKS. Sound underwriting REDUCES the probability of adverse selection." },
+  { s: "LO3 — Underwriting", q: "Elements of Insurable Risk", a: "(1) Loss must be SIGNIFICANT enough to cause financial hardship. (2) Loss must NOT be CATASTROPHIC (e.g., war). (3) Premium must be REASONABLE. (4) Loss must be UNPREDICTABLE/FORTUITOUS. (5) LAW OF LARGE NUMBERS must apply." },
+
+  // ── LO 4: Key Parties in Underwriting ──
+  { s: "LO4 — Key Parties", q: "Applicant vs. Proposed Insured vs. Policy Owner", a: "APPLICANT: person requesting insurance. PROPOSED INSURED: person whose life is covered. POLICY OWNER: person who retains policy rights. They may or may not be the same person." },
+  { s: "LO4 — Key Parties", q: "Payor", a: "The person RESPONSIBLE FOR PREMIUM PAYMENTS. May be different from the applicant, insured, or owner." },
+  { s: "LO4 — Key Parties", q: "Producer/Agent responsibilities in underwriting", a: "Complete applications THOROUGHLY and ACCURATELY. Collect INITIAL PREMIUM and issue RECEIPT. Provide REQUIRED DISCLOSURES before collecting premium. DELIVER policy and EXPLAIN provisions. Obtain STATEMENT OF CONTINUED GOOD HEALTH when needed." },
+  { s: "LO4 — Key Parties", q: "Underwriter (role)", a: "Reviews applications, CLASSIFIES RISK, and determines PREMIUM RATES. The underwriter decides whether to accept, modify, or decline the application." },
+
+  // ── LO 5: Life Insurance Application ──
+  { s: "LO5 — Application", q: "Three parts of a life insurance application", a: "PART I: General applicant info (name, age, address, policy details). PART II: Medical and health history (insured and family). PART III: Agent's report/statement (CONFIDENTIAL communication with insurer)." },
+  { s: "LO5 — Application", q: "Part I of the Application", a: "GENERAL APPLICANT INFORMATION: name, age, address, occupation, policy type requested, face amount, beneficiary designations." },
+  { s: "LO5 — Application", q: "Part II of the Application", a: "MEDICAL AND HEALTH HISTORY of the proposed insured AND their family. Covers current health, past conditions, medications, and family health history." },
+  { s: "LO5 — Application", q: "Part III of the Application", a: "AGENT'S REPORT/STATEMENT — a CONFIDENTIAL communication between the agent and the insurer. Contains agent's observations and assessment of the applicant." },
+  { s: "LO5 — Application", q: "Representations vs. Warranties", a: "Statements on applications are REPRESENTATIONS (believed to be true), NOT WARRANTIES (guaranteed to be true). Representations must be MATERIALLY ACCURATE, not absolutely true in every detail." },
+  { s: "LO5 — Application", q: "Material Misrepresentation", a: "A false statement that, if known, would have changed the insurer's decision. Material misrepresentation MAY VOID the policy." },
+  { s: "LO5 — Application", q: "Application signature requirements", a: "Must be signed by the APPLICANT and the AGENT. If the proposed insured is DIFFERENT from the applicant, the proposed insured must ALSO sign." },
+  { s: "LO5 — Application", q: "Changes to the application", a: "Any changes must be INITIALED BY THE APPLICANT. The agent cannot make unilateral changes to a signed application." },
+
+  // ── LO 6: Sources of Underwriting Information ──
+  { s: "LO6 — Info Sources", q: "Application (as info source)", a: "The PRIMARY SOURCE for personal, medical, and financial information about the applicant." },
+  { s: "LO6 — Info Sources", q: "Medical Information Bureau (MIB)", a: "A SHARED DATABASE of medical information used by insurers to DETECT UNDISCLOSED CONDITIONS. Helps prevent fraud and adverse selection." },
+  { s: "LO6 — Info Sources", q: "Attending Physician Statement (APS)", a: "DETAILED MEDICAL INFORMATION from the applicant's DOCTOR. Provides clinical records beyond what the applicant self-reports." },
+  { s: "LO6 — Info Sources", q: "Medical Examination", a: "OBJECTIVE VERIFICATION of health status. Typically required for HIGHER FACE AMOUNTS or when health concerns are identified." },
+  { s: "LO6 — Info Sources", q: "Other underwriting info sources", a: "SPECIAL QUESTIONNAIRES (aviation, hobbies, foreign residence). INSPECTION REPORTS (character, finances, lifestyle). CREDIT REPORTS. MOTOR VEHICLE REPORTS. PRESCRIPTION DRUG DATABASE." },
+  { s: "LO6 — Info Sources", q: "Fair Credit Reporting Act (FCRA) in underwriting", a: "Establishes procedures for COLLECTING and DISCLOSING consumer information. Applicants must be notified if adverse action is based on a consumer report." },
+  { s: "LO6 — Info Sources", q: "HIPAA in underwriting", a: "Requires PRIVACY NOTICES when collecting personal HEALTH INFORMATION from applicants." },
+  { s: "LO6 — Info Sources", q: "USA PATRIOT Act in underwriting", a: "Requires insurers to have ANTI-MONEY LAUNDERING programs to detect and prevent financial crimes." },
+
+  // ── LO 7: Risk Classifications ──
+  { s: "LO7 — Risk Classes", q: "Preferred Risk", a: "BETTER than average mortality expectation. Receives LOWER PREMIUMS than standard. Healthiest classification." },
+  { s: "LO7 — Risk Classes", q: "Standard Risk", a: "Meets the insurer's guidelines WITHOUT special restrictions. Average mortality expectation, standard premium rates." },
+  { s: "LO7 — Risk Classes", q: "Substandard Risk", a: "BELOW standard guidelines. May require HIGHER PREMIUMS, policy modifications, or exclusion riders. Still insurable but at increased cost." },
+  { s: "LO7 — Risk Classes", q: "Declined Risk", a: "UNINSURABLE due to EXCESSIVE RISK. The insurer refuses to issue coverage." },
+  { s: "LO7 — Risk Classes", q: "Risk classification factors", a: "HEALTH status and medical history. FAMILY medical history. TOBACCO/ALCOHOL use. OCCUPATION and HOBBIES. DRIVING record. FINANCIAL status." },
+  { s: "LO7 — Risk Classes", q: "Unfair Discrimination in underwriting", a: "PROHIBITED factors: sexual orientation, religion, geographical location. LEGAL discrimination based on risk factors (age, health, occupation) IS permitted." },
+  { s: "LO7 — Risk Classes", q: "Risk Classifications Summary", a: "PREFERRED: best health, lowest premium. STANDARD: average, normal premium. SUBSTANDARD: higher risk, higher premium. DECLINED: uninsurable, no policy issued." },
+
+  // ── LO 8: Premium Receipts ──
+  { s: "LO8 — Receipts", q: "Conditional Receipt", a: "Coverage effective as of APPLICATION DATE or MEDICAL EXAM DATE — but ONLY IF the applicant proves INSURABLE. If uninsurable, premium is REFUNDED." },
+  { s: "LO8 — Receipts", q: "Binding Receipt", a: "Coverage effective IMMEDIATELY when premium is collected. Remains in effect UNTIL FORMAL REJECTION by the insurer. Most favorable to the applicant." },
+  { s: "LO8 — Receipts", q: "Temporary Insurance Agreement", a: "Provides LIMITED COVERAGE between application and policy issue. Typically has a MAXIMUM COVERAGE AMOUNT specified on the receipt." },
+  { s: "LO8 — Receipts", q: "Conditional vs. Binding Receipt", a: "CONDITIONAL: coverage only if applicant IS insurable (backdated to application/exam date). BINDING: coverage IMMEDIATELY regardless of insurability, until formal rejection." },
+
+  // ── LO 9: Policy Issuance & Delivery ──
+  { s: "LO9 — Policy Delivery", q: "Policy issuance process", a: "(1) Underwriting COMPLETED and risk classified. (2) Policy PREPARED and sent to agent. (3) Agent DELIVERS policy to owner. (4) Initial PREMIUM collected (if not already paid). (5) STATEMENT OF CONTINUED GOOD HEALTH obtained if needed." },
+  { s: "LO9 — Policy Delivery", q: "Constructive Delivery", a: "Occurs when the insurer gives the policy to the AGENT FOR DELIVERY. The policy is considered delivered even if the agent hasn't physically handed it to the owner yet." },
+  { s: "LO9 — Policy Delivery", q: "Physical possession vs. delivery", a: "Physical possession DOES NOT establish delivery if CONDITIONS AREN'T MET (e.g., premium not paid, health changed). Conditions must be satisfied." },
+  { s: "LO9 — Policy Delivery", q: "Agent duties at delivery", a: "EXPLAIN policy provisions, exclusions, and riders. Collect premium if not already paid. Obtain STATEMENT OF CONTINUED GOOD HEALTH if needed." },
+  { s: "LO9 — Policy Delivery", q: "Backdating a policy", a: "May be permitted, typically up to 6 MONTHS, to SAVE AGE — allowing the insured to get a lower premium based on a younger age." },
+
+  // ── LO 10: Consumer Protections ──
+  { s: "LO10 — Consumer Protections", q: "Free-Look Period", a: "Minimum 10 DAYS (30 days for MAIL-ORDER policies) to return the policy for a FULL REFUND. No questions asked." },
+  { s: "LO10 — Consumer Protections", q: "Required disclosures at solicitation", a: "LIFE INSURANCE BUYER'S GUIDE and POLICY SUMMARY must be provided to the applicant." },
+  { s: "LO10 — Consumer Protections", q: "Consumer protections summary", a: "FREE-LOOK PERIOD (10/30 days). Required DISCLOSURES (buyer's guide, policy summary). HIPAA privacy notice. FCRA protections. Prohibition against UNFAIR DISCRIMINATION." },
+];
+
+let currentIdx = 0;
+let flipped = false;
+let shuffled = [...cards];
+
+function renderCard() {
+  const c = shuffled[currentIdx];
+  document.getElementById('fc-front-text').textContent = c.q;
+  document.getElementById('fc-back-text').textContent  = c.a;
+  document.getElementById('fc-progress').textContent = `Card ${currentIdx + 1} of ${shuffled.length}`;
+  const card = document.getElementById('fc-card');
+  card.classList.remove('flipped');
+  flipped = false;
+}
+
+function flipCard() {
+  const card = document.getElementById('fc-card');
+  flipped = !flipped;
+  card.classList.toggle('flipped', flipped);
+}
+
+function nextCard() {
+  if (currentIdx < shuffled.length - 1) currentIdx++;
+  else currentIdx = 0;
+  renderCard();
+}
+
+function prevCard() {
+  if (currentIdx > 0) currentIdx--;
+  else currentIdx = shuffled.length - 1;
+  renderCard();
+}
+
+function shuffleCards() {
+  shuffled = [...cards].sort(() => Math.random() - 0.5);
+  currentIdx = 0;
+  renderCard();
+}
+
+renderCard();
+
+// ──────────────────────────────────────────
+// QUIZ DATA
+// ──────────────────────────────────────────
+const questions = [
+  {
+    section: "Agent's Role & Responsibilities",
+    q: "An agent who initiates the underwriting process by completing the application is known as a:",
+    opts: ["Home office underwriter","Field underwriter","Claims adjuster","Actuary"],
+    ans: 1,
+    exp: "The agent acts as a field underwriter, initiating the underwriting process by completing the application and collecting information."
+  },
+  {
+    section: "Agent's Role & Responsibilities",
+    q: "A producer's fiduciary responsibility means the producer must:",
+    opts: ["Maximize the insurer's profits","Act in the client's best interest","Sell the most expensive policy available","Report all client information to the government"],
+    ans: 1,
+    exp: "Fiduciary responsibility is the legal obligation to act in the client's best interest, especially when collecting premiums."
+  },
+  {
+    section: "Agent's Role & Responsibilities",
+    q: "Errors and omissions by a producer are best described as:",
+    opts: ["Intentional fraud","Unintentional errors or honest mistakes","Criminal acts","Breach of contract"],
+    ans: 1,
+    exp: "Errors and omissions are unintentional errors or honest mistakes (torts) — not fraud, but they can create liability."
+  },
+  {
+    section: "Insurable Interest",
+    q: "In life insurance, insurable interest must exist at:",
+    opts: ["The time of the claim","The time of policy inception","The time of death","Both inception and death"],
+    ans: 1,
+    exp: "Insurable interest must exist at policy inception (time of application), not at the time of loss."
+  },
+  {
+    section: "Insurable Interest",
+    q: "Without insurable interest, a life insurance policy would be considered a:",
+    opts: ["Valued contract","Wagering contract","Unilateral contract","Conditional contract"],
+    ans: 1,
+    exp: "Without insurable interest, life insurance would be a wagering contract — essentially gambling on someone's life."
+  },
+  {
+    section: "Insurable Interest",
+    q: "A creditor's insurable interest in a debtor is limited to:",
+    opts: ["The debtor's total net worth","The amount of the debt","Unlimited amount","The debtor's annual income"],
+    ans: 1,
+    exp: "A creditor has insurable interest in a debtor, but it is limited to the amount of the debt."
+  },
+  {
+    section: "Insurable Interest",
+    q: "Which of the following has an automatic insurable interest?",
+    opts: ["A neighbor in their neighbor's life","A business partner in another partner's life","A friend in their friend's life","A landlord in their tenant's life"],
+    ans: 1,
+    exp: "Business partners have automatic insurable interest in each other due to the financial impact one partner's death would have on the business."
+  },
+  {
+    section: "Underwriting & Adverse Selection",
+    q: "The primary purpose of underwriting is to:",
+    opts: ["Maximize premium revenue","Protect against adverse selection","Deny as many applications as possible","Reduce agent commissions"],
+    ans: 1,
+    exp: "The primary purpose of underwriting is to protect insurers against adverse selection."
+  },
+  {
+    section: "Underwriting & Adverse Selection",
+    q: "Adverse selection occurs when:",
+    opts: ["Healthy individuals buy more insurance","Poorer risks disproportionately seek insurance","Insurers charge lower premiums","Agents sell fewer policies"],
+    ans: 1,
+    exp: "Adverse selection occurs when poorer risks seek insurance more frequently or when insurers accept bad risks."
+  },
+  {
+    section: "Underwriting & Adverse Selection",
+    q: "Which of the following is NOT an element of insurable risk?",
+    opts: ["Loss must be significant enough to cause financial hardship","Loss must be unpredictable or fortuitous","Loss must result in a profit for the insured","Premium cost must be reasonable"],
+    ans: 2,
+    exp: "The insured cannot profit from a loss — that would violate the principle of indemnification. Insurable risk requires significant, non-catastrophic, unpredictable losses with reasonable premiums."
+  },
+  {
+    section: "Key Parties in Underwriting",
+    q: "The person who retains policy rights and options is the:",
+    opts: ["Applicant","Proposed insured","Policy owner","Payor"],
+    ans: 2,
+    exp: "The policy owner retains all rights and options under the policy, including the right to change beneficiaries, take loans, and surrender."
+  },
+  {
+    section: "Key Parties in Underwriting",
+    q: "Which of the following is NOT an agent responsibility during underwriting?",
+    opts: ["Complete applications accurately","Classify the risk and set premium rates","Collect the initial premium","Deliver the policy and explain provisions"],
+    ans: 1,
+    exp: "The underwriter classifies risk and sets premium rates — not the agent. The agent completes applications, collects premiums, and delivers policies."
+  },
+  {
+    section: "Key Parties in Underwriting",
+    q: "When should an agent obtain a statement of continued good health?",
+    opts: ["At every policy renewal","When there is a delay between application and policy delivery","Only for substandard risks","When the policy owner changes beneficiaries"],
+    ans: 1,
+    exp: "A statement of continued good health is obtained when there is a delay between application and policy delivery, to confirm the insured's health hasn't changed."
+  },
+  {
+    section: "Life Insurance Application",
+    q: "Part III of the life insurance application contains:",
+    opts: ["The applicant's medical history","General applicant information","The agent's confidential report to the insurer","The beneficiary's information"],
+    ans: 2,
+    exp: "Part III is the agent's report/statement — a confidential communication between the agent and the insurer."
+  },
+  {
+    section: "Life Insurance Application",
+    q: "Statements made on a life insurance application are considered:",
+    opts: ["Warranties","Representations","Guarantees","Certifications"],
+    ans: 1,
+    exp: "Statements on applications are representations (believed to be true), not warranties (guaranteed to be true). They must be materially accurate."
+  },
+  {
+    section: "Life Insurance Application",
+    q: "A material misrepresentation on an application may result in:",
+    opts: ["Higher dividends","The policy being voided","Automatic renewal","Lower premiums"],
+    ans: 1,
+    exp: "Material misrepresentation — a false statement that would have changed the insurer's decision — may void the policy."
+  },
+  {
+    section: "Life Insurance Application",
+    q: "If the proposed insured is different from the applicant, who must sign the application?",
+    opts: ["Only the applicant","Only the proposed insured","Both the applicant and the proposed insured","Only the agent"],
+    ans: 2,
+    exp: "The application must be signed by the applicant, the agent, and the proposed insured if different from the applicant."
+  },
+  {
+    section: "Life Insurance Application",
+    q: "Changes to a signed application must be:",
+    opts: ["Made by the agent without notice","Initialed by the applicant","Approved by the state","Filed with the MIB"],
+    ans: 1,
+    exp: "Any changes to the application must be initialed by the applicant — the agent cannot make unilateral changes."
+  },
+  {
+    section: "Sources of Underwriting Information",
+    q: "The primary source of underwriting information is the:",
+    opts: ["MIB report","Credit report","Application","Medical examination"],
+    ans: 2,
+    exp: "The application is the primary source for personal, medical, and financial information about the applicant."
+  },
+  {
+    section: "Sources of Underwriting Information",
+    q: "The Medical Information Bureau (MIB) helps insurers:",
+    opts: ["Set premium rates","Detect undisclosed medical conditions","Provide medical treatment","Issue policies faster"],
+    ans: 1,
+    exp: "The MIB is a shared database of medical information used by insurers to detect undisclosed conditions and prevent fraud."
+  },
+  {
+    section: "Sources of Underwriting Information",
+    q: "An Attending Physician Statement (APS) provides:",
+    opts: ["The agent's assessment of the applicant","Detailed medical information from the applicant's doctor","Credit history","Driving records"],
+    ans: 1,
+    exp: "The APS provides detailed medical information from the applicant's doctor — clinical records beyond self-reported information."
+  },
+  {
+    section: "Sources of Underwriting Information",
+    q: "HIPAA requires insurers to:",
+    opts: ["Deny coverage to unhealthy applicants","Provide privacy notices when collecting personal health information","Share medical records with employers","Reduce premiums for healthy applicants"],
+    ans: 1,
+    exp: "HIPAA requires privacy notices when collecting personal health information from applicants."
+  },
+  {
+    section: "Sources of Underwriting Information",
+    q: "The USA PATRIOT Act requires insurers to maintain:",
+    opts: ["Higher reserves","Anti-money laundering programs","Lower premiums for veterans","Government-approved policy forms"],
+    ans: 1,
+    exp: "The USA PATRIOT Act requires insurers to have anti-money laundering programs to detect and prevent financial crimes."
+  },
+  {
+    section: "Risk Classifications",
+    q: "A preferred risk classification means the applicant has:",
+    opts: ["Average mortality expectation","Better than average mortality expectation","Below average mortality expectation","No mortality expectation"],
+    ans: 1,
+    exp: "Preferred risk means better than average mortality expectation — the healthiest classification with the lowest premiums."
+  },
+  {
+    section: "Risk Classifications",
+    q: "A substandard risk applicant will typically receive:",
+    opts: ["Lower premiums than standard","The same premiums as preferred","Higher premiums than standard","No coverage at all"],
+    ans: 2,
+    exp: "Substandard risks are below standard guidelines and may require higher premiums, policy modifications, or exclusion riders."
+  },
+  {
+    section: "Risk Classifications",
+    q: "Which of the following is a PROHIBITED underwriting factor?",
+    opts: ["Age","Tobacco use","Sexual orientation","Occupation"],
+    ans: 2,
+    exp: "Sexual orientation, religion, and geographical location are prohibited underwriting factors. Age, health, tobacco use, and occupation are legally permitted."
+  },
+  {
+    section: "Risk Classifications",
+    q: "Legal discrimination in underwriting is based on:",
+    opts: ["Race and ethnicity","Sexual orientation and religion","Risk factors such as age, health, and occupation","Geographic location only"],
+    ans: 2,
+    exp: "Legal discrimination based on risk factors (age, health, occupation) is permitted. Discrimination based on sexual orientation, religion, or geography is prohibited."
+  },
+  {
+    section: "Premium Receipts",
+    q: "A conditional receipt provides coverage effective:",
+    opts: ["Immediately upon premium payment","As of the application or medical exam date, if the applicant is insurable","30 days after application","Only after the policy is issued"],
+    ans: 1,
+    exp: "A conditional receipt provides coverage effective as of the application date or medical exam date — but only if the applicant proves insurable."
+  },
+  {
+    section: "Premium Receipts",
+    q: "A binding receipt provides coverage:",
+    opts: ["Only if the applicant is insurable","Immediately when premium is collected, until formal rejection","After the medical exam","30 days after application"],
+    ans: 1,
+    exp: "A binding receipt provides coverage immediately when premium is collected and remains in effect until formal rejection — the most favorable to the applicant."
+  },
+  {
+    section: "Premium Receipts",
+    q: "If an applicant with a conditional receipt proves uninsurable, the insurer will:",
+    opts: ["Issue the policy anyway","Refund the premium","Convert to term insurance","Extend the conditional period"],
+    ans: 1,
+    exp: "If the applicant proves uninsurable under a conditional receipt, the premium is refunded and no coverage exists."
+  },
+  {
+    section: "Premium Receipts",
+    q: "Which receipt is MOST favorable to the applicant?",
+    opts: ["Conditional receipt","Binding receipt","Temporary insurance agreement","No receipt"],
+    ans: 1,
+    exp: "The binding receipt is most favorable — coverage begins immediately regardless of insurability, continuing until formal rejection."
+  },
+  {
+    section: "Policy Issuance & Delivery",
+    q: "Constructive delivery occurs when:",
+    opts: ["The applicant signs the application","The insurer gives the policy to the agent for delivery","The beneficiary receives the death benefit","The premium is paid"],
+    ans: 1,
+    exp: "Constructive delivery occurs when the insurer gives the policy to the agent for delivery — even before the agent hands it to the owner."
+  },
+  {
+    section: "Policy Issuance & Delivery",
+    q: "Physical possession of a policy establishes delivery:",
+    opts: ["Always","Only if all conditions are met","Never","Only for term policies"],
+    ans: 1,
+    exp: "Physical possession does not establish delivery if conditions aren't met (e.g., premium not paid, health changed). Conditions must be satisfied."
+  },
+  {
+    section: "Policy Issuance & Delivery",
+    q: "Backdating a policy is typically permitted up to:",
+    opts: ["30 days","3 months","6 months","1 year"],
+    ans: 2,
+    exp: "Backdating may be permitted up to 6 months to save age — allowing the insured to get a lower premium based on a younger age."
+  },
+  {
+    section: "Consumer Protections",
+    q: "The standard free-look period for a life insurance policy is:",
+    opts: ["5 days","10 days","20 days","30 days"],
+    ans: 1,
+    exp: "The standard free-look period is a minimum of 10 days (30 days for mail-order policies) to return the policy for a full refund."
+  },
+  {
+    section: "Consumer Protections",
+    q: "The free-look period for mail-order life insurance policies is:",
+    opts: ["10 days","15 days","20 days","30 days"],
+    ans: 3,
+    exp: "Mail-order policies have a 30-day free-look period, compared to the standard 10-day period."
+  },
+  {
+    section: "Consumer Protections",
+    q: "Which documents must be provided to an applicant during solicitation?",
+    opts: ["Policy and premium receipt only","Life insurance buyer's guide and policy summary","Medical records and credit report","Agent's license and company financials"],
+    ans: 1,
+    exp: "Required disclosures include a life insurance buyer's guide and a policy summary."
+  },
+];
+
+// ── Quiz Engine ──
+let answered = {};
+let submitted = false;
+let score = 0;
+
+function buildQuiz() {
+  answered = {};
+  submitted = false;
+  score = 0;
+  const area = document.getElementById('quiz-area');
+  let html = `<div class="quiz-header"><div class="quiz-meta">${questions.length} Questions</div><div class="score-badge" id="score-live">0/${questions.length} answered</div></div>`;
+  let lastSection = '';
+
+  questions.forEach((q, i) => {
+    if (q.section !== lastSection) {
+      html += `<div class="section-divider">${q.section}</div>`;
+      lastSection = q.section;
+    }
+    html += `<div class="q-card" id="qcard-${i}">
+      <div class="q-num">Question ${i + 1}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="options">`;
+    const letters = ['A','B','C','D'];
+    q.opts.forEach((opt, j) => {
+      html += `<div class="opt" id="opt-${i}-${j}" onclick="selectAnswer(${i},${j})">
+        <span class="opt-letter">${letters[j]}</span><span>${opt}</span>
+      </div>`;
+    });
+    html += `</div><div class="explanation" id="exp-${i}">${q.exp}</div></div>`;
+  });
+
+  html += `<div style="text-align:center; margin-top:32px;">
+    <button class="btn btn-primary" onclick="submitQuiz()" id="submit-btn">Submit & Score</button>
+  </div><div id="results-area"></div>`;
+  area.innerHTML = html;
+}
+
+function selectAnswer(qIdx, optIdx) {
+  if (submitted) return;
+  answered[qIdx] = optIdx;
+  questions[qIdx].opts.forEach((_, j) => {
+    const el = document.getElementById(`opt-${qIdx}-${j}`);
+    el.style.borderColor = j === optIdx ? '#3b82f6' : '';
+    el.style.background  = j === optIdx ? '#1e3a5f' : '';
+    el.style.color       = j === optIdx ? '#e2e8f0' : '';
+  });
+  updateLiveScore();
+}
+
+function updateLiveScore() {
+  let correct = 0;
+  Object.keys(answered).forEach(i => { if (answered[i] === questions[i].ans) correct++; });
+  document.getElementById('score-live').textContent = `${correct}/${Object.keys(answered).length} answered`;
+}
+
+function submitQuiz() {
+  submitted = true;
+  score = 0;
+  questions.forEach((q, i) => {
+    q.opts.forEach((_, j) => {
+      const el = document.getElementById(`opt-${i}-${j}`);
+      el.classList.add('disabled');
+      if (j === q.ans) {
+        el.classList.add('correct');
+      } else if (answered[i] === j) {
+        el.classList.add('wrong');
+      }
+    });
+    document.getElementById(`exp-${i}`).classList.add('show');
+    if (answered[i] === q.ans) score++;
+  });
+
+  const pct = Math.round((score / questions.length) * 100);
+  let msg, color;
+  if (pct >= 90)      { msg = "Excellent! You're exam-ready on this chapter."; color = "#4ade80"; }
+  else if (pct >= 70) { msg = "Above passing threshold. Review missed questions."; color = "#facc15"; }
+  else                { msg = "Below passing threshold. Review and retry!"; color = "#f87171"; }
+
+  document.getElementById('score-live').textContent = `Score: ${score}/${questions.length} (${pct}%)`;
+  document.getElementById('submit-btn').outerHTML = `<button class="btn btn-ghost" onclick="buildQuiz()">Retake Quiz</button>`;
+  document.getElementById('results-area').innerHTML = `
+    <div class="quiz-results">
+      <div class="score-big" style="color:${color}">${pct}%</div>
+      <div class="score-sub">${score} correct out of ${questions.length}</div>
+      <div class="score-msg" style="color:${color}">${msg}</div>
+      <div style="margin-top:8px;font-size:0.85rem;color:#64748b;">Pass threshold: 70% · Scroll up to review explanations</div>
+    </div>`;
+  window.scrollTo({ top: document.getElementById('results-area').offsetTop - 80, behavior: 'smooth' });
+}
+
+function showTab(t) {
+  document.getElementById('tab-flashcards').style.display = t === 'flashcards' ? '' : 'none';
+  document.getElementById('tab-quiz').style.display       = t === 'quiz' ? '' : 'none';
+  document.querySelectorAll('.tab').forEach((el, i) => {
+    el.classList.toggle('active', (i === 0 && t === 'flashcards') || (i === 1 && t === 'quiz'));
+  });
+  if (t === 'quiz' && !document.querySelector('.q-card')) buildQuiz();
+}
+</script>
+</body>
+</html>
