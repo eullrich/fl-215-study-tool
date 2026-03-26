@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FL 2-15 Exam | Chapter 11 Study Tool</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+  .header { background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%); padding: 24px 32px; border-bottom: 1px solid #1e40af44; }
+  .header h1 { font-size: 1.5rem; font-weight: 700; color: #60a5fa; letter-spacing: -0.02em; }
+  .header p { font-size: 0.875rem; color: #94a3b8; margin-top: 4px; }
+  .tabs { display: flex; gap: 0; padding: 20px 32px 0; border-bottom: 1px solid #1e293b; }
+  .tab { padding: 10px 24px; border-radius: 8px 8px 0 0; cursor: pointer; font-size: 0.875rem; font-weight: 600; border: 1px solid transparent; border-bottom: none; transition: all 0.2s; color: #64748b; }
+  .tab.active { background: #1e293b; color: #60a5fa; border-color: #1e40af44; }
+  .tab:hover:not(.active) { color: #94a3b8; }
+  .content { padding: 32px; max-width: 860px; margin: 0 auto; }
+  .fc-container { display: flex; flex-direction: column; align-items: center; gap: 24px; }
+  .fc-progress { font-size: 0.8rem; color: #64748b; letter-spacing: 0.05em; text-transform: uppercase; }
+  .fc-card-wrap { width: 100%; max-width: 640px; perspective: 1200px; cursor: pointer; user-select: none; }
+  .fc-card { position: relative; width: 100%; height: 220px; transition: transform 0.55s cubic-bezier(.4,2,.6,1); transform-style: preserve-3d; }
+  .fc-card.flipped { transform: rotateY(180deg); }
+  .fc-face { position: absolute; inset: 0; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 28px 36px; text-align: center; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+  .fc-front { background: linear-gradient(135deg, #1e3a5f, #1e293b); border: 1px solid #2563eb44; box-shadow: 0 8px 32px #0004; }
+  .fc-back  { background: linear-gradient(135deg, #14532d, #1e293b); border: 1px solid #16a34a44; box-shadow: 0 8px 32px #0004; transform: rotateY(180deg); }
+  .fc-label { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px; opacity: 0.5; }
+  .fc-text  { font-size: 1.15rem; font-weight: 600; line-height: 1.5; color: #f1f5f9; }
+  .fc-hint  { font-size: 0.75rem; color: #64748b; margin-top: 14px; }
+  .fc-controls { display: flex; gap: 12px; align-items: center; }
+  .btn { padding: 10px 22px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; transition: all 0.15s; }
+  .btn-primary { background: #2563eb; color: #fff; }
+  .btn-primary:hover { background: #1d4ed8; }
+  .btn-ghost { background: #1e293b; color: #94a3b8; border: 1px solid #334155; }
+  .btn-ghost:hover { background: #334155; color: #e2e8f0; }
+  .btn-sm { padding: 7px 16px; font-size: 0.8rem; }
+  .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+  .quiz-meta { font-size: 0.8rem; color: #64748b; }
+  .score-badge { background: #1e293b; border: 1px solid #334155; border-radius: 999px; padding: 4px 14px; font-size: 0.8rem; font-weight: 700; color: #94a3b8; }
+  .q-card { background: #1e293b; border: 1px solid #334155; border-radius: 14px; padding: 28px; margin-bottom: 20px; }
+  .q-num { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #64748b; margin-bottom: 10px; }
+  .q-text { font-size: 1rem; font-weight: 600; color: #f1f5f9; line-height: 1.55; margin-bottom: 20px; }
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .opt { padding: 12px 18px; border-radius: 9px; border: 1.5px solid #334155; background: #0f172a; cursor: pointer; font-size: 0.9rem; color: #cbd5e1; transition: all 0.15s; display: flex; align-items: flex-start; gap: 10px; }
+  .opt:hover:not(.disabled) { border-color: #3b82f6; color: #e2e8f0; background: #1e3a5f; }
+  .opt.correct { border-color: #22c55e; background: #14532d22; color: #4ade80; }
+  .opt.wrong   { border-color: #ef4444; background: #7f1d1d22; color: #f87171; }
+  .opt.disabled { cursor: default; pointer-events: none; }
+  .opt-letter { font-weight: 700; opacity: 0.5; min-width: 18px; }
+  .explanation { margin-top: 14px; padding: 12px 16px; border-radius: 8px; background: #0f172a; border-left: 3px solid #3b82f6; font-size: 0.85rem; color: #94a3b8; line-height: 1.5; display: none; }
+  .explanation.show { display: block; }
+  .quiz-results { text-align: center; padding: 40px 20px; }
+  .score-big { font-size: 4rem; font-weight: 800; color: #60a5fa; line-height: 1; }
+  .score-sub { font-size: 1rem; color: #64748b; margin-top: 8px; }
+  .score-msg { font-size: 1.1rem; font-weight: 600; margin-top: 16px; }
+  .section-divider { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #3b82f6; background: #1e3a5f22; border: 1px solid #1e40af33; border-radius: 6px; padding: 5px 14px; display: inline-block; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>FL 2-15 Exam Prep</h1>
+  <p>Chapter 11 — Retirement Plans & IRAs</p>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('flashcards')">Flashcards</div>
+  <div class="tab" onclick="showTab('quiz')">Practice Test</div>
+</div>
+
+<div id="tab-flashcards" class="content">
+  <div class="fc-container">
+    <div class="fc-progress" id="fc-progress">Card 1 of 1</div>
+    <div class="fc-card-wrap" onclick="flipCard()">
+      <div class="fc-card" id="fc-card">
+        <div class="fc-face fc-front">
+          <div class="fc-label">Term</div>
+          <div class="fc-text" id="fc-front-text"></div>
+          <div class="fc-hint">click to reveal definition</div>
+        </div>
+        <div class="fc-face fc-back">
+          <div class="fc-label">Definition</div>
+          <div class="fc-text" id="fc-back-text"></div>
+        </div>
+      </div>
+    </div>
+    <div class="fc-controls">
+      <button class="btn btn-ghost btn-sm" onclick="prevCard()">Prev</button>
+      <button class="btn btn-primary" onclick="nextCard()">Next</button>
+      <button class="btn btn-ghost btn-sm" onclick="shuffleCards()">Shuffle</button>
+    </div>
+  </div>
+</div>
+
+<div id="tab-quiz" class="content" style="display:none;">
+  <div id="quiz-area"></div>
+</div>
+
+<script>
+const cards = [
+
+  // ── LO 1: Qualified vs. Non-Qualified Plans ──
+  { s: "LO1 — Qualified vs. Non-Qualified", q: "Qualified Retirement Plan", a: "Meets FEDERAL REQUIREMENTS and receives FAVORABLE TAX TREATMENT. Employer contributions are TAX-DEDUCTIBLE. Employee contributions and earnings grow TAX-DEFERRED." },
+  { s: "LO1 — Qualified vs. Non-Qualified", q: "Non-Qualified Retirement Plan", a: "Does NOT meet federal requirements. LACKS tax advantages of qualified plans. Often used for HIGHLY COMPENSATED employees who exceed qualified plan limits." },
+  { s: "LO1 — Qualified vs. Non-Qualified", q: "Qualified vs. Non-Qualified — key differences", a: "QUALIFIED: tax-deductible contributions, tax-deferred growth, must follow ERISA rules, cannot discriminate. NON-QUALIFIED: no tax deduction, fewer restrictions, can favor select employees." },
+
+  // ── LO 2: ERISA Requirements ──
+  { s: "LO2 — ERISA", q: "ERISA", a: "Employee Retirement Income Security Act. Requires qualified plans to be FORMAL, WRITTEN documents communicated to ALL employees. Plans must be for EMPLOYEES' BENEFIT with intention of being ONGOING." },
+  { s: "LO2 — ERISA", q: "ERISA eligibility standards", a: "Minimum age: 21. Minimum service: 1 YEAR. Plans CANNOT discriminate in favor of highly compensated employees." },
+  { s: "LO2 — ERISA", q: "ERISA vesting and asset requirements", a: "Must provide SURVIVOR BENEFITS and meet minimum VESTING standards. Plan assets must be legally SEGREGATED from the sponsoring organization's funds." },
+  { s: "LO2 — ERISA", q: "Vesting Schedules", a: "Option 1: FULL vesting after 5 YEARS (cliff vesting). Option 2: 20% after 3 years, increasing to FULL vesting after 7 YEARS (graded). Employees are ALWAYS 100% vested in their OWN contributions." },
+
+  // ── LO 3: Defined Contribution Plans ──
+  { s: "LO3 — Defined Contribution", q: "Defined Contribution Plan", a: "The EMPLOYER DEFINES THEIR CONTRIBUTION. Final benefit depends on contribution amounts + INVESTMENT RETURNS. Employee bears INVESTMENT RISK. Contributions grow TAX-DEFERRED." },
+  { s: "LO3 — Defined Contribution", q: "Money Purchase Plan", a: "Employer MUST contribute a FIXED PERCENTAGE of employees' salary every year. Mandatory contributions regardless of profit." },
+  { s: "LO3 — Defined Contribution", q: "Profit-Sharing Plan", a: "Contributions based on COMPANY PROFITS. Contributions are NOT required every year — only when there are profits. Most flexible defined contribution plan." },
+  { s: "LO3 — Defined Contribution", q: "Stock Bonus Plan", a: "Benefits given in the form of COMPANY STOCK, not cash. Not based on profits." },
+  { s: "LO3 — Defined Contribution", q: "ESOP (Employee Stock Ownership Plan)", a: "Provides employees an OWNERSHIP INTEREST in the company through stock. A type of defined contribution plan." },
+  { s: "LO3 — Defined Contribution", q: "Money Purchase vs. Profit-Sharing", a: "MONEY PURCHASE: employer MUST contribute fixed percentage every year. PROFIT-SHARING: contributions based on profits, NOT mandatory every year." },
+
+  // ── LO 4: Defined Benefit Plans ──
+  { s: "LO4 — Defined Benefit", q: "Defined Benefit Plan", a: "Establishes a PREDETERMINED FUTURE BENEFIT using a specific formula. Based on SALARY HISTORY and YEARS OF SERVICE. Provides GUARANTEED INCOME FOR LIFE after retirement." },
+  { s: "LO4 — Defined Benefit", q: "Who bears risk in a defined benefit plan?", a: "The EMPLOYER bears the INVESTMENT RISK. The employer must ensure enough funds to pay the guaranteed benefit regardless of investment performance." },
+  { s: "LO4 — Defined Benefit", q: "Defined Contribution vs. Defined Benefit", a: "DEFINED CONTRIBUTION: employer defines contribution, employee bears investment risk, benefit varies. DEFINED BENEFIT: employer defines benefit, employer bears investment risk, benefit guaranteed." },
+
+  // ── LO 5: Salary Reduction Plans ──
+  { s: "LO5 — Salary Reduction", q: "401(k) Plan", a: "Employees REDUCE CURRENT SALARY by deferring into retirement. Contributions NOT included in yearly GROSS INCOME. Earnings grow TAX-DEFERRED. Often includes EMPLOYER MATCHING." },
+  { s: "LO5 — Salary Reduction", q: "401(k) Catch-Up Contributions", a: "Additional contributions allowed for employees age 50+. Allows older workers to accelerate retirement savings." },
+  { s: "LO5 — Salary Reduction", q: "403(b) Plan", a: "Available ONLY to employees of NONPROFIT, EDUCATIONAL, RELIGIOUS, and 501(c)(3) organizations. Contributions excluded from current taxable income. Also called a Tax-Sheltered Annuity (TSA)." },
+  { s: "LO5 — Salary Reduction", q: "Section 457 Plan", a: "For employees of STATE/LOCAL GOVERNMENTS and NONPROFIT organizations. Deferred amounts NOT included in gross income until received." },
+  { s: "LO5 — Salary Reduction", q: "401(k) vs. 403(b) vs. 457", a: "401(k): private sector employees. 403(b): nonprofit/educational/religious/501(c)(3). 457: state/local government and nonprofits. All defer income and grow tax-deferred." },
+
+  // ── LO 6: Small Employer & Self-Employed Plans ──
+  { s: "LO6 — Small Employer Plans", q: "Keogh (HR-10) Plan", a: "For UNINCORPORATED businesses (sole proprietors, partnerships). Can be structured as DEFINED CONTRIBUTION or DEFINED BENEFIT." },
+  { s: "LO6 — Small Employer Plans", q: "SEP (Simplified Employee Pension)", a: "EMPLOYER contributes to EMPLOYEE'S IRA. Simple to set up and administer. Lower administrative costs than traditional qualified plans." },
+  { s: "LO6 — Small Employer Plans", q: "SIMPLE Plan", a: "Available to businesses with 100 OR FEWER employees. Can be structured as an IRA or 401(k). All contributions are IMMEDIATELY VESTED. Business must have NO OTHER qualified plan." },
+  { s: "LO6 — Small Employer Plans", q: "Small employer plans — common features", a: "LOWER administrative costs. SIMPLER to set up. Designed for small businesses and self-employed. Keogh = unincorporated. SEP = employer-to-IRA. SIMPLE = 100 or fewer employees." },
+
+  // ── LO 7: Traditional vs. Roth IRAs ──
+  { s: "LO7 — IRAs", q: "Traditional IRA", a: "Contributions may be TAX-DEDUCTIBLE (depends on income/employer plan). Earnings grow TAX-DEFERRED. RMDs begin at age 73. Early withdrawals before 59 1/2: 10% penalty + income tax." },
+  { s: "LO7 — IRAs", q: "Roth IRA", a: "Contributions are AFTER-TAX (NOT deductible). Qualified withdrawals (including earnings) are completely TAX-FREE. NO Required Minimum Distributions during owner's lifetime. Subject to INCOME LIMITATIONS." },
+  { s: "LO7 — IRAs", q: "IRA Contribution Limits", a: "Maximum annual contribution: $7,000. Age 50+ CATCH-UP: $8,000. Same limits apply to both Traditional and Roth IRAs." },
+  { s: "LO7 — IRAs", q: "Roth IRA — Qualified Withdrawals", a: "Must meet 5-YEAR HOLDING PERIOD and a QUALIFYING EVENT (age 59 1/2, death, disability, first-time home purchase). Then withdrawals including earnings are COMPLETELY TAX-FREE." },
+  { s: "LO7 — IRAs", q: "Traditional vs. Roth IRA — key differences", a: "TRADITIONAL: tax-deductible contributions, taxed on withdrawal, RMDs at 73. ROTH: after-tax contributions, tax-free withdrawals, NO RMDs. Both: $7,000 limit ($8,000 age 50+)." },
+  { s: "LO7 — IRAs", q: "Required Minimum Distributions (RMDs)", a: "TRADITIONAL IRA: RMDs must begin at age 73. Failure to take RMDs results in penalties. ROTH IRA: NO RMDs during the owner's lifetime." },
+
+  // ── LO 8: Rollovers & Early Withdrawals ──
+  { s: "LO8 — Rollovers", q: "Rollover Rules", a: "TAX-FREE transfer between qualified plans. Must be completed within 60 DAYS. DIRECT rollovers avoid 20% mandatory withholding. ONE-ROLLOVER-PER-YEAR rule applies." },
+  { s: "LO8 — Rollovers", q: "Direct vs. Indirect Rollover", a: "DIRECT: funds transferred directly between custodians, NO withholding. INDIRECT: check issued to you, 20% WITHHELD, must deposit full amount within 60 days." },
+  { s: "LO8 — Rollovers", q: "Spousal IRA", a: "Available for NON-WORKING SPOUSES. Working spouse must have sufficient EARNED INCOME. Same contribution limits apply ($7,000 or $8,000 if age 50+)." },
+  { s: "LO8 — Rollovers", q: "Early Withdrawal Penalty Exceptions", a: "10% penalty WAIVED for: DEATH or DISABILITY. Qualifying MEDICAL EXPENSES. HIGHER EDUCATION expenses. FIRST-TIME HOME purchase. HEALTH INSURANCE while unemployed." },
+
+  // ── LO 9: Education Savings ──
+  { s: "LO9 — Education Savings", q: "Coverdell Education Savings Account", a: "Can be used for PRIMARY, SECONDARY, and HIGHER education expenses. Unused funds can be rolled over to another beneficiary BEFORE AGE 30." },
+  { s: "LO9 — Education Savings", q: "Section 529 Plan", a: "STATE-OPERATED investment plan. Two types: COLLEGE SAVINGS plans and PREPAID TUITION plans. Earnings and qualified withdrawals are FEDERAL TAX-FREE. Must be used for qualified education expenses." },
+  { s: "LO9 — Education Savings", q: "Coverdell vs. 529 Plan", a: "COVERDELL: K-12 + college, must use by age 30, lower contribution limits. 529: college expenses (some K-12), state-operated, higher contribution limits, no age limit." },
+];
+
+let currentIdx = 0;
+let flipped = false;
+let shuffled = [...cards];
+
+function renderCard() {
+  const c = shuffled[currentIdx];
+  document.getElementById('fc-front-text').textContent = c.q;
+  document.getElementById('fc-back-text').textContent  = c.a;
+  document.getElementById('fc-progress').textContent = `Card ${currentIdx + 1} of ${shuffled.length}`;
+  const card = document.getElementById('fc-card');
+  card.classList.remove('flipped');
+  flipped = false;
+}
+
+function flipCard() {
+  const card = document.getElementById('fc-card');
+  flipped = !flipped;
+  card.classList.toggle('flipped', flipped);
+}
+
+function nextCard() {
+  if (currentIdx < shuffled.length - 1) currentIdx++;
+  else currentIdx = 0;
+  renderCard();
+}
+
+function prevCard() {
+  if (currentIdx > 0) currentIdx--;
+  else currentIdx = shuffled.length - 1;
+  renderCard();
+}
+
+function shuffleCards() {
+  shuffled = [...cards].sort(() => Math.random() - 0.5);
+  currentIdx = 0;
+  renderCard();
+}
+
+renderCard();
+
+// ──────────────────────────────────────────
+// QUIZ DATA
+// ──────────────────────────────────────────
+const questions = [
+  {
+    section: "Qualified vs. Non-Qualified Plans",
+    q: "Employer contributions to qualified retirement plans are:",
+    opts: ["Not tax-deductible","Tax-deductible as a business expense","Taxable to the employee immediately","Subject to capital gains tax"],
+    ans: 1,
+    exp: "Employer contributions to qualified plans are tax-deductible business expenses."
+  },
+  {
+    section: "Qualified vs. Non-Qualified Plans",
+    q: "Non-qualified retirement plans are often used for:",
+    opts: ["All employees equally","Part-time employees only","Highly compensated employees","Government workers only"],
+    ans: 2,
+    exp: "Non-qualified plans are often used for highly compensated employees who exceed qualified plan limits."
+  },
+  {
+    section: "Qualified vs. Non-Qualified Plans",
+    q: "Which of the following is a characteristic of a qualified plan?",
+    opts: ["Contributions are not tax-deductible","Can discriminate in favor of executives","Earnings grow tax-deferred","No federal requirements apply"],
+    ans: 2,
+    exp: "Qualified plans receive favorable tax treatment — contributions and earnings grow tax-deferred until withdrawal."
+  },
+  {
+    section: "ERISA Requirements",
+    q: "Under ERISA, the minimum age for plan participation is:",
+    opts: ["18","19","21","25"],
+    ans: 2,
+    exp: "ERISA requires a minimum age of 21 and minimum service of 1 year for plan participation."
+  },
+  {
+    section: "ERISA Requirements",
+    q: "Under cliff vesting, an employee becomes fully vested after:",
+    opts: ["3 years","5 years","7 years","10 years"],
+    ans: 1,
+    exp: "Cliff vesting provides full vesting after 5 years. The alternative is graded vesting: 20% after 3 years, full after 7 years."
+  },
+  {
+    section: "ERISA Requirements",
+    q: "Employees are always 100% vested in:",
+    opts: ["Employer contributions","Employer matching funds","Their own contributions","All plan assets"],
+    ans: 2,
+    exp: "Employees are always 100% vested in their own contributions. Employer contributions vest according to the plan's vesting schedule."
+  },
+  {
+    section: "ERISA Requirements",
+    q: "ERISA requires that plan assets must be:",
+    opts: ["Combined with the employer's general funds","Legally segregated from the sponsoring organization's funds","Invested only in government bonds","Managed by the employees"],
+    ans: 1,
+    exp: "ERISA requires plan assets to be legally segregated from the sponsoring organization's funds to protect employees."
+  },
+  {
+    section: "Defined Contribution Plans",
+    q: "In a money purchase plan, the employer:",
+    opts: ["Contributes only when profitable","Must contribute a fixed percentage of employees' salary","Contributes company stock","Has no contribution obligation"],
+    ans: 1,
+    exp: "In a money purchase plan, the employer MUST contribute a fixed percentage of employees' salary every year, regardless of profits."
+  },
+  {
+    section: "Defined Contribution Plans",
+    q: "A profit-sharing plan differs from a money purchase plan because contributions are:",
+    opts: ["Always mandatory","Based on company profits and not required every year","Always in the form of stock","Made only by employees"],
+    ans: 1,
+    exp: "Profit-sharing contributions are based on company profits and are not required every year — unlike money purchase plans where contributions are mandatory."
+  },
+  {
+    section: "Defined Contribution Plans",
+    q: "An ESOP provides employees with:",
+    opts: ["Cash bonuses","An ownership interest in the company","Guaranteed retirement income","Tax-free distributions"],
+    ans: 1,
+    exp: "An Employee Stock Ownership Plan (ESOP) provides employees an ownership interest in the company through stock."
+  },
+  {
+    section: "Defined Contribution Plans",
+    q: "In a defined contribution plan, who bears the investment risk?",
+    opts: ["The employer","The employee","The government","The insurance company"],
+    ans: 1,
+    exp: "In a defined contribution plan, the employee bears the investment risk — the final benefit depends on investment performance."
+  },
+  {
+    section: "Defined Benefit Plans",
+    q: "A defined benefit plan provides:",
+    opts: ["A variable benefit based on investment returns","A predetermined guaranteed retirement benefit","Benefits in the form of company stock","No guaranteed income"],
+    ans: 1,
+    exp: "A defined benefit plan establishes a predetermined future benefit using a specific formula, providing guaranteed income for life."
+  },
+  {
+    section: "Defined Benefit Plans",
+    q: "In a defined benefit plan, who bears the investment risk?",
+    opts: ["The employee","The beneficiary","The employer","The government"],
+    ans: 2,
+    exp: "The employer bears the investment risk in a defined benefit plan — they must ensure enough funds to pay the guaranteed benefit."
+  },
+  {
+    section: "Defined Benefit Plans",
+    q: "Defined benefit plan benefits are typically based on:",
+    opts: ["Employee contributions only","Salary history and years of service","Stock market performance","The employer's annual profits"],
+    ans: 1,
+    exp: "Defined benefit plans typically calculate benefits based on salary history and years of service using a specific formula."
+  },
+  {
+    section: "Salary Reduction Plans",
+    q: "A 401(k) plan allows employees to:",
+    opts: ["Receive tax-free income immediately","Defer a portion of their salary into a retirement account","Avoid all taxes on their income","Withdraw funds at any time without penalty"],
+    ans: 1,
+    exp: "401(k) plans allow employees to reduce their current salary by deferring amounts into retirement. Contributions are not included in gross income."
+  },
+  {
+    section: "Salary Reduction Plans",
+    q: "A 403(b) plan is available to employees of:",
+    opts: ["Private for-profit corporations","State and local governments","Nonprofit, educational, religious, and 501(c)(3) organizations","Federal government agencies"],
+    ans: 2,
+    exp: "403(b) plans are available only to employees of nonprofit, educational, religious, and 501(c)(3) organizations."
+  },
+  {
+    section: "Salary Reduction Plans",
+    q: "Section 457 plans are designed for employees of:",
+    opts: ["Private corporations","State/local governments and nonprofit organizations","Banks and financial institutions","Self-employed individuals"],
+    ans: 1,
+    exp: "Section 457 plans are for employees of state/local governments and nonprofit organizations."
+  },
+  {
+    section: "Salary Reduction Plans",
+    q: "Catch-up contributions in a 401(k) are available to employees age:",
+    opts: ["45 and older","50 and older","55 and older","59 1/2 and older"],
+    ans: 1,
+    exp: "Additional catch-up contributions are allowed for employees age 50 and older to accelerate retirement savings."
+  },
+  {
+    section: "Small Employer & Self-Employed Plans",
+    q: "A Keogh (HR-10) plan is designed for:",
+    opts: ["Large corporations","Unincorporated businesses","Government employees","Nonprofit organizations"],
+    ans: 1,
+    exp: "Keogh plans are for unincorporated businesses — sole proprietors and partnerships."
+  },
+  {
+    section: "Small Employer & Self-Employed Plans",
+    q: "A SEP involves the employer contributing to:",
+    opts: ["A company pension fund","The employee's IRA","A 401(k) plan","A defined benefit plan"],
+    ans: 1,
+    exp: "In a Simplified Employee Pension (SEP), the employer contributes to the employee's IRA."
+  },
+  {
+    section: "Small Employer & Self-Employed Plans",
+    q: "A SIMPLE plan is available to businesses with:",
+    opts: ["Any number of employees","500 or fewer employees","100 or fewer employees","50 or fewer employees"],
+    ans: 2,
+    exp: "SIMPLE plans are available to businesses with 100 or fewer employees that have no other qualified plan in place."
+  },
+  {
+    section: "Small Employer & Self-Employed Plans",
+    q: "In a SIMPLE plan, all contributions are:",
+    opts: ["Subject to a 5-year vesting schedule","Immediately vested","Vested after 3 years","Subject to cliff vesting"],
+    ans: 1,
+    exp: "All contributions to SIMPLE plans are immediately vested — employees own 100% of contributions from day one."
+  },
+  {
+    section: "Traditional vs. Roth IRAs",
+    q: "Traditional IRA Required Minimum Distributions must begin at age:",
+    opts: ["59 1/2","65","70 1/2","73"],
+    ans: 3,
+    exp: "Traditional IRA RMDs must begin at age 73. Failure to take RMDs results in penalties."
+  },
+  {
+    section: "Traditional vs. Roth IRAs",
+    q: "Roth IRA qualified withdrawals are:",
+    opts: ["Taxed as ordinary income","Subject to capital gains tax","Completely tax-free","Partially tax-free"],
+    ans: 2,
+    exp: "Roth IRA qualified withdrawals, including earnings, are completely tax-free — provided the 5-year holding period and qualifying event requirements are met."
+  },
+  {
+    section: "Traditional vs. Roth IRAs",
+    q: "The maximum annual IRA contribution for someone under age 50 is:",
+    opts: ["$5,500","$6,000","$6,500","$7,000"],
+    ans: 3,
+    exp: "The maximum annual IRA contribution is $7,000 ($8,000 if age 50+ with catch-up contributions)."
+  },
+  {
+    section: "Traditional vs. Roth IRAs",
+    q: "Which IRA has NO Required Minimum Distributions during the owner's lifetime?",
+    opts: ["Traditional IRA","Roth IRA","SEP IRA","SIMPLE IRA"],
+    ans: 1,
+    exp: "Roth IRAs have no Required Minimum Distributions during the owner's lifetime, unlike Traditional IRAs."
+  },
+  {
+    section: "Traditional vs. Roth IRAs",
+    q: "Roth IRA contributions are:",
+    opts: ["Tax-deductible","Made with after-tax dollars","Tax-deferred","Excluded from gross income"],
+    ans: 1,
+    exp: "Roth IRA contributions are made with after-tax dollars — they are not tax-deductible. The benefit is tax-free withdrawals later."
+  },
+  {
+    section: "Rollovers & Early Withdrawals",
+    q: "A rollover from one qualified plan to another must be completed within:",
+    opts: ["30 days","60 days","90 days","120 days"],
+    ans: 1,
+    exp: "Rollovers must be completed within 60 days of distribution to avoid taxes and penalties."
+  },
+  {
+    section: "Rollovers & Early Withdrawals",
+    q: "A direct rollover avoids the:",
+    opts: ["10% early withdrawal penalty","20% mandatory withholding","Annual contribution limits","Required Minimum Distribution"],
+    ans: 1,
+    exp: "Direct rollovers (trustee-to-trustee) avoid the 20% mandatory withholding that applies to indirect rollovers."
+  },
+  {
+    section: "Rollovers & Early Withdrawals",
+    q: "The 10% early withdrawal penalty is waived for all of the following EXCEPT:",
+    opts: ["Death or disability","First-time home purchase","Job change","Higher education expenses"],
+    ans: 2,
+    exp: "Exceptions to the 10% penalty include death, disability, medical expenses, higher education, first-time home purchase, and health insurance while unemployed — but not a job change."
+  },
+  {
+    section: "Rollovers & Early Withdrawals",
+    q: "A spousal IRA requires the working spouse to have:",
+    opts: ["A qualified retirement plan","Sufficient earned income","A minimum age of 50","Both spouses to be employed"],
+    ans: 1,
+    exp: "For a spousal IRA, the working spouse must have sufficient earned income. The same contribution limits apply."
+  },
+  {
+    section: "Education Savings",
+    q: "A Coverdell Education Savings Account can be used for:",
+    opts: ["Only college expenses","Only K-12 expenses","Primary, secondary, and higher education expenses","Only vocational training"],
+    ans: 2,
+    exp: "Coverdell accounts can be used for primary, secondary, AND higher education expenses — broader than 529 plans."
+  },
+  {
+    section: "Education Savings",
+    q: "Section 529 plans are:",
+    opts: ["Federally operated","State-operated investment plans","Employer-sponsored plans","Bank savings accounts"],
+    ans: 1,
+    exp: "Section 529 plans are state-operated investment plans with two types: college savings plans and prepaid tuition plans."
+  },
+  {
+    section: "Education Savings",
+    q: "Unused Coverdell funds must be used or rolled over before the beneficiary reaches age:",
+    opts: ["18","21","25","30"],
+    ans: 3,
+    exp: "Unused Coverdell funds can be rolled over to another beneficiary but must be used before the beneficiary reaches age 30."
+  },
+];
+
+// ── Quiz Engine ──
+let answered = {};
+let submitted = false;
+let score = 0;
+
+function buildQuiz() {
+  answered = {};
+  submitted = false;
+  score = 0;
+  const area = document.getElementById('quiz-area');
+  let html = `<div class="quiz-header"><div class="quiz-meta">${questions.length} Questions</div><div class="score-badge" id="score-live">0/${questions.length} answered</div></div>`;
+  let lastSection = '';
+
+  questions.forEach((q, i) => {
+    if (q.section !== lastSection) {
+      html += `<div class="section-divider">${q.section}</div>`;
+      lastSection = q.section;
+    }
+    html += `<div class="q-card" id="qcard-${i}">
+      <div class="q-num">Question ${i + 1}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="options">`;
+    const letters = ['A','B','C','D'];
+    q.opts.forEach((opt, j) => {
+      html += `<div class="opt" id="opt-${i}-${j}" onclick="selectAnswer(${i},${j})">
+        <span class="opt-letter">${letters[j]}</span><span>${opt}</span>
+      </div>`;
+    });
+    html += `</div><div class="explanation" id="exp-${i}">${q.exp}</div></div>`;
+  });
+
+  html += `<div style="text-align:center; margin-top:32px;">
+    <button class="btn btn-primary" onclick="submitQuiz()" id="submit-btn">Submit & Score</button>
+  </div><div id="results-area"></div>`;
+  area.innerHTML = html;
+}
+
+function selectAnswer(qIdx, optIdx) {
+  if (submitted) return;
+  answered[qIdx] = optIdx;
+  questions[qIdx].opts.forEach((_, j) => {
+    const el = document.getElementById(`opt-${qIdx}-${j}`);
+    el.style.borderColor = j === optIdx ? '#3b82f6' : '';
+    el.style.background  = j === optIdx ? '#1e3a5f' : '';
+    el.style.color       = j === optIdx ? '#e2e8f0' : '';
+  });
+  updateLiveScore();
+}
+
+function updateLiveScore() {
+  let correct = 0;
+  Object.keys(answered).forEach(i => { if (answered[i] === questions[i].ans) correct++; });
+  document.getElementById('score-live').textContent = `${correct}/${Object.keys(answered).length} answered`;
+}
+
+function submitQuiz() {
+  submitted = true;
+  score = 0;
+  questions.forEach((q, i) => {
+    q.opts.forEach((_, j) => {
+      const el = document.getElementById(`opt-${i}-${j}`);
+      el.classList.add('disabled');
+      if (j === q.ans) {
+        el.classList.add('correct');
+      } else if (answered[i] === j) {
+        el.classList.add('wrong');
+      }
+    });
+    document.getElementById(`exp-${i}`).classList.add('show');
+    if (answered[i] === q.ans) score++;
+  });
+
+  const pct = Math.round((score / questions.length) * 100);
+  let msg, color;
+  if (pct >= 90)      { msg = "Excellent! You're exam-ready on this chapter."; color = "#4ade80"; }
+  else if (pct >= 70) { msg = "Above passing threshold. Review missed questions."; color = "#facc15"; }
+  else                { msg = "Below passing threshold. Review and retry!"; color = "#f87171"; }
+
+  document.getElementById('score-live').textContent = `Score: ${score}/${questions.length} (${pct}%)`;
+  document.getElementById('submit-btn').outerHTML = `<button class="btn btn-ghost" onclick="buildQuiz()">Retake Quiz</button>`;
+  document.getElementById('results-area').innerHTML = `
+    <div class="quiz-results">
+      <div class="score-big" style="color:${color}">${pct}%</div>
+      <div class="score-sub">${score} correct out of ${questions.length}</div>
+      <div class="score-msg" style="color:${color}">${msg}</div>
+      <div style="margin-top:8px;font-size:0.85rem;color:#64748b;">Pass threshold: 70% · Scroll up to review explanations</div>
+    </div>`;
+  window.scrollTo({ top: document.getElementById('results-area').offsetTop - 80, behavior: 'smooth' });
+}
+
+function showTab(t) {
+  document.getElementById('tab-flashcards').style.display = t === 'flashcards' ? '' : 'none';
+  document.getElementById('tab-quiz').style.display       = t === 'quiz' ? '' : 'none';
+  document.querySelectorAll('.tab').forEach((el, i) => {
+    el.classList.toggle('active', (i === 0 && t === 'flashcards') || (i === 1 && t === 'quiz'));
+  });
+  if (t === 'quiz' && !document.querySelector('.q-card')) buildQuiz();
+}
+</script>
+</body>
+</html>
