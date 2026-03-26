@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FL 2-15 Exam | Chapter 12 Study Tool</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+  .header { background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%); padding: 24px 32px; border-bottom: 1px solid #1e40af44; }
+  .header h1 { font-size: 1.5rem; font-weight: 700; color: #60a5fa; letter-spacing: -0.02em; }
+  .header p { font-size: 0.875rem; color: #94a3b8; margin-top: 4px; }
+  .tabs { display: flex; gap: 0; padding: 20px 32px 0; border-bottom: 1px solid #1e293b; }
+  .tab { padding: 10px 24px; border-radius: 8px 8px 0 0; cursor: pointer; font-size: 0.875rem; font-weight: 600; border: 1px solid transparent; border-bottom: none; transition: all 0.2s; color: #64748b; }
+  .tab.active { background: #1e293b; color: #60a5fa; border-color: #1e40af44; }
+  .tab:hover:not(.active) { color: #94a3b8; }
+  .content { padding: 32px; max-width: 860px; margin: 0 auto; }
+  .fc-container { display: flex; flex-direction: column; align-items: center; gap: 24px; }
+  .fc-progress { font-size: 0.8rem; color: #64748b; letter-spacing: 0.05em; text-transform: uppercase; }
+  .fc-card-wrap { width: 100%; max-width: 640px; perspective: 1200px; cursor: pointer; user-select: none; }
+  .fc-card { position: relative; width: 100%; height: 220px; transition: transform 0.55s cubic-bezier(.4,2,.6,1); transform-style: preserve-3d; }
+  .fc-card.flipped { transform: rotateY(180deg); }
+  .fc-face { position: absolute; inset: 0; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 28px 36px; text-align: center; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+  .fc-front { background: linear-gradient(135deg, #1e3a5f, #1e293b); border: 1px solid #2563eb44; box-shadow: 0 8px 32px #0004; }
+  .fc-back  { background: linear-gradient(135deg, #14532d, #1e293b); border: 1px solid #16a34a44; box-shadow: 0 8px 32px #0004; transform: rotateY(180deg); }
+  .fc-label { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px; opacity: 0.5; }
+  .fc-text  { font-size: 1.15rem; font-weight: 600; line-height: 1.5; color: #f1f5f9; }
+  .fc-hint  { font-size: 0.75rem; color: #64748b; margin-top: 14px; }
+  .fc-controls { display: flex; gap: 12px; align-items: center; }
+  .btn { padding: 10px 22px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; transition: all 0.15s; }
+  .btn-primary { background: #2563eb; color: #fff; }
+  .btn-primary:hover { background: #1d4ed8; }
+  .btn-ghost { background: #1e293b; color: #94a3b8; border: 1px solid #334155; }
+  .btn-ghost:hover { background: #334155; color: #e2e8f0; }
+  .btn-sm { padding: 7px 16px; font-size: 0.8rem; }
+  .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+  .quiz-meta { font-size: 0.8rem; color: #64748b; }
+  .score-badge { background: #1e293b; border: 1px solid #334155; border-radius: 999px; padding: 4px 14px; font-size: 0.8rem; font-weight: 700; color: #94a3b8; }
+  .q-card { background: #1e293b; border: 1px solid #334155; border-radius: 14px; padding: 28px; margin-bottom: 20px; }
+  .q-num { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #64748b; margin-bottom: 10px; }
+  .q-text { font-size: 1rem; font-weight: 600; color: #f1f5f9; line-height: 1.55; margin-bottom: 20px; }
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .opt { padding: 12px 18px; border-radius: 9px; border: 1.5px solid #334155; background: #0f172a; cursor: pointer; font-size: 0.9rem; color: #cbd5e1; transition: all 0.15s; display: flex; align-items: flex-start; gap: 10px; }
+  .opt:hover:not(.disabled) { border-color: #3b82f6; color: #e2e8f0; background: #1e3a5f; }
+  .opt.correct { border-color: #22c55e; background: #14532d22; color: #4ade80; }
+  .opt.wrong   { border-color: #ef4444; background: #7f1d1d22; color: #f87171; }
+  .opt.disabled { cursor: default; pointer-events: none; }
+  .opt-letter { font-weight: 700; opacity: 0.5; min-width: 18px; }
+  .explanation { margin-top: 14px; padding: 12px 16px; border-radius: 8px; background: #0f172a; border-left: 3px solid #3b82f6; font-size: 0.85rem; color: #94a3b8; line-height: 1.5; display: none; }
+  .explanation.show { display: block; }
+  .quiz-results { text-align: center; padding: 40px 20px; }
+  .score-big { font-size: 4rem; font-weight: 800; color: #60a5fa; line-height: 1; }
+  .score-sub { font-size: 1rem; color: #64748b; margin-top: 8px; }
+  .score-msg { font-size: 1.1rem; font-weight: 600; margin-top: 16px; }
+  .section-divider { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #3b82f6; background: #1e3a5f22; border: 1px solid #1e40af33; border-radius: 6px; padding: 5px 14px; display: inline-block; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>FL 2-15 Exam Prep</h1>
+  <p>Chapter 12 — Social Security</p>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('flashcards')">Flashcards</div>
+  <div class="tab" onclick="showTab('quiz')">Practice Test</div>
+</div>
+
+<div id="tab-flashcards" class="content">
+  <div class="fc-container">
+    <div class="fc-progress" id="fc-progress">Card 1 of 1</div>
+    <div class="fc-card-wrap" onclick="flipCard()">
+      <div class="fc-card" id="fc-card">
+        <div class="fc-face fc-front">
+          <div class="fc-label">Term</div>
+          <div class="fc-text" id="fc-front-text"></div>
+          <div class="fc-hint">click to reveal definition</div>
+        </div>
+        <div class="fc-face fc-back">
+          <div class="fc-label">Definition</div>
+          <div class="fc-text" id="fc-back-text"></div>
+        </div>
+      </div>
+    </div>
+    <div class="fc-controls">
+      <button class="btn btn-ghost btn-sm" onclick="prevCard()">Prev</button>
+      <button class="btn btn-primary" onclick="nextCard()">Next</button>
+      <button class="btn btn-ghost btn-sm" onclick="shuffleCards()">Shuffle</button>
+    </div>
+  </div>
+</div>
+
+<div id="tab-quiz" class="content" style="display:none;">
+  <div id="quiz-area"></div>
+</div>
+
+<script>
+const cards = [
+
+  // ── LO 1: Social Security Basics ──
+  { s: "LO1 — SS Basics", q: "Social Security (OASDI)", a: "OLD AGE, SURVIVORS, AND DISABILITY INSURANCE. Provides basic protection against financial problems from DEATH, DISABILITY, and AGING. SUPPLEMENTS but does NOT replace personal financial planning." },
+  { s: "LO1 — SS Basics", q: "PIA (Primary Insurance Amount)", a: "The BASIC BENEFIT AMOUNT at FULL RETIREMENT AGE. All other Social Security benefits are calculated as a percentage of PIA." },
+  { s: "LO1 — SS Basics", q: "Social Security — key limitation", a: "Social Security SUPPLEMENTS but does NOT REPLACE personal financial and insurance programs. Many Americans mistakenly believe it will cover all financial needs." },
+
+  // ── LO 2: FICA Funding ──
+  { s: "LO2 — FICA Taxes", q: "FICA Tax — Employer and Employee", a: "Each pays 7.65%: 6.2% SOCIAL SECURITY + 1.45% MEDICARE. Total combined: 15.3%." },
+  { s: "LO2 — FICA Taxes", q: "FICA Tax — Self-Employed", a: "Self-employed pay the FULL 15.3%: 12.4% Social Security + 2.9% Medicare. They pay both the employer and employee portions." },
+  { s: "LO2 — FICA Taxes", q: "Social Security vs. Medicare tax caps", a: "SOCIAL SECURITY: has a TAXABLE WAGE BASE (maximum cap on earnings taxed). MEDICARE: has NO WAGE CAP — all earnings are taxed." },
+  { s: "LO2 — FICA Taxes", q: "Taxation of Social Security benefits", a: "Benefits may be subject to FEDERAL INCOME TAXATION. However, 15% of all Social Security benefits are ALWAYS 100% income tax-free." },
+
+  // ── LO 3: Insured Status ──
+  { s: "LO3 — Insured Status", q: "Fully Insured Status", a: "40 QUARTERS of coverage (10 YEARS of work). Eligible for RETIREMENT, DISABILITY, MEDICARE, and SURVIVOR benefits. Required for most Social Security benefits." },
+  { s: "LO3 — Insured Status", q: "Currently Insured Status", a: "6 QUARTERS of coverage in the last 13 QUARTERS (approximately 3 years). Eligible for LIMITED SURVIVOR BENEFITS ONLY." },
+  { s: "LO3 — Insured Status", q: "Fully vs. Currently Insured", a: "FULLY: 40 quarters (10 years), all benefits available. CURRENTLY: 6 of last 13 quarters, limited survivor benefits only." },
+  { s: "LO3 — Insured Status", q: "Quarter of Coverage", a: "Any THREE-MONTH PERIOD ending March 31, June 30, September 30, or December 31. Earned by meeting minimum earnings in that quarter." },
+  { s: "LO3 — Insured Status", q: "20/40 Rule for Disability", a: "Workers age 31+ need 20 QUARTERS in the LAST 40 QUARTERS to qualify for disability. Workers under 31 have LESS RESTRICTIVE rules." },
+
+  // ── LO 4: Retirement Benefits ──
+  { s: "LO4 — Retirement", q: "AIME (Average Indexed Monthly Earnings)", a: "Based on the HIGHEST 35 YEARS of earnings. Used to calculate the PIA (Primary Insurance Amount)." },
+  { s: "LO4 — Retirement", q: "Early Retirement (Age 62)", a: "Receive 70% of PIA — a 30% PERMANENT REDUCTION. Benefits are reduced for life." },
+  { s: "LO4 — Retirement", q: "Full Retirement Age (Age 67)", a: "Receive 100% of PIA. Age 67 for those born 1960 or later." },
+  { s: "LO4 — Retirement", q: "Delayed Retirement (Up to Age 70)", a: "Receive 124% of PIA — an 8% ANNUAL INCREASE for each year past FRA. Maximum benefit at age 70." },
+  { s: "LO4 — Retirement", q: "Retirement benefit percentages", a: "Age 62: 70% of PIA. Age 67 (FRA): 100% of PIA. Age 70: 124% of PIA. Each year of delay past FRA adds 8%." },
+  { s: "LO4 — Retirement", q: "Earnings Test (below FRA)", a: "BELOW FRA: $1 reduction for every $2 earned above the annual limit. YEAR REACHING FRA: $1 for every $3. AT OR ABOVE FRA: NO earnings limitation." },
+
+  // ── LO 5: Disability Benefits ──
+  { s: "LO5 — Disability", q: "Social Security Disability — requirements", a: "Must be FULLY INSURED. Must have 20 of 40 quarters immediately before disability. FIVE-MONTH waiting period (benefits begin in 6th month). Must be TOTAL disability." },
+  { s: "LO5 — Disability", q: "Definition of Disability (Social Security)", a: "Unable to engage in any SUBSTANTIAL GAINFUL ACTIVITY. Medical condition expected to last at least 12 MONTHS or result in DEATH. Cannot perform ANY work in the national economy." },
+  { s: "LO5 — Disability", q: "Disability — key details", a: "Must be TOTAL disability — NOT partial. 5-MONTH waiting period. Condition must last 12+ months or result in death. No benefits for partial or short-term disability." },
+
+  // ── LO 6: Survivor Benefits ──
+  { s: "LO6 — Survivor Benefits", q: "Lump-Sum Death Benefit", a: "$255 — paid to the SURVIVING SPOUSE living with the deceased or an ELIGIBLE CHILD. This is the only one-time payment." },
+  { s: "LO6 — Survivor Benefits", q: "Surviving Spouse Benefits", a: "100% of PIA if benefits start at FRA. 71.5% of PIA if benefits start at AGE 60. ANY AGE if caring for deceased's child UNDER 16." },
+  { s: "LO6 — Survivor Benefits", q: "Children's Survivor Benefits", a: "75% of PIA if under age 18 (19 if FULL-TIME STUDENT) or DISABLED before age 22." },
+  { s: "LO6 — Survivor Benefits", q: "Dependent Parents' Survivor Benefits", a: "Parents age 62+: 75% of PIA EACH, or 82.5% if ONLY ONE surviving parent." },
+  { s: "LO6 — Survivor Benefits", q: "Survivor benefit eligibility", a: "FULL benefits: worker must be FULLY INSURED (40 quarters). LIMITED benefits: worker must be CURRENTLY INSURED (6 of last 13 quarters)." },
+
+  // ── LO 7: Blackout Period ──
+  { s: "LO7 — Blackout Period", q: "Social Security Blackout Period", a: "STARTS: when youngest child turns 16 (spouse benefits stop). ENDS: when surviving spouse reaches AGE 60 (eligible for survivor benefits again). NO Social Security income during this gap." },
+  { s: "LO7 — Blackout Period", q: "Children's benefits during blackout", a: "CHILDREN'S benefits continue until age 18 (19 if in high school). Only the SPOUSE'S benefits stop during the blackout — children are unaffected." },
+  { s: "LO7 — Blackout Period", q: "Maximum Family Benefit", a: "LIMITS the total benefits paid to a family from one worker's record. Individual payments may be reduced when multiple beneficiaries exist." },
+  { s: "LO7 — Blackout Period", q: "Dual Benefit Liability", a: "Eligible individuals can only collect ONE benefit — the GREATER amount. Cannot collect multiple Social Security benefits simultaneously." },
+];
+
+let currentIdx = 0;
+let flipped = false;
+let shuffled = [...cards];
+
+function renderCard() {
+  const c = shuffled[currentIdx];
+  document.getElementById('fc-front-text').textContent = c.q;
+  document.getElementById('fc-back-text').textContent  = c.a;
+  document.getElementById('fc-progress').textContent = `Card ${currentIdx + 1} of ${shuffled.length}`;
+  const card = document.getElementById('fc-card');
+  card.classList.remove('flipped');
+  flipped = false;
+}
+
+function flipCard() {
+  const card = document.getElementById('fc-card');
+  flipped = !flipped;
+  card.classList.toggle('flipped', flipped);
+}
+
+function nextCard() {
+  if (currentIdx < shuffled.length - 1) currentIdx++;
+  else currentIdx = 0;
+  renderCard();
+}
+
+function prevCard() {
+  if (currentIdx > 0) currentIdx--;
+  else currentIdx = shuffled.length - 1;
+  renderCard();
+}
+
+function shuffleCards() {
+  shuffled = [...cards].sort(() => Math.random() - 0.5);
+  currentIdx = 0;
+  renderCard();
+}
+
+renderCard();
+
+// ──────────────────────────────────────────
+// QUIZ DATA
+// ──────────────────────────────────────────
+const questions = [
+  {
+    section: "Social Security Basics",
+    q: "OASDI stands for:",
+    opts: ["Office of Actuarial Services and Disability Insurance","Old Age, Survivors, and Disability Insurance","Optional Annuity, Savings, and Death Insurance","Occupational Aid and Social Disability Income"],
+    ans: 1,
+    exp: "OASDI stands for Old Age, Survivors, and Disability Insurance — the official name for Social Security."
+  },
+  {
+    section: "Social Security Basics",
+    q: "Social Security is designed to:",
+    opts: ["Replace all personal financial planning","Supplement personal financial and insurance programs","Provide unlimited income in retirement","Cover all medical expenses"],
+    ans: 1,
+    exp: "Social Security supplements but does NOT replace personal financial and insurance programs."
+  },
+  {
+    section: "Social Security Basics",
+    q: "The Primary Insurance Amount (PIA) is:",
+    opts: ["The maximum benefit available at any age","The basic benefit amount at full retirement age","The amount of FICA taxes paid","The lump-sum death benefit"],
+    ans: 1,
+    exp: "PIA is the basic benefit amount at full retirement age — all other benefits are calculated as a percentage of PIA."
+  },
+  {
+    section: "FICA Funding",
+    q: "The combined FICA tax rate for employers and employees is:",
+    opts: ["6.2% each","7.65% each","12.4% each","15.3% each"],
+    ans: 1,
+    exp: "Both employers and employees pay 7.65% each (6.2% Social Security + 1.45% Medicare)."
+  },
+  {
+    section: "FICA Funding",
+    q: "Self-employed individuals pay a FICA tax rate of:",
+    opts: ["7.65%","12.4%","15.3%","20%"],
+    ans: 2,
+    exp: "Self-employed pay the full 15.3% (12.4% Social Security + 2.9% Medicare) — both the employer and employee portions."
+  },
+  {
+    section: "FICA Funding",
+    q: "Which portion of FICA has NO wage cap?",
+    opts: ["Social Security","Medicare","Both have caps","Neither has a cap"],
+    ans: 1,
+    exp: "The Medicare portion has no wage cap — all earnings are taxed. Social Security has a taxable wage base (maximum cap)."
+  },
+  {
+    section: "FICA Funding",
+    q: "What percentage of Social Security benefits is always income tax-free?",
+    opts: ["0%","10%","15%","50%"],
+    ans: 2,
+    exp: "15% of all Social Security benefits are always 100% income tax-free."
+  },
+  {
+    section: "Insured Status",
+    q: "To be fully insured under Social Security, a worker needs:",
+    opts: ["20 quarters of coverage","30 quarters of coverage","40 quarters of coverage","52 quarters of coverage"],
+    ans: 2,
+    exp: "Fully insured status requires 40 quarters of coverage (10 years of work)."
+  },
+  {
+    section: "Insured Status",
+    q: "Currently insured status requires:",
+    opts: ["40 quarters total","20 quarters in the last 40","6 quarters in the last 13 quarters","10 quarters in the last 20"],
+    ans: 2,
+    exp: "Currently insured requires 6 quarters of coverage in the last 13 quarters — eligible for limited survivor benefits only."
+  },
+  {
+    section: "Insured Status",
+    q: "A currently insured worker is eligible for:",
+    opts: ["All Social Security benefits","Retirement and disability benefits","Limited survivor benefits only","Medicare only"],
+    ans: 2,
+    exp: "Currently insured status qualifies for limited survivor benefits only — not retirement, disability, or Medicare."
+  },
+  {
+    section: "Insured Status",
+    q: "The 20/40 rule for disability means workers age 31+ need:",
+    opts: ["20 quarters total","20 quarters in the last 40 quarters","40 quarters in the last 20 years","20 years of work"],
+    ans: 1,
+    exp: "Workers age 31+ need 20 quarters of coverage in the last 40 quarters immediately before the disability."
+  },
+  {
+    section: "Retirement Benefits",
+    q: "If a worker claims Social Security at age 62, they receive:",
+    opts: ["50% of PIA","70% of PIA","85% of PIA","100% of PIA"],
+    ans: 1,
+    exp: "Early retirement at age 62 provides 70% of PIA — a permanent 30% reduction."
+  },
+  {
+    section: "Retirement Benefits",
+    q: "Full retirement age for those born in 1960 or later is:",
+    opts: ["62","65","66","67"],
+    ans: 3,
+    exp: "Full retirement age is 67 for those born in 1960 or later, providing 100% of PIA."
+  },
+  {
+    section: "Retirement Benefits",
+    q: "Delaying retirement to age 70 provides what percentage of PIA?",
+    opts: ["100%","108%","116%","124%"],
+    ans: 3,
+    exp: "Delayed retirement provides 124% of PIA — an 8% annual increase for each year past FRA (67 to 70 = 3 years x 8% = 24%)."
+  },
+  {
+    section: "Retirement Benefits",
+    q: "AIME is calculated based on the highest:",
+    opts: ["10 years of earnings","20 years of earnings","35 years of earnings","All years of earnings"],
+    ans: 2,
+    exp: "Average Indexed Monthly Earnings (AIME) is based on the highest 35 years of earnings."
+  },
+  {
+    section: "Retirement Benefits",
+    q: "For workers below FRA, the earnings test reduces benefits by $1 for every:",
+    opts: ["$1 earned above the limit","$2 earned above the limit","$3 earned above the limit","$5 earned above the limit"],
+    ans: 1,
+    exp: "Below FRA: $1 reduction for every $2 earned above the annual limit. In the year reaching FRA: $1 for every $3."
+  },
+  {
+    section: "Retirement Benefits",
+    q: "At or above full retirement age, the earnings test:",
+    opts: ["Reduces benefits by $1 for every $2","Reduces benefits by $1 for every $3","Does not apply — no earnings limitation","Eliminates all benefits"],
+    ans: 2,
+    exp: "At or above FRA, there is no earnings limitation — benefits are not reduced regardless of how much you earn."
+  },
+  {
+    section: "Disability Benefits",
+    q: "The waiting period for Social Security disability benefits is:",
+    opts: ["30 days","3 months","5 months","12 months"],
+    ans: 2,
+    exp: "There is a 5-month waiting period — benefits begin in the sixth month after disability onset."
+  },
+  {
+    section: "Disability Benefits",
+    q: "Social Security defines disability as:",
+    opts: ["Inability to perform one's current job","Partial inability to work","Total inability to engage in any substantial gainful activity","Temporary inability to work for 30+ days"],
+    ans: 2,
+    exp: "Social Security disability requires total inability to engage in any substantial gainful activity, lasting 12+ months or resulting in death."
+  },
+  {
+    section: "Disability Benefits",
+    q: "Social Security disability benefits are available for:",
+    opts: ["Partial disability only","Total disability only","Both partial and total disability","Short-term disability only"],
+    ans: 1,
+    exp: "Social Security only covers TOTAL disability — not partial or short-term disability."
+  },
+  {
+    section: "Survivor Benefits",
+    q: "The Social Security lump-sum death benefit is:",
+    opts: ["$100","$255","$500","$1,000"],
+    ans: 1,
+    exp: "The lump-sum death benefit is $255, paid to the surviving spouse living with the deceased or an eligible child."
+  },
+  {
+    section: "Survivor Benefits",
+    q: "A surviving spouse at full retirement age receives what percentage of the deceased worker's PIA?",
+    opts: ["50%","71.5%","82.5%","100%"],
+    ans: 3,
+    exp: "A surviving spouse receives 100% of PIA if benefits start at FRA, or 71.5% if starting at age 60."
+  },
+  {
+    section: "Survivor Benefits",
+    q: "Children's survivor benefits are what percentage of PIA?",
+    opts: ["50%","71.5%","75%","100%"],
+    ans: 2,
+    exp: "Children receive 75% of PIA if under age 18 (19 if a full-time student) or disabled before age 22."
+  },
+  {
+    section: "Survivor Benefits",
+    q: "A surviving spouse can receive benefits at any age if:",
+    opts: ["They are disabled","They are caring for the deceased's child under age 16","They have been married for 10+ years","They are fully insured"],
+    ans: 1,
+    exp: "A surviving spouse can receive benefits at any age if caring for the deceased worker's child who is under age 16."
+  },
+  {
+    section: "Survivor Benefits",
+    q: "A surviving spouse who begins benefits at age 60 receives:",
+    opts: ["50% of PIA","71.5% of PIA","75% of PIA","100% of PIA"],
+    ans: 1,
+    exp: "A surviving spouse who begins benefits at age 60 receives 71.5% of PIA — reduced from the 100% available at FRA."
+  },
+  {
+    section: "Blackout Period",
+    q: "The Social Security blackout period begins when:",
+    opts: ["The insured dies","The youngest child turns 16","The surviving spouse turns 50","The youngest child turns 18"],
+    ans: 1,
+    exp: "The blackout period starts when the youngest child turns 16 — the surviving spouse's benefits stop at that point."
+  },
+  {
+    section: "Blackout Period",
+    q: "The blackout period ends when the surviving spouse reaches age:",
+    opts: ["55","59 1/2","60","62"],
+    ans: 2,
+    exp: "The blackout period ends when the surviving spouse reaches age 60, when they become eligible for survivor benefits again."
+  },
+  {
+    section: "Blackout Period",
+    q: "During the blackout period, children's benefits:",
+    opts: ["Also stop","Continue until age 18 (19 if in high school)","Are reduced by 50%","Are transferred to the spouse"],
+    ans: 1,
+    exp: "Children's benefits continue until age 18 (19 if still in high school) — only the spouse's benefits stop during the blackout."
+  },
+  {
+    section: "Blackout Period",
+    q: "Dual benefit liability means an eligible individual can:",
+    opts: ["Collect two benefits simultaneously","Only collect one benefit — the greater amount","Choose which benefit to receive permanently","Alternate between benefits each year"],
+    ans: 1,
+    exp: "Dual benefit liability means eligible individuals can only collect one benefit — the greater of the two amounts."
+  },
+];
+
+// ── Quiz Engine ──
+let answered = {};
+let submitted = false;
+let score = 0;
+
+function buildQuiz() {
+  answered = {};
+  submitted = false;
+  score = 0;
+  const area = document.getElementById('quiz-area');
+  let html = `<div class="quiz-header"><div class="quiz-meta">${questions.length} Questions</div><div class="score-badge" id="score-live">0/${questions.length} answered</div></div>`;
+  let lastSection = '';
+
+  questions.forEach((q, i) => {
+    if (q.section !== lastSection) {
+      html += `<div class="section-divider">${q.section}</div>`;
+      lastSection = q.section;
+    }
+    html += `<div class="q-card" id="qcard-${i}">
+      <div class="q-num">Question ${i + 1}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="options">`;
+    const letters = ['A','B','C','D'];
+    q.opts.forEach((opt, j) => {
+      html += `<div class="opt" id="opt-${i}-${j}" onclick="selectAnswer(${i},${j})">
+        <span class="opt-letter">${letters[j]}</span><span>${opt}</span>
+      </div>`;
+    });
+    html += `</div><div class="explanation" id="exp-${i}">${q.exp}</div></div>`;
+  });
+
+  html += `<div style="text-align:center; margin-top:32px;">
+    <button class="btn btn-primary" onclick="submitQuiz()" id="submit-btn">Submit & Score</button>
+  </div><div id="results-area"></div>`;
+  area.innerHTML = html;
+}
+
+function selectAnswer(qIdx, optIdx) {
+  if (submitted) return;
+  answered[qIdx] = optIdx;
+  questions[qIdx].opts.forEach((_, j) => {
+    const el = document.getElementById(`opt-${qIdx}-${j}`);
+    el.style.borderColor = j === optIdx ? '#3b82f6' : '';
+    el.style.background  = j === optIdx ? '#1e3a5f' : '';
+    el.style.color       = j === optIdx ? '#e2e8f0' : '';
+  });
+  updateLiveScore();
+}
+
+function updateLiveScore() {
+  let correct = 0;
+  Object.keys(answered).forEach(i => { if (answered[i] === questions[i].ans) correct++; });
+  document.getElementById('score-live').textContent = `${correct}/${Object.keys(answered).length} answered`;
+}
+
+function submitQuiz() {
+  submitted = true;
+  score = 0;
+  questions.forEach((q, i) => {
+    q.opts.forEach((_, j) => {
+      const el = document.getElementById(`opt-${i}-${j}`);
+      el.classList.add('disabled');
+      if (j === q.ans) {
+        el.classList.add('correct');
+      } else if (answered[i] === j) {
+        el.classList.add('wrong');
+      }
+    });
+    document.getElementById(`exp-${i}`).classList.add('show');
+    if (answered[i] === q.ans) score++;
+  });
+
+  const pct = Math.round((score / questions.length) * 100);
+  let msg, color;
+  if (pct >= 90)      { msg = "Excellent! You're exam-ready on this chapter."; color = "#4ade80"; }
+  else if (pct >= 70) { msg = "Above passing threshold. Review missed questions."; color = "#facc15"; }
+  else                { msg = "Below passing threshold. Review and retry!"; color = "#f87171"; }
+
+  document.getElementById('score-live').textContent = `Score: ${score}/${questions.length} (${pct}%)`;
+  document.getElementById('submit-btn').outerHTML = `<button class="btn btn-ghost" onclick="buildQuiz()">Retake Quiz</button>`;
+  document.getElementById('results-area').innerHTML = `
+    <div class="quiz-results">
+      <div class="score-big" style="color:${color}">${pct}%</div>
+      <div class="score-sub">${score} correct out of ${questions.length}</div>
+      <div class="score-msg" style="color:${color}">${msg}</div>
+      <div style="margin-top:8px;font-size:0.85rem;color:#64748b;">Pass threshold: 70% · Scroll up to review explanations</div>
+    </div>`;
+  window.scrollTo({ top: document.getElementById('results-area').offsetTop - 80, behavior: 'smooth' });
+}
+
+function showTab(t) {
+  document.getElementById('tab-flashcards').style.display = t === 'flashcards' ? '' : 'none';
+  document.getElementById('tab-quiz').style.display       = t === 'quiz' ? '' : 'none';
+  document.querySelectorAll('.tab').forEach((el, i) => {
+    el.classList.toggle('active', (i === 0 && t === 'flashcards') || (i === 1 && t === 'quiz'));
+  });
+  if (t === 'quiz' && !document.querySelector('.q-card')) buildQuiz();
+}
+</script>
+</body>
+</html>
