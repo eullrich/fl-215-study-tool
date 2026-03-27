@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FL 2-15 Exam | Chapter 16 Study Tool</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+  .header { background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%); padding: 24px 32px; border-bottom: 1px solid #1e40af44; }
+  .header h1 { font-size: 1.5rem; font-weight: 700; color: #60a5fa; letter-spacing: -0.02em; }
+  .header p { font-size: 0.875rem; color: #94a3b8; margin-top: 4px; }
+  .tabs { display: flex; gap: 0; padding: 20px 32px 0; border-bottom: 1px solid #1e293b; }
+  .tab { padding: 10px 24px; border-radius: 8px 8px 0 0; cursor: pointer; font-size: 0.875rem; font-weight: 600; border: 1px solid transparent; border-bottom: none; transition: all 0.2s; color: #64748b; }
+  .tab.active { background: #1e293b; color: #60a5fa; border-color: #1e40af44; }
+  .tab:hover:not(.active) { color: #94a3b8; }
+  .content { padding: 32px; max-width: 860px; margin: 0 auto; }
+  .fc-container { display: flex; flex-direction: column; align-items: center; gap: 24px; }
+  .fc-progress { font-size: 0.8rem; color: #64748b; letter-spacing: 0.05em; text-transform: uppercase; }
+  .fc-card-wrap { width: 100%; max-width: 640px; perspective: 1200px; cursor: pointer; user-select: none; }
+  .fc-card { position: relative; width: 100%; height: 220px; transition: transform 0.55s cubic-bezier(.4,2,.6,1); transform-style: preserve-3d; }
+  .fc-card.flipped { transform: rotateY(180deg); }
+  .fc-face { position: absolute; inset: 0; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 28px 36px; text-align: center; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+  .fc-front { background: linear-gradient(135deg, #1e3a5f, #1e293b); border: 1px solid #2563eb44; box-shadow: 0 8px 32px #0004; }
+  .fc-back  { background: linear-gradient(135deg, #14532d, #1e293b); border: 1px solid #16a34a44; box-shadow: 0 8px 32px #0004; transform: rotateY(180deg); }
+  .fc-label { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px; opacity: 0.5; }
+  .fc-text  { font-size: 1.15rem; font-weight: 600; line-height: 1.5; color: #f1f5f9; }
+  .fc-hint  { font-size: 0.75rem; color: #64748b; margin-top: 14px; }
+  .fc-controls { display: flex; gap: 12px; align-items: center; }
+  .btn { padding: 10px 22px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; transition: all 0.15s; }
+  .btn-primary { background: #2563eb; color: #fff; }
+  .btn-primary:hover { background: #1d4ed8; }
+  .btn-ghost { background: #1e293b; color: #94a3b8; border: 1px solid #334155; }
+  .btn-ghost:hover { background: #334155; color: #e2e8f0; }
+  .btn-sm { padding: 7px 16px; font-size: 0.8rem; }
+  .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+  .quiz-meta { font-size: 0.8rem; color: #64748b; }
+  .score-badge { background: #1e293b; border: 1px solid #334155; border-radius: 999px; padding: 4px 14px; font-size: 0.8rem; font-weight: 700; color: #94a3b8; }
+  .q-card { background: #1e293b; border: 1px solid #334155; border-radius: 14px; padding: 28px; margin-bottom: 20px; }
+  .q-num { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #64748b; margin-bottom: 10px; }
+  .q-text { font-size: 1rem; font-weight: 600; color: #f1f5f9; line-height: 1.55; margin-bottom: 20px; }
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .opt { padding: 12px 18px; border-radius: 9px; border: 1.5px solid #334155; background: #0f172a; cursor: pointer; font-size: 0.9rem; color: #cbd5e1; transition: all 0.15s; display: flex; align-items: flex-start; gap: 10px; }
+  .opt:hover:not(.disabled) { border-color: #3b82f6; color: #e2e8f0; background: #1e3a5f; }
+  .opt.correct { border-color: #22c55e; background: #14532d22; color: #4ade80; }
+  .opt.wrong   { border-color: #ef4444; background: #7f1d1d22; color: #f87171; }
+  .opt.disabled { cursor: default; pointer-events: none; }
+  .opt-letter { font-weight: 700; opacity: 0.5; min-width: 18px; }
+  .explanation { margin-top: 14px; padding: 12px 16px; border-radius: 8px; background: #0f172a; border-left: 3px solid #3b82f6; font-size: 0.85rem; color: #94a3b8; line-height: 1.5; display: none; }
+  .explanation.show { display: block; }
+  .quiz-results { text-align: center; padding: 40px 20px; }
+  .score-big { font-size: 4rem; font-weight: 800; color: #60a5fa; line-height: 1; }
+  .score-sub { font-size: 1rem; color: #64748b; margin-top: 8px; }
+  .score-msg { font-size: 1.1rem; font-weight: 600; margin-top: 16px; }
+  .section-divider { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #3b82f6; background: #1e3a5f22; border: 1px solid #1e40af33; border-radius: 6px; padding: 5px 14px; display: inline-block; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>FL 2-15 Exam Prep</h1>
+  <p>Chapter 16 — Disability Income Insurance</p>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('flashcards')">Flashcards</div>
+  <div class="tab" onclick="showTab('quiz')">Practice Test</div>
+</div>
+
+<div id="tab-flashcards" class="content">
+  <div class="fc-container">
+    <div class="fc-progress" id="fc-progress">Card 1 of 1</div>
+    <div class="fc-card-wrap" onclick="flipCard()">
+      <div class="fc-card" id="fc-card">
+        <div class="fc-face fc-front">
+          <div class="fc-label">Term</div>
+          <div class="fc-text" id="fc-front-text"></div>
+          <div class="fc-hint">click to reveal definition</div>
+        </div>
+        <div class="fc-face fc-back">
+          <div class="fc-label">Definition</div>
+          <div class="fc-text" id="fc-back-text"></div>
+        </div>
+      </div>
+    </div>
+    <div class="fc-controls">
+      <button class="btn btn-ghost btn-sm" onclick="prevCard()">Prev</button>
+      <button class="btn btn-primary" onclick="nextCard()">Next</button>
+      <button class="btn btn-ghost btn-sm" onclick="shuffleCards()">Shuffle</button>
+    </div>
+  </div>
+</div>
+
+<div id="tab-quiz" class="content" style="display:none;">
+  <div id="quiz-area"></div>
+</div>
+
+<script>
+const cards = [
+
+  // ── LO 1: Purpose of Disability Income Insurance ──
+  { s: "LO1 — Purpose", q: "Disability Income Insurance", a: "Protects against LOSS OF INCOME when covered perils make it impossible to work. Often called LIVING DEATH INSURANCE because the financial impact can be WORSE than death." },
+  { s: "LO1 — Purpose", q: "Why is disability called 'living death'?", a: "Unlike death, disability means LOST INCOME plus CONTINUED LIVING EXPENSES. The insured still needs food, housing, and medical care but cannot earn. Financial impact can exceed that of death." },
+  { s: "LO1 — Purpose", q: "Morbidity (in disability context)", a: "Measures the RISK OF BECOMING DISABLED based on PERSONAL and OCCUPATIONAL factors. Used to determine premiums and eligibility." },
+
+  // ── LO 2: Definitions of Disability ──
+  { s: "LO2 — Definitions", q: "Own Occupation Disability", a: "Cannot perform the MATERIAL AND SUBSTANTIAL DUTIES of the insured's OWN OCCUPATION. Most favorable definition for the insured." },
+  { s: "LO2 — Definitions", q: "Any Occupation Disability", a: "Cannot perform duties of own occupation OR ANY OCCUPATION for which REASONABLY SUITED by education, training, or experience. More restrictive than own-occupation." },
+  { s: "LO2 — Definitions", q: "Substantial Gainful Activity (SGA)", a: "SOCIAL SECURITY definition: inability to engage in ANY substantial gainful work. The MOST RESTRICTIVE definition — many don't qualify." },
+  { s: "LO2 — Definitions", q: "Partial Disability", a: "Inability to perform ONE OR MORE key duties or inability to work FULL-TIME. Benefits typically 50% of total disability benefit." },
+  { s: "LO2 — Definitions", q: "Residual Disability", a: "Working LESS THAN FULL-TIME with income loss of at least 20%. Benefit is a PERCENTAGE of total disability based on income loss." },
+  { s: "LO2 — Definitions", q: "Presumptive Disability", a: "Specific SEVERE conditions automatically qualify as total disability: loss of LIMBS, SIGHT, HEARING, or SPEECH. No other proof needed." },
+  { s: "LO2 — Definitions", q: "Own Occupation vs. Any Occupation vs. SGA", a: "OWN OCC: can't do YOUR job (most favorable). ANY OCC: can't do any job you're suited for. SGA: can't do ANY work at all (most restrictive, Social Security)." },
+
+  // ── LO 3: Qualifying for Benefits ──
+  { s: "LO3 — Qualifying", q: "Requirements to receive disability benefits", a: "Must be under a PHYSICIAN'S CARE. Must meet the policy's DEFINITION OF DISABILITY. Must satisfy the ELIMINATION (waiting) period. Must have LOSS OF INCOME." },
+  { s: "LO3 — Qualifying", q: "Elimination Period", a: "The WAITING PERIOD before benefits begin. Similar to a deductible — the insured absorbs initial income loss. Longer elimination = LOWER premiums." },
+  { s: "LO3 — Qualifying", q: "Recurrent Disability", a: "Relapse within 6 MONTHS = continuation of initial disability (no new elimination period). Relapse AFTER 6 months = treated as a NEW CLAIM (new elimination period)." },
+  { s: "LO3 — Qualifying", q: "Partial vs. Residual disability benefits", a: "PARTIAL: 50% of total disability benefit. RESIDUAL: percentage of benefit based on actual INCOME LOSS (at least 20% loss required)." },
+
+  // ── LO 4: Government vs. Private Disability ──
+  { s: "LO4 — Government Programs", q: "Social Security Disability (SSDI)", a: "Requires 40 QUARTERS of FICA payments. Uses SGA definition (most restrictive). 5-MONTH waiting period. Benefit = 100% of PIA." },
+  { s: "LO4 — Government Programs", q: "Workers' Compensation Disability", a: "Covers WORK-RELATED accidents and occupational diseases. Provides medical, disability, and survivor benefits. Classifies as TEMPORARY or PERMANENT. PRIMARY coverage for work-related disability." },
+  { s: "LO4 — Government Programs", q: "Private vs. Government Disability", a: "PRIVATE: flexible definitions, shorter elimination periods, higher benefits, customizable riders, occupational AND non-occupational. GOVERNMENT: strict definitions, longer waits, limited benefits." },
+
+  // ── LO 5: Individual vs. Group Disability ──
+  { s: "LO5 — Individual vs. Group", q: "Individual Disability Insurance", a: "OCCUPATIONAL contract (24/7 coverage). FLAT AMOUNT approach. Limited to 60% of GROSS or 80% of NET income. Has PROBATIONARY PERIOD at inception. NON-CANCELABLE or guaranteed renewable." },
+  { s: "LO5 — Individual vs. Group", q: "Group Disability Insurance", a: "Often NON-OCCUPATIONAL coverage. PERCENTAGE-OF-EARNINGS approach. COORDINATES benefits with other sources. NO probationary period once covered. Minimum participation required." },
+  { s: "LO5 — Individual vs. Group", q: "Elimination Period vs. Probationary Period", a: "ELIMINATION PERIOD: waiting period before benefits begin for EACH claim. PROBATIONARY PERIOD: one-time waiting period at POLICY INCEPTION before coverage starts (individual policies only)." },
+  { s: "LO5 — Individual vs. Group", q: "Short-Term Disability (STD)", a: "WEEKLY benefit payments. MINIMAL waiting periods. Maximum benefit period of TWO YEARS. Often pays up to 180 DAYS." },
+  { s: "LO5 — Individual vs. Group", q: "Long-Term Disability (LTD)", a: "MONTHLY benefit payments. LONGER elimination periods. Benefit periods from TWO YEARS to AGE 65. Addresses more serious injuries/illnesses." },
+  { s: "LO5 — Individual vs. Group", q: "STD vs. LTD", a: "STD: weekly, minimal wait, up to 2 years, less serious. LTD: monthly, longer wait, up to age 65, serious disabilities." },
+  { s: "LO5 — Individual vs. Group", q: "Income replacement limits", a: "Disability benefits can NEVER exceed PRE-DISABILITY INCOME. Individual: 60% of gross or 80% of net. This prevents malingering." },
+
+  // ── LO 6: Business Disability Insurance ──
+  { s: "LO6 — Business Uses", q: "Business Overhead Expense (BOE) Insurance", a: "REIMBURSES business expenses if the owner becomes disabled. Does NOT cover the OWNER'S LOST COMPENSATION. Covers rent, utilities, employee wages, equipment leases. Vital for SMALL businesses." },
+  { s: "LO6 — Business Uses", q: "BOE — What it covers vs. doesn't", a: "COVERS: rent, utilities, employee wages, equipment leases, supplies. DOES NOT COVER: the disabled owner's own salary or compensation." },
+  { s: "LO6 — Business Uses", q: "Disability Buy-Out Policy", a: "Funds disability BUY-SELL agreements. Allows remaining owners to BUY the disabled partner's share. Often has LENGTHY elimination periods (up to 2 YEARS). Cross-purchase or entity plans." },
+  { s: "LO6 — Business Uses", q: "Key Person Disability Insurance", a: "INDEMNIFIES the business for LOSS OF SERVICES of an essential person. Covers expenses for additional help or outside services. Typically 30-90 DAY elimination period. Benefit period usually 1-2 YEARS." },
+  { s: "LO6 — Business Uses", q: "Three business disability products", a: "BOE: reimburses business expenses (not owner's salary). BUY-OUT: funds purchase of disabled owner's share. KEY PERSON: compensates for loss of essential employee." },
+
+  // ── LO 7: Taxation of Disability Benefits ──
+  { s: "LO7 — Taxation", q: "Disability Tax Principle", a: "The IRS generally taxes money ONLY ONCE — either the PREMIUMS or the BENEFITS. If premiums are paid with after-tax dollars, benefits are tax-free. If premiums are deductible, benefits are taxable." },
+  { s: "LO7 — Taxation", q: "Individual Disability — Tax Treatment", a: "Premiums are NOT tax-deductible (paid with after-tax dollars). Benefits are NOT TAXABLE. Money was already taxed at the premium stage." },
+  { s: "LO7 — Taxation", q: "Group Disability — Employer-Paid Premiums", a: "Premiums are TAX-DEDUCTIBLE to the employer. Benefits are FULLY TAXABLE to the employee. The employee hasn't been taxed on the premiums." },
+  { s: "LO7 — Taxation", q: "Group Disability — Employee-Paid Premiums", a: "PRE-TAX contributions: benefits are FULLY TAXABLE. AFTER-TAX contributions: benefits are TAX-FREE. The key is whether the premium was taxed." },
+  { s: "LO7 — Taxation", q: "SSDI and Workers' Comp — Tax Treatment", a: "SSDI: PARTIALLY TAXABLE if income exceeds threshold. WORKERS' COMP: generally NOT TAXABLE." },
+  { s: "LO7 — Taxation", q: "Disability tax summary", a: "Individual: premiums NOT deductible, benefits TAX-FREE. Employer-paid group: premiums deductible, benefits TAXABLE. Employee after-tax: benefits TAX-FREE. SSDI: partially taxable. Workers' comp: NOT taxable." },
+];
+
+let currentIdx = 0;
+let flipped = false;
+let shuffled = [...cards];
+
+function renderCard() {
+  const c = shuffled[currentIdx];
+  document.getElementById('fc-front-text').textContent = c.q;
+  document.getElementById('fc-back-text').textContent  = c.a;
+  document.getElementById('fc-progress').textContent = `Card ${currentIdx + 1} of ${shuffled.length}`;
+  const card = document.getElementById('fc-card');
+  card.classList.remove('flipped');
+  flipped = false;
+}
+
+function flipCard() {
+  const card = document.getElementById('fc-card');
+  flipped = !flipped;
+  card.classList.toggle('flipped', flipped);
+}
+
+function nextCard() {
+  if (currentIdx < shuffled.length - 1) currentIdx++;
+  else currentIdx = 0;
+  renderCard();
+}
+
+function prevCard() {
+  if (currentIdx > 0) currentIdx--;
+  else currentIdx = shuffled.length - 1;
+  renderCard();
+}
+
+function shuffleCards() {
+  shuffled = [...cards].sort(() => Math.random() - 0.5);
+  currentIdx = 0;
+  renderCard();
+}
+
+renderCard();
+
+// ──────────────────────────────────────────
+// QUIZ DATA
+// ──────────────────────────────────────────
+const questions = [
+  {
+    section: "Purpose of Disability Income Insurance",
+    q: "Disability income insurance is sometimes called 'living death insurance' because:",
+    opts: ["It pays benefits only at death","The financial impact of disability can be worse than death","It covers funeral expenses","It is only available to terminally ill individuals"],
+    ans: 1,
+    exp: "Disability can be financially worse than death — lost income continues while living expenses remain or increase."
+  },
+  {
+    section: "Purpose of Disability Income Insurance",
+    q: "Morbidity in the context of disability insurance measures:",
+    opts: ["The risk of death","The risk of becoming disabled","The cost of medical treatment","The length of hospital stays"],
+    ans: 1,
+    exp: "Morbidity measures the risk of becoming disabled based on personal and occupational factors."
+  },
+  {
+    section: "Definitions of Disability",
+    q: "The 'own occupation' definition of disability means the insured:",
+    opts: ["Cannot perform any work at all","Cannot perform the duties of their own occupation","Cannot perform any occupation suited to their training","Is confined to their home"],
+    ans: 1,
+    exp: "Own occupation: cannot perform the material and substantial duties of the insured's own occupation — the most favorable definition."
+  },
+  {
+    section: "Definitions of Disability",
+    q: "Which definition of disability is the MOST restrictive?",
+    opts: ["Own occupation","Any occupation","Substantial gainful activity (SGA)","Partial disability"],
+    ans: 2,
+    exp: "SGA (Social Security's definition) is the most restrictive — requires inability to engage in ANY substantial gainful work."
+  },
+  {
+    section: "Definitions of Disability",
+    q: "Presumptive disability automatically qualifies the insured based on:",
+    opts: ["A physician's recommendation","Loss of limbs, sight, hearing, or speech","Income loss exceeding 50%","Hospitalization for more than 30 days"],
+    ans: 1,
+    exp: "Presumptive disability: specific severe conditions (loss of limbs, sight, hearing, or speech) automatically qualify as total disability."
+  },
+  {
+    section: "Definitions of Disability",
+    q: "Residual disability requires an income loss of at least:",
+    opts: ["10%","15%","20%","25%"],
+    ans: 2,
+    exp: "Residual disability means working less than full-time with an income loss of at least 20%."
+  },
+  {
+    section: "Definitions of Disability",
+    q: "Partial disability typically pays what percentage of the total disability benefit?",
+    opts: ["25%","50%","75%","100%"],
+    ans: 1,
+    exp: "Partial disability benefits are typically 50% of the total disability benefit."
+  },
+  {
+    section: "Qualifying for Benefits",
+    q: "The elimination period in disability insurance is:",
+    opts: ["The time before the policy can be canceled","The waiting period before benefits begin","The probationary period at policy inception","The time to file a claim"],
+    ans: 1,
+    exp: "The elimination period is the waiting period before benefits begin — similar to a deductible in time rather than money."
+  },
+  {
+    section: "Qualifying for Benefits",
+    q: "A recurrent disability that relapses within 6 months is treated as:",
+    opts: ["A new claim with a new elimination period","A continuation of the initial disability","A partial disability","An excluded condition"],
+    ans: 1,
+    exp: "Relapse within 6 months is a continuation — no new elimination period. After 6 months, it's treated as a new claim."
+  },
+  {
+    section: "Qualifying for Benefits",
+    q: "To qualify for disability benefits, the insured must meet all EXCEPT:",
+    opts: ["Be under a physician's care","Meet the policy's definition of disability","Be hospitalized","Satisfy the elimination period"],
+    ans: 2,
+    exp: "Hospitalization is not required — the insured must be under a physician's care, meet the disability definition, satisfy the elimination period, and have income loss."
+  },
+  {
+    section: "Government vs. Private Disability",
+    q: "Social Security disability (SSDI) has a waiting period of:",
+    opts: ["30 days","3 months","5 months","12 months"],
+    ans: 2,
+    exp: "SSDI has a 5-month waiting period — benefits begin in the sixth month."
+  },
+  {
+    section: "Government vs. Private Disability",
+    q: "Workers' compensation provides primary coverage for:",
+    opts: ["All disabilities regardless of cause","Work-related accidents and occupational diseases only","Non-occupational disabilities","Mental health disabilities only"],
+    ans: 1,
+    exp: "Workers' compensation is the primary coverage for work-related accidents and occupational diseases."
+  },
+  {
+    section: "Government vs. Private Disability",
+    q: "Private disability insurance offers all of the following advantages over government programs EXCEPT:",
+    opts: ["More flexible definitions of disability","Shorter elimination periods","Guaranteed acceptance without underwriting","Customizable riders"],
+    ans: 2,
+    exp: "Private disability requires underwriting. Advantages include flexible definitions, shorter elimination periods, higher benefits, and customizable riders."
+  },
+  {
+    section: "Individual vs. Group Disability",
+    q: "Individual disability insurance is typically:",
+    opts: ["Non-occupational coverage only","An occupational contract providing 24/7 coverage","Limited to work-related injuries","Available without underwriting"],
+    ans: 1,
+    exp: "Individual disability is an occupational contract providing 24/7 coverage — covers disabilities from any cause."
+  },
+  {
+    section: "Individual vs. Group Disability",
+    q: "Group disability insurance is often:",
+    opts: ["Occupational coverage with 24/7 protection","Non-occupational coverage","Non-cancelable","Individually underwritten"],
+    ans: 1,
+    exp: "Group disability is often non-occupational coverage, using a percentage-of-earnings approach and coordinating benefits."
+  },
+  {
+    section: "Individual vs. Group Disability",
+    q: "Individual disability benefits are typically limited to:",
+    opts: ["100% of gross income","80% of gross income","60% of gross income or 80% of net income","50% of net income"],
+    ans: 2,
+    exp: "Individual disability limits coverage to 60% of gross income or 80% of net income to prevent malingering."
+  },
+  {
+    section: "Individual vs. Group Disability",
+    q: "Short-term disability typically provides benefits for up to:",
+    opts: ["90 days","180 days","2 years","Age 65"],
+    ans: 2,
+    exp: "Short-term disability has a maximum benefit period of two years, often paying up to 180 days, with weekly payments."
+  },
+  {
+    section: "Individual vs. Group Disability",
+    q: "Long-term disability benefit periods range from:",
+    opts: ["30 days to 1 year","90 days to 2 years","2 years to age 65","5 years to age 70"],
+    ans: 2,
+    exp: "Long-term disability benefit periods range from two years to age 65, with monthly payments for serious disabilities."
+  },
+  {
+    section: "Individual vs. Group Disability",
+    q: "The probationary period differs from the elimination period because it:",
+    opts: ["Applies to each claim","Is a one-time waiting period at policy inception","Is longer than the elimination period","Only applies to group policies"],
+    ans: 1,
+    exp: "Probationary period: one-time at policy inception. Elimination period: applies to each claim before benefits begin."
+  },
+  {
+    section: "Business Disability Insurance",
+    q: "Business Overhead Expense (BOE) insurance covers:",
+    opts: ["The owner's lost salary","Business expenses like rent, utilities, and employee wages","Employee disability benefits","Key person replacement costs"],
+    ans: 1,
+    exp: "BOE reimburses business expenses (rent, utilities, wages, leases) but does NOT cover the owner's lost compensation."
+  },
+  {
+    section: "Business Disability Insurance",
+    q: "A disability buy-out policy funds:",
+    opts: ["The disabled owner's medical expenses","The purchase of the disabled partner's ownership share","Business overhead expenses","Key employee replacement"],
+    ans: 1,
+    exp: "Disability buy-out policies fund buy-sell agreements, allowing remaining owners to purchase the disabled partner's share."
+  },
+  {
+    section: "Business Disability Insurance",
+    q: "Key person disability insurance typically has an elimination period of:",
+    opts: ["7 days","30-90 days","6 months","2 years"],
+    ans: 1,
+    exp: "Key person disability typically has a 30-90 day elimination period with a benefit period of 1-2 years."
+  },
+  {
+    section: "Business Disability Insurance",
+    q: "BOE insurance does NOT cover:",
+    opts: ["Rent and utilities","Employee wages","Equipment leases","The owner's personal compensation"],
+    ans: 3,
+    exp: "BOE covers business expenses (rent, utilities, wages, leases) but specifically excludes the owner's own compensation."
+  },
+  {
+    section: "Taxation of Disability Benefits",
+    q: "The disability tax principle states that the IRS taxes money:",
+    opts: ["Twice — at premium and benefit","Only once — either premiums or benefits","Only at the benefit stage","Only at the premium stage"],
+    ans: 1,
+    exp: "The IRS generally taxes money only once. If premiums are paid with after-tax dollars, benefits are tax-free, and vice versa."
+  },
+  {
+    section: "Taxation of Disability Benefits",
+    q: "Individual disability insurance benefits are:",
+    opts: ["Fully taxable","Partially taxable","Not taxable","Taxable above a threshold"],
+    ans: 2,
+    exp: "Individual disability benefits are not taxable because premiums are paid with after-tax (non-deductible) dollars."
+  },
+  {
+    section: "Taxation of Disability Benefits",
+    q: "When an employer pays group disability premiums, the benefits are:",
+    opts: ["Tax-free to the employee","Fully taxable to the employee","Partially taxable","Tax-deferred"],
+    ans: 1,
+    exp: "Employer-paid premiums are tax-deductible to the employer, so the benefits are fully taxable to the employee."
+  },
+  {
+    section: "Taxation of Disability Benefits",
+    q: "Workers' compensation disability benefits are generally:",
+    opts: ["Fully taxable","Partially taxable","Not taxable","Tax-deferred"],
+    ans: 2,
+    exp: "Workers' compensation benefits are generally not taxable."
+  },
+  {
+    section: "Taxation of Disability Benefits",
+    q: "If an employee pays group disability premiums with after-tax dollars, benefits are:",
+    opts: ["Fully taxable","Tax-free","Partially taxable","Tax-deferred"],
+    ans: 1,
+    exp: "After-tax employee contributions mean benefits are tax-free — the money was already taxed at the premium stage."
+  },
+];
+
+// ── Quiz Engine ──
+let answered = {};
+let submitted = false;
+let score = 0;
+
+function buildQuiz() {
+  answered = {};
+  submitted = false;
+  score = 0;
+  const area = document.getElementById('quiz-area');
+  let html = `<div class="quiz-header"><div class="quiz-meta">${questions.length} Questions</div><div class="score-badge" id="score-live">0/${questions.length} answered</div></div>`;
+  let lastSection = '';
+
+  questions.forEach((q, i) => {
+    if (q.section !== lastSection) {
+      html += `<div class="section-divider">${q.section}</div>`;
+      lastSection = q.section;
+    }
+    html += `<div class="q-card" id="qcard-${i}">
+      <div class="q-num">Question ${i + 1}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="options">`;
+    const letters = ['A','B','C','D'];
+    q.opts.forEach((opt, j) => {
+      html += `<div class="opt" id="opt-${i}-${j}" onclick="selectAnswer(${i},${j})">
+        <span class="opt-letter">${letters[j]}</span><span>${opt}</span>
+      </div>`;
+    });
+    html += `</div><div class="explanation" id="exp-${i}">${q.exp}</div></div>`;
+  });
+
+  html += `<div style="text-align:center; margin-top:32px;">
+    <button class="btn btn-primary" onclick="submitQuiz()" id="submit-btn">Submit & Score</button>
+  </div><div id="results-area"></div>`;
+  area.innerHTML = html;
+}
+
+function selectAnswer(qIdx, optIdx) {
+  if (submitted) return;
+  answered[qIdx] = optIdx;
+  questions[qIdx].opts.forEach((_, j) => {
+    const el = document.getElementById(`opt-${qIdx}-${j}`);
+    el.style.borderColor = j === optIdx ? '#3b82f6' : '';
+    el.style.background  = j === optIdx ? '#1e3a5f' : '';
+    el.style.color       = j === optIdx ? '#e2e8f0' : '';
+  });
+  updateLiveScore();
+}
+
+function updateLiveScore() {
+  let correct = 0;
+  Object.keys(answered).forEach(i => { if (answered[i] === questions[i].ans) correct++; });
+  document.getElementById('score-live').textContent = `${correct}/${Object.keys(answered).length} answered`;
+}
+
+function submitQuiz() {
+  submitted = true;
+  score = 0;
+  questions.forEach((q, i) => {
+    q.opts.forEach((_, j) => {
+      const el = document.getElementById(`opt-${i}-${j}`);
+      el.classList.add('disabled');
+      if (j === q.ans) {
+        el.classList.add('correct');
+      } else if (answered[i] === j) {
+        el.classList.add('wrong');
+      }
+    });
+    document.getElementById(`exp-${i}`).classList.add('show');
+    if (answered[i] === q.ans) score++;
+  });
+
+  const pct = Math.round((score / questions.length) * 100);
+  let msg, color;
+  if (pct >= 90)      { msg = "Excellent! You're exam-ready on this chapter."; color = "#4ade80"; }
+  else if (pct >= 70) { msg = "Above passing threshold. Review missed questions."; color = "#facc15"; }
+  else                { msg = "Below passing threshold. Review and retry!"; color = "#f87171"; }
+
+  document.getElementById('score-live').textContent = `Score: ${score}/${questions.length} (${pct}%)`;
+  document.getElementById('submit-btn').outerHTML = `<button class="btn btn-ghost" onclick="buildQuiz()">Retake Quiz</button>`;
+  document.getElementById('results-area').innerHTML = `
+    <div class="quiz-results">
+      <div class="score-big" style="color:${color}">${pct}%</div>
+      <div class="score-sub">${score} correct out of ${questions.length}</div>
+      <div class="score-msg" style="color:${color}">${msg}</div>
+      <div style="margin-top:8px;font-size:0.85rem;color:#64748b;">Pass threshold: 70% · Scroll up to review explanations</div>
+    </div>`;
+  window.scrollTo({ top: document.getElementById('results-area').offsetTop - 80, behavior: 'smooth' });
+}
+
+function showTab(t) {
+  document.getElementById('tab-flashcards').style.display = t === 'flashcards' ? '' : 'none';
+  document.getElementById('tab-quiz').style.display       = t === 'quiz' ? '' : 'none';
+  document.querySelectorAll('.tab').forEach((el, i) => {
+    el.classList.toggle('active', (i === 0 && t === 'flashcards') || (i === 1 && t === 'quiz'));
+  });
+  if (t === 'quiz' && !document.querySelector('.q-card')) buildQuiz();
+}
+</script>
+</body>
+</html>
