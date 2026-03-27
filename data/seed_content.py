@@ -28,6 +28,7 @@ CHAPTERS = {
     14: "Managed Care, Group Health & Federal Regulations",
     15: "Medical Expense Insurance, ACA & Tax-Advantaged Accounts",
     16: "Disability Income Insurance",
+    17: "Medicare, Medigap & Long-Term Care",
 }
 
 

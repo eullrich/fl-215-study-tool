@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FL 2-15 Exam | Chapter 17 Study Tool</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+  .header { background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%); padding: 24px 32px; border-bottom: 1px solid #1e40af44; }
+  .header h1 { font-size: 1.5rem; font-weight: 700; color: #60a5fa; letter-spacing: -0.02em; }
+  .header p { font-size: 0.875rem; color: #94a3b8; margin-top: 4px; }
+  .tabs { display: flex; gap: 0; padding: 20px 32px 0; border-bottom: 1px solid #1e293b; }
+  .tab { padding: 10px 24px; border-radius: 8px 8px 0 0; cursor: pointer; font-size: 0.875rem; font-weight: 600; border: 1px solid transparent; border-bottom: none; transition: all 0.2s; color: #64748b; }
+  .tab.active { background: #1e293b; color: #60a5fa; border-color: #1e40af44; }
+  .tab:hover:not(.active) { color: #94a3b8; }
+  .content { padding: 32px; max-width: 860px; margin: 0 auto; }
+  .fc-container { display: flex; flex-direction: column; align-items: center; gap: 24px; }
+  .fc-progress { font-size: 0.8rem; color: #64748b; letter-spacing: 0.05em; text-transform: uppercase; }
+  .fc-card-wrap { width: 100%; max-width: 640px; perspective: 1200px; cursor: pointer; user-select: none; }
+  .fc-card { position: relative; width: 100%; height: 220px; transition: transform 0.55s cubic-bezier(.4,2,.6,1); transform-style: preserve-3d; }
+  .fc-card.flipped { transform: rotateY(180deg); }
+  .fc-face { position: absolute; inset: 0; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 28px 36px; text-align: center; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+  .fc-front { background: linear-gradient(135deg, #1e3a5f, #1e293b); border: 1px solid #2563eb44; box-shadow: 0 8px 32px #0004; }
+  .fc-back  { background: linear-gradient(135deg, #14532d, #1e293b); border: 1px solid #16a34a44; box-shadow: 0 8px 32px #0004; transform: rotateY(180deg); }
+  .fc-label { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px; opacity: 0.5; }
+  .fc-text  { font-size: 1.15rem; font-weight: 600; line-height: 1.5; color: #f1f5f9; }
+  .fc-hint  { font-size: 0.75rem; color: #64748b; margin-top: 14px; }
+  .fc-controls { display: flex; gap: 12px; align-items: center; }
+  .btn { padding: 10px 22px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; transition: all 0.15s; }
+  .btn-primary { background: #2563eb; color: #fff; }
+  .btn-primary:hover { background: #1d4ed8; }
+  .btn-ghost { background: #1e293b; color: #94a3b8; border: 1px solid #334155; }
+  .btn-ghost:hover { background: #334155; color: #e2e8f0; }
+  .btn-sm { padding: 7px 16px; font-size: 0.8rem; }
+  .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+  .quiz-meta { font-size: 0.8rem; color: #64748b; }
+  .score-badge { background: #1e293b; border: 1px solid #334155; border-radius: 999px; padding: 4px 14px; font-size: 0.8rem; font-weight: 700; color: #94a3b8; }
+  .q-card { background: #1e293b; border: 1px solid #334155; border-radius: 14px; padding: 28px; margin-bottom: 20px; }
+  .q-num { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #64748b; margin-bottom: 10px; }
+  .q-text { font-size: 1rem; font-weight: 600; color: #f1f5f9; line-height: 1.55; margin-bottom: 20px; }
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .opt { padding: 12px 18px; border-radius: 9px; border: 1.5px solid #334155; background: #0f172a; cursor: pointer; font-size: 0.9rem; color: #cbd5e1; transition: all 0.15s; display: flex; align-items: flex-start; gap: 10px; }
+  .opt:hover:not(.disabled) { border-color: #3b82f6; color: #e2e8f0; background: #1e3a5f; }
+  .opt.correct { border-color: #22c55e; background: #14532d22; color: #4ade80; }
+  .opt.wrong   { border-color: #ef4444; background: #7f1d1d22; color: #f87171; }
+  .opt.disabled { cursor: default; pointer-events: none; }
+  .opt-letter { font-weight: 700; opacity: 0.5; min-width: 18px; }
+  .explanation { margin-top: 14px; padding: 12px 16px; border-radius: 8px; background: #0f172a; border-left: 3px solid #3b82f6; font-size: 0.85rem; color: #94a3b8; line-height: 1.5; display: none; }
+  .explanation.show { display: block; }
+  .quiz-results { text-align: center; padding: 40px 20px; }
+  .score-big { font-size: 4rem; font-weight: 800; color: #60a5fa; line-height: 1; }
+  .score-sub { font-size: 1rem; color: #64748b; margin-top: 8px; }
+  .score-msg { font-size: 1.1rem; font-weight: 600; margin-top: 16px; }
+  .section-divider { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #3b82f6; background: #1e3a5f22; border: 1px solid #1e40af33; border-radius: 6px; padding: 5px 14px; display: inline-block; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>FL 2-15 Exam Prep</h1>
+  <p>Chapter 17 — Medicare, Medigap & Long-Term Care</p>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('flashcards')">Flashcards</div>
+  <div class="tab" onclick="showTab('quiz')">Practice Test</div>
+</div>
+
+<div id="tab-flashcards" class="content">
+  <div class="fc-container">
+    <div class="fc-progress" id="fc-progress">Card 1 of 1</div>
+    <div class="fc-card-wrap" onclick="flipCard()">
+      <div class="fc-card" id="fc-card">
+        <div class="fc-face fc-front"><div class="fc-label">Term</div><div class="fc-text" id="fc-front-text"></div><div class="fc-hint">click to reveal definition</div></div>
+        <div class="fc-face fc-back"><div class="fc-label">Definition</div><div class="fc-text" id="fc-back-text"></div></div>
+      </div>
+    </div>
+    <div class="fc-controls">
+      <button class="btn btn-ghost btn-sm" onclick="prevCard()">Prev</button>
+      <button class="btn btn-primary" onclick="nextCard()">Next</button>
+      <button class="btn btn-ghost btn-sm" onclick="shuffleCards()">Shuffle</button>
+    </div>
+  </div>
+</div>
+
+<div id="tab-quiz" class="content" style="display:none;"><div id="quiz-area"></div></div>
+
+<script>
+const cards = [
+
+  // ── LO 1: Medicare Parts A, B, C, D ──
+  { s: "LO1 — Medicare Parts", q: "Medicare Part A (Hospital Insurance)", a: "Covers INPATIENT hospital care (up to 90 DAYS per benefit period). 60 LIFETIME RESERVE DAYS (not restored). SKILLED NURSING facility (up to 100 days after hospitalization). HOSPICE care. Limited HOME HEALTH. Most pay NO premium." },
+  { s: "LO1 — Medicare Parts", q: "Medicare Part B (Medical Insurance)", a: "Covers PHYSICIAN services and OUTPATIENT care. Diagnostic tests, lab work, DURABLE MEDICAL EQUIPMENT. Pays 80% of approved charges after annual deductible. Requires MONTHLY PREMIUM. Does NOT cover dental, vision, hearing, or Rx drugs." },
+  { s: "LO1 — Medicare Parts", q: "Medicare Part C (Medicare Advantage)", a: "PRIVATE insurance alternative to Original Medicare. Must cover ALL Part A and B services. Often includes Rx drugs, dental, vision. Uses PROVIDER NETWORKS (HMO, PPO). Sets annual OUT-OF-POCKET MAXIMUMS." },
+  { s: "LO1 — Medicare Parts", q: "Medicare Part D (Prescription Drug Plans)", a: "Covers OUTPATIENT prescription medications. Available as STANDALONE or included in Medicare Advantage. Uses FORMULARIES. Tiered COST-SHARING structure. Includes CATASTROPHIC coverage after OOP limit." },
+  { s: "LO1 — Medicare Parts", q: "Medicare Parts Summary", a: "A = HOSPITAL (inpatient). B = MEDICAL (outpatient/physician). C = ADVANTAGE (private alternative). D = DRUGS (prescriptions). A+B = Original Medicare. C = replaces A+B through private plan." },
+
+  // ── LO 2: Original vs. Medicare Advantage ──
+  { s: "LO2 — Original vs. Advantage", q: "Original Medicare", a: "FEE-FOR-SERVICE. Parts A + B. NO provider networks — see any provider accepting Medicare. NO referrals needed. NO annual OOP maximum. Does NOT include Rx drugs. Often supplemented with MEDIGAP. NATIONWIDE coverage." },
+  { s: "LO2 — Original vs. Advantage", q: "Medicare Advantage (Part C)", a: "Managed by PRIVATE insurers. Combines A + B in one plan. Most include Rx drugs + extra benefits. Uses PROVIDER NETWORKS. HMOs may require REFERRALS. Has annual OOP MAXIMUMS. CANNOT use Medigap. Limited to NETWORK SERVICE AREA." },
+  { s: "LO2 — Original vs. Advantage", q: "Key difference: Medigap compatibility", a: "ORIGINAL Medicare: CAN use Medigap policies. MEDICARE ADVANTAGE: CANNOT use Medigap policies. Must choose one approach or the other." },
+
+  // ── LO 3: Eligibility ──
+  { s: "LO3 — Eligibility", q: "Medicare eligibility — Age 65+", a: "U.S. CITIZENS or legal residents for at least 5 YEARS. Must have earned 40 SOCIAL SECURITY CREDITS (10 years). Spouse's work history may qualify. Without enough credits: pay UNSUBSIDIZED premiums." },
+  { s: "LO3 — Eligibility", q: "Medicare eligibility — Under 65", a: "Receiving SSDI for 24+ MONTHS. END-STAGE RENAL DISEASE (ESRD) after 3 months on dialysis. ALS (Lou Gehrig's disease): IMMEDIATELY eligible — NO waiting period." },
+
+  // ── LO 4: Enrollment Periods & Penalties ──
+  { s: "LO4 — Enrollment", q: "Initial Enrollment Period (IEP)", a: "7-MONTH window: 3 months before + month of + 3 months after 65th birthday. AUTOMATIC enrollment if receiving Social Security. Others must actively enroll through SSA." },
+  { s: "LO4 — Enrollment", q: "General Enrollment Period (GEP)", a: "JANUARY 1 through MARCH 31 each year. For those who MISSED initial enrollment. Coverage begins first day of following month. LATE PENALTIES may apply." },
+  { s: "LO4 — Enrollment", q: "Special Enrollment Period (SEP)", a: "For those who delayed due to EMPLOYER coverage. 8-MONTH period after employment/group coverage ends. NO PENALTIES. Only applies to COBRA-regulated group plans (20+ employees)." },
+  { s: "LO4 — Enrollment", q: "Annual Open Enrollment (AEP)", a: "OCTOBER 15 through DECEMBER 7 each year. Can switch between Original and Advantage. Can change Advantage plans. Can join/switch/drop Part D." },
+  { s: "LO4 — Enrollment", q: "Part A Late Enrollment Penalty", a: "10% premium increase for TWICE the number of years delayed." },
+  { s: "LO4 — Enrollment", q: "Part B Late Enrollment Penalty", a: "10% premium increase for each 12-MONTH period delayed. Penalty lasts for LIFETIME." },
+  { s: "LO4 — Enrollment", q: "Part D Late Enrollment Penalty", a: "1% PER MONTH penalty for each month without CREDITABLE COVERAGE." },
+
+  // ── LO 5: Claims & Appeals ──
+  { s: "LO5 — Claims", q: "Medicare Claims Processing", a: "Processed by MEDICARE ADMINISTRATIVE CONTRACTORS (MACs). PARTICIPATING providers accept assignment and bill Medicare directly. NON-PARTICIPATING can charge up to 15% ABOVE approved amount." },
+  { s: "LO5 — Claims", q: "Medicare Appeals", a: "Beneficiaries have 120 DAYS to appeal denied claims. Must include personal info and explanation of disagreement. Must specify dates and services disputed." },
+
+  // ── LO 6: Medigap (Medicare Supplement) ──
+  { s: "LO6 — Medigap", q: "Medigap Overview", a: "PRIVATE insurance filling gaps in ORIGINAL Medicare. Only for those with Parts A AND B. STANDARDIZED plans designated by LETTERS (A through N). Best time to buy: 6-MONTH open enrollment period (starting at age 65)." },
+  { s: "LO6 — Medigap", q: "Medigap Core Benefits (all plans)", a: "Part A COINSURANCE + hospital costs up to 365 additional days. Part B COINSURANCE or copayment. First THREE PINTS of blood. Part A HOSPICE care coinsurance/copayment." },
+  { s: "LO6 — Medigap", q: "Medigap Plans F and G — Excess Charges", a: "Only Plans F and G cover Part B EXCESS CHARGES. Plan F also covers Part B deductible (no longer sold to new beneficiaries). Plan G is the most comprehensive currently available to new enrollees." },
+  { s: "LO6 — Medigap", q: "Medigap Plans K and L", a: "Have OUT-OF-POCKET LIMITS and provide PARTIAL coverage of benefits instead of full coverage." },
+  { s: "LO6 — Medigap", q: "Medicare Select", a: "Medigap plans requiring the use of NETWORK PROVIDERS for full benefits. Lower premiums in exchange for restricted provider choice." },
+
+  // ── LO 7: Levels of Long-Term Care ──
+  { s: "LO7 — LTC Levels", q: "Skilled Nursing Care", a: "24-HOUR care by LICENSED MEDICAL professionals. The highest level of long-term care." },
+  { s: "LO7 — LTC Levels", q: "Intermediate Care", a: "INTERMITTENT nursing and REHABILITATIVE care by skilled personnel. Not continuous — provided as needed." },
+  { s: "LO7 — LTC Levels", q: "Custodial Care", a: "Assistance with DAILY PERSONAL NEEDS by trained NON-MEDICAL personnel. The most common type of long-term care." },
+  { s: "LO7 — LTC Levels", q: "Long-Term Care Settings", a: "NURSING HOMES (24-hour skilled). ASSISTED LIVING (intermittent + personal). HOME HEALTH (skilled, at home). ADULT DAY CARE (while caregiver is away). RESPITE CARE (temporary caregiver relief)." },
+  { s: "LO7 — LTC Levels", q: "Formal vs. Informal Care", a: "FORMAL: PAID care by professional caregivers (covered by LTC insurance). INFORMAL: UNPAID care by family members (NOT covered by LTC insurance)." },
+
+  // ── LO 8: LTC Benefit Triggers ──
+  { s: "LO8 — LTC Triggers", q: "LTC Benefit Triggers", a: "Two ways to qualify: (1) LOSS OF PHYSICAL FUNCTION — inability to perform 2+ ADLs. (2) COGNITIVE IMPAIRMENT — deficiency in memory, orientation, reasoning, or judgment." },
+  { s: "LO8 — LTC Triggers", q: "Activities of Daily Living (ADLs)", a: "BATHING, DRESSING, TOILETING, TRANSFERRING, CONTINENCE, and EATING. Most policies require inability to perform 2 OR MORE ADLs." },
+  { s: "LO8 — LTC Triggers", q: "Hands-On vs. Stand-By Assistance", a: "HANDS-ON: physical help with ADLs (direct contact). STAND-BY: supervision within ARM'S LENGTH during activities." },
+  { s: "LO8 — LTC Triggers", q: "LTC Policy Exclusions", a: "WAR, SELF-INFLICTED injuries, attempted suicide. DRUG or ALCOHOL treatment. MENTAL ILLNESS (unless from organic disease). Care OUTSIDE the U.S. Care covered by WORKERS' COMP." },
+  { s: "LO8 — LTC Triggers", q: "LTC Insurance Types", a: "STAND-ALONE: traditional LTC insurance. LIFE INSURANCE RIDERS: use portion of death benefit for LTC. HYBRID (asset-based): combine life/annuity with LTC benefits." },
+
+  // ── LO 9: LTC Tax Considerations ──
+  { s: "LO9 — LTC Taxes", q: "Tax-Qualified LTC Policy (HIPAA)", a: "Premiums may be TAX-DEDUCTIBLE as medical expenses. Benefits generally TAX-EXEMPT. Must use specific triggers (2+ ADLs or cognitive impairment). Must be GUARANTEED RENEWABLE. NO cash surrender value. 30-DAY free-look. 90+ day disability diagnosis." },
+  { s: "LO9 — LTC Taxes", q: "Non-Qualified LTC Policy", a: "Premiums NOT tax-deductible. Benefits TAXABLE if they exceed actual care expenses. No specific federal requirements." },
+  { s: "LO9 — LTC Taxes", q: "Tax-Qualified vs. Non-Qualified LTC", a: "QUALIFIED: deductible premiums, tax-exempt benefits, must meet HIPAA criteria. NON-QUALIFIED: no deduction, benefits may be taxable, fewer restrictions." },
+
+  // ── LO 10: Medicare, Medicaid & LTC Together ──
+  { s: "LO10 — Coordination", q: "Medicare LTC Limitations", a: "Focuses on ACUTE care and recovery, NOT long-term maintenance. Skilled nursing: up to 100 DAYS after hospitalization. Does NOT cover CUSTODIAL care or extended nursing home stays." },
+  { s: "LO10 — Coordination", q: "Medicaid and Long-Term Care", a: "MEANS-TESTED program for low-income. PRIMARY public payer for long-term services (LTSS). Requires SPENDING DOWN assets. 5-YEAR LOOK-BACK period for asset transfers." },
+  { s: "LO10 — Coordination", q: "Long-Term Care Partnership Program", a: "FEDERALLY supported, STATE-operated. Protect ASSETS EQUAL to LTC insurance benefits paid. Policies must be TAX-QUALIFIED with INFLATION protection. Qualify for Medicaid WITHOUT spending all assets." },
+  { s: "LO10 — Coordination", q: "Care Coordination Order", a: "MEDICARE: primary for acute/short-term recovery. LTC INSURANCE: covers extended care needs. MEDICAID: safety net after personal assets and LTC benefits exhausted." },
+];
+
+let currentIdx = 0;
+let flipped = false;
+let shuffled = [...cards];
+
+function renderCard() {
+  const c = shuffled[currentIdx];
+  document.getElementById('fc-front-text').textContent = c.q;
+  document.getElementById('fc-back-text').textContent  = c.a;
+  document.getElementById('fc-progress').textContent = `Card ${currentIdx + 1} of ${shuffled.length}`;
+  document.getElementById('fc-card').classList.remove('flipped');
+  flipped = false;
+}
+function flipCard() { flipped = !flipped; document.getElementById('fc-card').classList.toggle('flipped', flipped); }
+function nextCard() { currentIdx = currentIdx < shuffled.length - 1 ? currentIdx + 1 : 0; renderCard(); }
+function prevCard() { currentIdx = currentIdx > 0 ? currentIdx - 1 : shuffled.length - 1; renderCard(); }
+function shuffleCards() { shuffled = [...cards].sort(() => Math.random() - 0.5); currentIdx = 0; renderCard(); }
+renderCard();
+
+const questions = [
+  { section: "Medicare Parts", q: "Medicare Part A covers:", opts: ["Physician services and outpatient care","Inpatient hospital care, skilled nursing, and hospice","Prescription drugs","Dental and vision services"], ans: 1, exp: "Part A covers inpatient hospital care (up to 90 days), skilled nursing (up to 100 days), hospice, and limited home health." },
+  { section: "Medicare Parts", q: "Medicare Part B covers all of the following EXCEPT:", opts: ["Physician services","Diagnostic tests","Durable medical equipment","Prescription drugs"], ans: 3, exp: "Part B does not cover dental, vision, hearing, or prescription drugs. Rx drugs are covered under Part D." },
+  { section: "Medicare Parts", q: "Medicare Part B pays what percentage of approved charges after the deductible?", opts: ["50%","70%","80%","100%"], ans: 2, exp: "Part B covers 80% of Medicare-approved charges after the annual deductible is met." },
+  { section: "Medicare Parts", q: "How many lifetime reserve days does Medicare Part A provide?", opts: ["30","60","90","120"], ans: 1, exp: "Part A provides 60 lifetime reserve days that are NOT restored once used." },
+  { section: "Medicare Parts", q: "Medicare Part D uses _____ to determine covered medications.", opts: ["Provider networks","Formularies","Deductibles only","Benefit triggers"], ans: 1, exp: "Part D uses formularies — lists of covered medications with tiered cost-sharing." },
+  { section: "Original vs. Advantage", q: "Original Medicare does NOT include:", opts: ["Hospital coverage","Physician coverage","An annual out-of-pocket maximum","Fee-for-service payments"], ans: 2, exp: "Original Medicare has no annual out-of-pocket maximum. Medicare Advantage plans do have OOP maximums." },
+  { section: "Original vs. Advantage", q: "Medicare Advantage plans CANNOT be used with:", opts: ["Part D drug plans","Medigap policies","Dental coverage","Vision coverage"], ans: 1, exp: "Medigap policies cannot be used with Medicare Advantage — they only supplement Original Medicare." },
+  { section: "Original vs. Advantage", q: "Original Medicare provides coverage:", opts: ["Only within a network service area","Only in the enrollee's home state","Nationwide","Only at participating hospitals"], ans: 2, exp: "Original Medicare provides nationwide coverage — any provider accepting Medicare can be used." },
+  { section: "Eligibility", q: "To qualify for Medicare at age 65, a person needs:", opts: ["20 Social Security credits","30 Social Security credits","40 Social Security credits","No work history required"], ans: 2, exp: "Medicare eligibility at 65 requires 40 Social Security credits (10 years of work) and U.S. citizenship/residency for 5+ years." },
+  { section: "Eligibility", q: "Which condition qualifies for IMMEDIATE Medicare eligibility with no waiting period?", opts: ["End-stage renal disease","SSDI recipients","ALS (Lou Gehrig's disease)","Cancer diagnosis"], ans: 2, exp: "ALS patients are immediately eligible for Medicare with no waiting period. ESRD requires 3 months; SSDI requires 24 months." },
+  { section: "Eligibility", q: "SSDI recipients qualify for Medicare after:", opts: ["6 months","12 months","24 months","36 months"], ans: 2, exp: "Individuals receiving SSDI qualify for Medicare after 24 months (2 years) of disability benefits." },
+  { section: "Enrollment Periods", q: "The Initial Enrollment Period is:", opts: ["3 months long","6 months long","7 months long","12 months long"], ans: 2, exp: "The IEP is 7 months: 3 months before, the month of, and 3 months after one's 65th birthday." },
+  { section: "Enrollment Periods", q: "The General Enrollment Period runs:", opts: ["October 15 - December 7","January 1 - March 31","April 1 - June 30","July 1 - September 30"], ans: 1, exp: "The GEP runs January 1 through March 31 for those who missed initial enrollment." },
+  { section: "Enrollment Periods", q: "The Part B late enrollment penalty is:", opts: ["5% per year delayed","10% per 12-month period delayed, for life","1% per month delayed","20% one-time penalty"], ans: 1, exp: "Part B penalty: 10% premium increase for each 12-month period delayed — and it lasts for the beneficiary's lifetime." },
+  { section: "Enrollment Periods", q: "The Special Enrollment Period lasts:", opts: ["3 months","6 months","8 months","12 months"], ans: 2, exp: "The SEP is 8 months following the end of employment or group coverage, with no late penalties." },
+  { section: "Enrollment Periods", q: "The Annual Open Enrollment Period runs:", opts: ["January 1 - March 31","April 1 - June 30","October 15 - December 7","November 1 - December 15"], ans: 2, exp: "The AEP runs October 15 through December 7 — for switching between Original and Advantage, changing plans, or modifying Part D." },
+  { section: "Claims & Appeals", q: "Non-participating Medicare providers may charge up to _____ above the approved amount.", opts: ["5%","10%","15%","25%"], ans: 2, exp: "Non-participating providers may charge up to 15% above the Medicare-approved amount." },
+  { section: "Claims & Appeals", q: "Beneficiaries have _____ days to appeal a denied Medicare claim.", opts: ["30","60","90","120"], ans: 3, exp: "Beneficiaries have 120 days to appeal denied claims." },
+  { section: "Medigap", q: "Medigap policies are available to those with:", opts: ["Medicare Advantage only","Original Medicare (Parts A and B)","Part D only","Any type of Medicare"], ans: 1, exp: "Medigap is only available to those enrolled in Original Medicare (Parts A and B) — not Medicare Advantage." },
+  { section: "Medigap", q: "Which of the following is a Medigap core benefit?", opts: ["Part B deductible coverage","Foreign travel emergency","Part A coinsurance and hospital costs up to 365 additional days","Skilled nursing facility coinsurance"], ans: 2, exp: "Core benefits in ALL plans include Part A coinsurance (365 additional days), Part B coinsurance, first 3 pints of blood, and Part A hospice coinsurance." },
+  { section: "Medigap", q: "The best time to purchase Medigap is during the:", opts: ["Annual Open Enrollment Period","General Enrollment Period","6-month Medigap open enrollment period starting at age 65","Special Enrollment Period"], ans: 2, exp: "The best time is the 6-month Medigap open enrollment period starting when you turn 65 and enroll in Part B — guaranteed issue." },
+  { section: "Long-Term Care", q: "The three levels of long-term care are:", opts: ["Hospital, outpatient, and home care","Skilled nursing, intermediate, and custodial care","Emergency, urgent, and preventive care","Primary, secondary, and tertiary care"], ans: 1, exp: "The three levels: skilled nursing (24-hour licensed medical), intermediate (intermittent skilled), and custodial (daily personal needs, non-medical)." },
+  { section: "Long-Term Care", q: "Most LTC insurance policies require the inability to perform how many ADLs?", opts: ["1 or more","2 or more","3 or more","4 or more"], ans: 1, exp: "Most policies require the inability to perform 2 or more ADLs (bathing, dressing, toileting, transferring, continence, eating)." },
+  { section: "Long-Term Care", q: "Informal care by family members is:", opts: ["Covered by LTC insurance","Covered by Medicare","Not covered by LTC insurance","Covered by Medicaid"], ans: 2, exp: "Informal care (unpaid, by family) is NOT covered by LTC insurance. Only formal (paid professional) care is covered." },
+  { section: "Long-Term Care", q: "Tax-qualified LTC policies must be:", opts: ["Cancelable at any time","Guaranteed renewable","Limited to 1-year terms","Issued only to those over 65"], ans: 1, exp: "Tax-qualified LTC policies must be guaranteed renewable, use specific benefit triggers, have no cash surrender value, and include a 30-day free-look period." },
+  { section: "Long-Term Care", q: "Medicaid's look-back period for asset transfers is:", opts: ["1 year","3 years","5 years","7 years"], ans: 2, exp: "Medicaid examines asset transfers during a 5-year look-back period to prevent individuals from giving away assets to qualify." },
+  { section: "Long-Term Care", q: "The Long-Term Care Partnership Program allows individuals to:", opts: ["Skip the Medicare waiting period","Protect assets equal to LTC insurance benefits paid","Receive free LTC insurance","Convert Medicare to LTC coverage"], ans: 1, exp: "Partnership programs protect assets equal to LTC insurance benefits paid, enabling Medicaid qualification without spending all assets." },
+  { section: "Long-Term Care", q: "Medicare covers skilled nursing facility care for up to:", opts: ["30 days","60 days","100 days","Unlimited days"], ans: 2, exp: "Medicare covers skilled nursing care for up to 100 days following a qualifying hospital stay." },
+  { section: "Long-Term Care", q: "Medicare does NOT cover:", opts: ["Skilled nursing for 100 days","Hospice care","Custodial care or extended nursing home stays","Inpatient hospital care"], ans: 2, exp: "Medicare does not cover custodial care or extended nursing home stays — it focuses on acute care and short-term recovery." },
+];
+
+let answered = {};
+let submitted = false;
+let score = 0;
+
+function buildQuiz() {
+  answered = {}; submitted = false; score = 0;
+  const area = document.getElementById('quiz-area');
+  let html = `<div class="quiz-header"><div class="quiz-meta">${questions.length} Questions</div><div class="score-badge" id="score-live">0/${questions.length} answered</div></div>`;
+  let lastSection = '';
+  questions.forEach((q, i) => {
+    if (q.section !== lastSection) { html += `<div class="section-divider">${q.section}</div>`; lastSection = q.section; }
+    html += `<div class="q-card" id="qcard-${i}"><div class="q-num">Question ${i + 1}</div><div class="q-text">${q.q}</div><div class="options">`;
+    ['A','B','C','D'].forEach((l, j) => { html += `<div class="opt" id="opt-${i}-${j}" onclick="selectAnswer(${i},${j})"><span class="opt-letter">${l}</span><span>${q.opts[j]}</span></div>`; });
+    html += `</div><div class="explanation" id="exp-${i}">${q.exp}</div></div>`;
+  });
+  html += `<div style="text-align:center; margin-top:32px;"><button class="btn btn-primary" onclick="submitQuiz()" id="submit-btn">Submit & Score</button></div><div id="results-area"></div>`;
+  area.innerHTML = html;
+}
+
+function selectAnswer(qIdx, optIdx) {
+  if (submitted) return;
+  answered[qIdx] = optIdx;
+  questions[qIdx].opts.forEach((_, j) => { const el = document.getElementById(`opt-${qIdx}-${j}`); el.style.borderColor = j === optIdx ? '#3b82f6' : ''; el.style.background = j === optIdx ? '#1e3a5f' : ''; el.style.color = j === optIdx ? '#e2e8f0' : ''; });
+  updateLiveScore();
+}
+
+function updateLiveScore() {
+  let correct = 0;
+  Object.keys(answered).forEach(i => { if (answered[i] === questions[i].ans) correct++; });
+  document.getElementById('score-live').textContent = `${correct}/${Object.keys(answered).length} answered`;
+}
+
+function submitQuiz() {
+  submitted = true; score = 0;
+  questions.forEach((q, i) => {
+    q.opts.forEach((_, j) => { const el = document.getElementById(`opt-${i}-${j}`); el.classList.add('disabled'); if (j === q.ans) el.classList.add('correct'); else if (answered[i] === j) el.classList.add('wrong'); });
+    document.getElementById(`exp-${i}`).classList.add('show');
+    if (answered[i] === q.ans) score++;
+  });
+  const pct = Math.round((score / questions.length) * 100);
+  let msg, color;
+  if (pct >= 90) { msg = "Excellent! You're exam-ready on this chapter."; color = "#4ade80"; }
+  else if (pct >= 70) { msg = "Above passing threshold. Review missed questions."; color = "#facc15"; }
+  else { msg = "Below passing threshold. Review and retry!"; color = "#f87171"; }
+  document.getElementById('score-live').textContent = `Score: ${score}/${questions.length} (${pct}%)`;
+  document.getElementById('submit-btn').outerHTML = `<button class="btn btn-ghost" onclick="buildQuiz()">Retake Quiz</button>`;
+  document.getElementById('results-area').innerHTML = `<div class="quiz-results"><div class="score-big" style="color:${color}">${pct}%</div><div class="score-sub">${score} correct out of ${questions.length}</div><div class="score-msg" style="color:${color}">${msg}</div><div style="margin-top:8px;font-size:0.85rem;color:#64748b;">Pass threshold: 70%</div></div>`;
+  window.scrollTo({ top: document.getElementById('results-area').offsetTop - 80, behavior: 'smooth' });
+}
+
+function showTab(t) {
+  document.getElementById('tab-flashcards').style.display = t === 'flashcards' ? '' : 'none';
+  document.getElementById('tab-quiz').style.display = t === 'quiz' ? '' : 'none';
+  document.querySelectorAll('.tab').forEach((el, i) => { el.classList.toggle('active', (i === 0 && t === 'flashcards') || (i === 1 && t === 'quiz')); });
+  if (t === 'quiz' && !document.querySelector('.q-card')) buildQuiz();
+}
+</script>
+</body>
+</html>
