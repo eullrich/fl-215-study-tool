@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FL 2-15 Exam | Chapter 15 Study Tool</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+  .header { background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%); padding: 24px 32px; border-bottom: 1px solid #1e40af44; }
+  .header h1 { font-size: 1.5rem; font-weight: 700; color: #60a5fa; letter-spacing: -0.02em; }
+  .header p { font-size: 0.875rem; color: #94a3b8; margin-top: 4px; }
+  .tabs { display: flex; gap: 0; padding: 20px 32px 0; border-bottom: 1px solid #1e293b; }
+  .tab { padding: 10px 24px; border-radius: 8px 8px 0 0; cursor: pointer; font-size: 0.875rem; font-weight: 600; border: 1px solid transparent; border-bottom: none; transition: all 0.2s; color: #64748b; }
+  .tab.active { background: #1e293b; color: #60a5fa; border-color: #1e40af44; }
+  .tab:hover:not(.active) { color: #94a3b8; }
+  .content { padding: 32px; max-width: 860px; margin: 0 auto; }
+  .fc-container { display: flex; flex-direction: column; align-items: center; gap: 24px; }
+  .fc-progress { font-size: 0.8rem; color: #64748b; letter-spacing: 0.05em; text-transform: uppercase; }
+  .fc-card-wrap { width: 100%; max-width: 640px; perspective: 1200px; cursor: pointer; user-select: none; }
+  .fc-card { position: relative; width: 100%; height: 220px; transition: transform 0.55s cubic-bezier(.4,2,.6,1); transform-style: preserve-3d; }
+  .fc-card.flipped { transform: rotateY(180deg); }
+  .fc-face { position: absolute; inset: 0; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 28px 36px; text-align: center; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+  .fc-front { background: linear-gradient(135deg, #1e3a5f, #1e293b); border: 1px solid #2563eb44; box-shadow: 0 8px 32px #0004; }
+  .fc-back  { background: linear-gradient(135deg, #14532d, #1e293b); border: 1px solid #16a34a44; box-shadow: 0 8px 32px #0004; transform: rotateY(180deg); }
+  .fc-label { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px; opacity: 0.5; }
+  .fc-text  { font-size: 1.15rem; font-weight: 600; line-height: 1.5; color: #f1f5f9; }
+  .fc-hint  { font-size: 0.75rem; color: #64748b; margin-top: 14px; }
+  .fc-controls { display: flex; gap: 12px; align-items: center; }
+  .btn { padding: 10px 22px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; transition: all 0.15s; }
+  .btn-primary { background: #2563eb; color: #fff; }
+  .btn-primary:hover { background: #1d4ed8; }
+  .btn-ghost { background: #1e293b; color: #94a3b8; border: 1px solid #334155; }
+  .btn-ghost:hover { background: #334155; color: #e2e8f0; }
+  .btn-sm { padding: 7px 16px; font-size: 0.8rem; }
+  .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+  .quiz-meta { font-size: 0.8rem; color: #64748b; }
+  .score-badge { background: #1e293b; border: 1px solid #334155; border-radius: 999px; padding: 4px 14px; font-size: 0.8rem; font-weight: 700; color: #94a3b8; }
+  .q-card { background: #1e293b; border: 1px solid #334155; border-radius: 14px; padding: 28px; margin-bottom: 20px; }
+  .q-num { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #64748b; margin-bottom: 10px; }
+  .q-text { font-size: 1rem; font-weight: 600; color: #f1f5f9; line-height: 1.55; margin-bottom: 20px; }
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .opt { padding: 12px 18px; border-radius: 9px; border: 1.5px solid #334155; background: #0f172a; cursor: pointer; font-size: 0.9rem; color: #cbd5e1; transition: all 0.15s; display: flex; align-items: flex-start; gap: 10px; }
+  .opt:hover:not(.disabled) { border-color: #3b82f6; color: #e2e8f0; background: #1e3a5f; }
+  .opt.correct { border-color: #22c55e; background: #14532d22; color: #4ade80; }
+  .opt.wrong   { border-color: #ef4444; background: #7f1d1d22; color: #f87171; }
+  .opt.disabled { cursor: default; pointer-events: none; }
+  .opt-letter { font-weight: 700; opacity: 0.5; min-width: 18px; }
+  .explanation { margin-top: 14px; padding: 12px 16px; border-radius: 8px; background: #0f172a; border-left: 3px solid #3b82f6; font-size: 0.85rem; color: #94a3b8; line-height: 1.5; display: none; }
+  .explanation.show { display: block; }
+  .quiz-results { text-align: center; padding: 40px 20px; }
+  .score-big { font-size: 4rem; font-weight: 800; color: #60a5fa; line-height: 1; }
+  .score-sub { font-size: 1rem; color: #64748b; margin-top: 8px; }
+  .score-msg { font-size: 1.1rem; font-weight: 600; margin-top: 16px; }
+  .section-divider { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #3b82f6; background: #1e3a5f22; border: 1px solid #1e40af33; border-radius: 6px; padding: 5px 14px; display: inline-block; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>FL 2-15 Exam Prep</h1>
+  <p>Chapter 15 — Medical Expense Insurance, ACA & Tax-Advantaged Accounts</p>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('flashcards')">Flashcards</div>
+  <div class="tab" onclick="showTab('quiz')">Practice Test</div>
+</div>
+
+<div id="tab-flashcards" class="content">
+  <div class="fc-container">
+    <div class="fc-progress" id="fc-progress">Card 1 of 1</div>
+    <div class="fc-card-wrap" onclick="flipCard()">
+      <div class="fc-card" id="fc-card">
+        <div class="fc-face fc-front">
+          <div class="fc-label">Term</div>
+          <div class="fc-text" id="fc-front-text"></div>
+          <div class="fc-hint">click to reveal definition</div>
+        </div>
+        <div class="fc-face fc-back">
+          <div class="fc-label">Definition</div>
+          <div class="fc-text" id="fc-back-text"></div>
+        </div>
+      </div>
+    </div>
+    <div class="fc-controls">
+      <button class="btn btn-ghost btn-sm" onclick="prevCard()">Prev</button>
+      <button class="btn btn-primary" onclick="nextCard()">Next</button>
+      <button class="btn btn-ghost btn-sm" onclick="shuffleCards()">Shuffle</button>
+    </div>
+  </div>
+</div>
+
+<div id="tab-quiz" class="content" style="display:none;">
+  <div id="quiz-area"></div>
+</div>
+
+<script>
+const cards = [
+
+  // ── LO 1: Basic vs. Major Medical ──
+  { s: "LO1 — Basic vs. Major Medical", q: "Basic Medical Expense Insurance", a: "FIRST-DOLLAR coverage (NO deductibles). Modest coverage limits. Only covers SPECIFIC LISTED services. Three types: hospital, surgical, physician. Considered EXCEPTED BENEFITS (exempt from ACA)." },
+  { s: "LO1 — Basic vs. Major Medical", q: "Major Medical Expense Insurance", a: "COMPREHENSIVE coverage for catastrophic expenses. Has DEDUCTIBLES and COINSURANCE. HIGH maximum benefits, fewer exclusions. Covers all MEDICALLY NECESSARY treatments unless excluded. Based on UCR standard." },
+  { s: "LO1 — Basic vs. Major Medical", q: "UCR (Usual, Customary, and Reasonable)", a: "Standard used by major medical to determine benefit amounts. Based on GEOGRAPHIC NORMS for similar services. Charges exceeding UCR are the insured's responsibility." },
+  { s: "LO1 — Basic vs. Major Medical", q: "Common Exclusions from All Medical Expense Policies", a: "Elective COSMETIC procedures. EXPERIMENTAL therapies. Care in GOVERNMENT facilities. WORK-RELATED injuries. OCCUPATIONAL diseases (covered by workers' comp)." },
+
+  // ── LO 2: Basic Expense Coverage Types ──
+  { s: "LO2 — Basic Coverage", q: "Basic Hospital Expense Insurance", a: "Covers hospital ROOM AND BOARD plus miscellaneous expenses (lab, X-ray, medicines, ICU, OR). Pays on an INDEMNITY basis (fixed dollar amount). Only covers charges billed by the HOSPITAL." },
+  { s: "LO2 — Basic Coverage", q: "Basic Surgical Expense Insurance", a: "Pays for SURGEONS' services regardless of location. Includes surgeon's and anesthesiologist fees. Three benefit approaches: SURGICAL SCHEDULE, RELATIVE VALUE SCALE, and UCR." },
+  { s: "LO2 — Basic Coverage", q: "Surgical Schedule Approach", a: "Assigns a FIXED DOLLAR AMOUNT to each procedure. Simple but may not reflect actual costs." },
+  { s: "LO2 — Basic Coverage", q: "Relative Value Scale Approach", a: "Assigns UNITS to procedures with a DOLLAR VALUE PER UNIT. More flexible than a surgical schedule." },
+  { s: "LO2 — Basic Coverage", q: "Basic Physician Expense Insurance", a: "Covers NON-SURGICAL physician services (outpatient). Pays a FIXED AMOUNT PER VISIT. Usually included with hospital/surgical plans — NOT written alone." },
+
+  // ── LO 3: Deductibles ──
+  { s: "LO3 — Deductibles", q: "Calendar-Year (Cumulative) Deductible", a: "Met ONCE during the benefit period. All covered expenses accumulate toward the single annual deductible. Also called ALL-CAUSE deductible." },
+  { s: "LO3 — Deductibles", q: "Flat Deductible", a: "A STATED DOLLAR AMOUNT the insured must pay before insurance pays anything." },
+  { s: "LO3 — Deductibles", q: "Corridor Deductible", a: "The GAP between BASIC COVERAGE and MAJOR MEDICAL coverage. The insured pays this gap out of pocket." },
+  { s: "LO3 — Deductibles", q: "Integrated Deductible", a: "Amounts paid by a BASIC POLICY apply toward the MAJOR MEDICAL deductible. Reduces the out-of-pocket gap." },
+  { s: "LO3 — Deductibles", q: "Per-Cause (Occurrence) Deductible", a: "SEPARATE deductible for EACH accident or illness. Must meet a new deductible for each different cause." },
+  { s: "LO3 — Deductibles", q: "Family Maximum Deductible", a: "LIMITS the total deductible amount required from the entire covered family." },
+  { s: "LO3 — Deductibles", q: "Carryover Provision", a: "Claims from the FINAL THREE MONTHS of the policy year can apply to NEXT YEAR'S deductible. Prevents penalizing late-year claims." },
+  { s: "LO3 — Deductibles", q: "Corridor vs. Integrated Deductible", a: "CORRIDOR: gap between basic and major medical, insured pays it fully. INTEGRATED: basic plan payments credit toward major medical deductible, reducing the gap." },
+
+  // ── LO 4: Coinsurance & Stop-Loss ──
+  { s: "LO4 — Coinsurance & Stop-Loss", q: "Coinsurance", a: "PERCENTAGE participation in covered expenses AFTER the deductible. Expressed as insurer/insured ratio (e.g., 80/20). Insurer must pay at least 50% to qualify as insurance." },
+  { s: "LO4 — Coinsurance & Stop-Loss", q: "Stop-Loss Provision (Out-of-Pocket Maximum)", a: "LIMITS the insured's out-of-pocket medical expenses. Includes deductible, coinsurance, and copays. Does NOT include premiums, UCR overages, or non-covered services. 2025: $9,200 individual / $18,400 family." },
+  { s: "LO4 — Coinsurance & Stop-Loss", q: "Claim Calculation Steps", a: "(1) Determine TOTAL claim. (2) Subtract DEDUCTIBLE. (3) Apply COINSURANCE percentage. (4) Add deductible + coinsurance = insured's cost. (5) Apply STOP-LOSS if applicable." },
+  { s: "LO4 — Coinsurance & Stop-Loss", q: "What does stop-loss NOT include?", a: "PREMIUMS paid. Charges EXCEEDING UCR. NON-COVERED services. These are always the insured's responsibility even after reaching the out-of-pocket maximum." },
+
+  // ── LO 5: ACA Essential Health Benefits ──
+  { s: "LO5 — ACA", q: "10 Essential Health Benefits (ACA)", a: "(1) Ambulatory/outpatient. (2) Emergency. (3) Hospitalization. (4) Maternity/newborn. (5) Prescription drugs. (6) Mental health/substance abuse. (7) Rehab/habilitative. (8) Lab services. (9) Preventive/wellness. (10) Pediatric (dental + vision)." },
+  { s: "LO5 — ACA", q: "ACA Metal Tiers", a: "BRONZE: 60% actuarial value (60/40). SILVER: 70% (70/30). GOLD: 80% (80/20). PLATINUM: 90% (90/10). Higher tier = higher premium, lower out-of-pocket." },
+  { s: "LO5 — ACA", q: "ACA Key Provisions", a: "PREVENTIVE services at 100% (no cost-sharing). DEPENDENT coverage through AGE 26. NO pre-existing condition exclusions. No LIFETIME or ANNUAL caps on essential benefits." },
+  { s: "LO5 — ACA", q: "ACA Employer Mandate", a: "Employers with 50+ FULL-TIME EQUIVALENT employees must offer coverage or face SHARED RESPONSIBILITY PAYMENT." },
+  { s: "LO5 — ACA", q: "Premium Tax Credits", a: "Available to eligible individuals/families purchasing through ACA EXCHANGES. Based on income level to make coverage affordable." },
+
+  // ── LO 6: Tax-Advantaged Health Accounts ──
+  { s: "LO6 — Health Accounts", q: "HSA (Health Savings Account)", a: "Requires qualifying HDHP. TAX-DEDUCTIBLE contributions; TAX-FREE qualified withdrawals. 2025 limits: $4,300 individual / $8,550 family. $1,000 CATCH-UP (ages 55-65). Funds ROLL OVER. PORTABLE (owned by individual). 20% penalty for non-qualified withdrawals." },
+  { s: "LO6 — Health Accounts", q: "HRA (Health Reimbursement Arrangement)", a: "EMPLOYER-established and funded. NO limit on annual contributions. Tax-free reimbursements. NOT PORTABLE (funds stay with employer). Unused amounts CAN carry forward." },
+  { s: "LO6 — Health Accounts", q: "FSA (Flexible Spending Account)", a: "Through employer's CAFETERIA PLAN. 2025 limit: $3,200. USE IT OR LOSE IT (limited $640 rollover). CANNOT have an HSA simultaneously. No HDHP required." },
+  { s: "LO6 — Health Accounts", q: "Archer MSA", a: "For SMALL employers (50 or fewer) and self-employed. GRANDFATHERED — no new accounts since 2008. 20% penalty for non-qualified withdrawals. Unused balances roll over." },
+  { s: "LO6 — Health Accounts", q: "HSA vs. HRA vs. FSA", a: "HSA: individual-owned, portable, HDHP required, rolls over. HRA: employer-owned, not portable, no limit, carries forward. FSA: use-it-or-lose-it, no HDHP needed, $3,200 limit." },
+
+  // ── LO 7: HDHPs & CDHPs ──
+  { s: "LO7 — HDHPs", q: "HDHP (High-Deductible Health Plan)", a: "Makes basic expenses (except PREVENTIVE CARE) the insured's responsibility. 2025 minimum deductibles: $1,650 individual / $3,300 family. 2025 max out-of-pocket: $8,300 individual / $16,600 family. REQUIRED for HSA eligibility." },
+  { s: "LO7 — HDHPs", q: "CDHP (Consumer-Driven Health Plan)", a: "Three elements: TAX-ADVANTAGED SAVINGS vehicle + CORRIDOR/INTEGRATED DEDUCTIBLE + HDHP. Incentivizes COST-CONSCIOUS healthcare decisions. Major medical coverage caps risk." },
+
+  // ── LO 8: HIPAA & Tax Treatment ──
+  { s: "LO8 — HIPAA & Taxes", q: "HIPAA — Pre-Existing Conditions in Group Plans", a: "6-MONTH LOOK-BACK period to define pre-existing conditions. Exclusion limited to 12 MONTHS (18 for late enrollees). Applies to groups of 2+, NOT individual policies. No gap exceeding 62 DAYS to maintain portability." },
+  { s: "LO8 — HIPAA & Taxes", q: "Tax Treatment of Medical Expense Insurance", a: "BENEFITS received are NOT TAXABLE. Employee premiums deductible if itemized and exceed 7.5% OF AGI. Self-employed can deduct 100% of premiums. Partnership/LLC premiums are TAX-DEDUCTIBLE to the business." },
+];
+
+let currentIdx = 0;
+let flipped = false;
+let shuffled = [...cards];
+
+function renderCard() {
+  const c = shuffled[currentIdx];
+  document.getElementById('fc-front-text').textContent = c.q;
+  document.getElementById('fc-back-text').textContent  = c.a;
+  document.getElementById('fc-progress').textContent = `Card ${currentIdx + 1} of ${shuffled.length}`;
+  const card = document.getElementById('fc-card');
+  card.classList.remove('flipped');
+  flipped = false;
+}
+
+function flipCard() {
+  const card = document.getElementById('fc-card');
+  flipped = !flipped;
+  card.classList.toggle('flipped', flipped);
+}
+
+function nextCard() {
+  if (currentIdx < shuffled.length - 1) currentIdx++;
+  else currentIdx = 0;
+  renderCard();
+}
+
+function prevCard() {
+  if (currentIdx > 0) currentIdx--;
+  else currentIdx = shuffled.length - 1;
+  renderCard();
+}
+
+function shuffleCards() {
+  shuffled = [...cards].sort(() => Math.random() - 0.5);
+  currentIdx = 0;
+  renderCard();
+}
+
+renderCard();
+
+// ──────────────────────────────────────────
+// QUIZ DATA
+// ──────────────────────────────────────────
+const questions = [
+  {
+    section: "Basic vs. Major Medical",
+    q: "Basic medical expense insurance provides:",
+    opts: ["Comprehensive catastrophic coverage","First-dollar coverage with no deductibles","Coverage based on UCR standards","High maximum benefits with coinsurance"],
+    ans: 1,
+    exp: "Basic medical expense insurance provides first-dollar coverage with no deductibles but has modest limits and covers only specific listed services."
+  },
+  {
+    section: "Basic vs. Major Medical",
+    q: "Major medical expense insurance is based on the:",
+    opts: ["Surgical schedule approach","Indemnity basis only","UCR (usual, customary, and reasonable) standard","Flat deductible only"],
+    ans: 2,
+    exp: "Major medical uses the UCR standard to determine benefit amounts based on geographic norms."
+  },
+  {
+    section: "Basic vs. Major Medical",
+    q: "Which of the following is commonly excluded from all medical expense policies?",
+    opts: ["Emergency services","Prescription drugs","Work-related injuries","Laboratory services"],
+    ans: 2,
+    exp: "Work-related injuries are excluded from medical expense policies — they are covered by workers' compensation."
+  },
+  {
+    section: "Basic Expense Coverage",
+    q: "Basic hospital expense insurance pays on:",
+    opts: ["A UCR basis","A coinsurance basis","An indemnity basis (fixed dollar amount)","A percentage of actual charges"],
+    ans: 2,
+    exp: "Basic hospital expense pays on an indemnity basis — a fixed dollar amount regardless of actual charges."
+  },
+  {
+    section: "Basic Expense Coverage",
+    q: "The relative value scale approach to surgical benefits assigns:",
+    opts: ["A fixed dollar amount to each procedure","Units to procedures with a dollar value per unit","Benefits based on geographic norms","A percentage of the surgeon's fee"],
+    ans: 1,
+    exp: "The relative value scale assigns units to procedures and multiplies by a dollar value per unit."
+  },
+  {
+    section: "Basic Expense Coverage",
+    q: "Basic physician expense insurance typically covers:",
+    opts: ["Surgical procedures","Hospital room and board","Non-surgical outpatient physician services","Prescription drugs"],
+    ans: 2,
+    exp: "Basic physician expense covers non-surgical physician services (outpatient visits) and pays a fixed amount per visit."
+  },
+  {
+    section: "Deductibles",
+    q: "A corridor deductible is:",
+    opts: ["The annual deductible for the calendar year","The gap between basic coverage and major medical coverage","A deductible that applies to each illness separately","The family maximum deductible"],
+    ans: 1,
+    exp: "A corridor deductible is the gap between basic coverage and major medical — the insured pays this out of pocket."
+  },
+  {
+    section: "Deductibles",
+    q: "An integrated deductible means:",
+    opts: ["Each family member has a separate deductible","Amounts paid by basic policy apply toward the major medical deductible","A new deductible applies per illness","The deductible increases each year"],
+    ans: 1,
+    exp: "An integrated deductible allows payments from basic coverage to credit toward the major medical deductible."
+  },
+  {
+    section: "Deductibles",
+    q: "The carryover provision allows claims from the final _____ months of the year to apply to next year's deductible.",
+    opts: ["One","Two","Three","Six"],
+    ans: 2,
+    exp: "The carryover provision allows claims from the final three months to apply to next year's deductible."
+  },
+  {
+    section: "Deductibles",
+    q: "A per-cause deductible requires:",
+    opts: ["One deductible per year","A separate deductible for each accident or illness","No deductible for the first claim","A deductible only for hospital stays"],
+    ans: 1,
+    exp: "A per-cause (occurrence) deductible requires a separate deductible for each different accident or illness."
+  },
+  {
+    section: "Coinsurance & Stop-Loss",
+    q: "An 80/20 coinsurance provision means:",
+    opts: ["The insured pays 80% and the insurer pays 20%","The insurer pays 80% and the insured pays 20%","The insured pays 80% of the deductible","The insurer pays 80% of the premium"],
+    ans: 1,
+    exp: "Coinsurance is expressed as insurer/insured — 80/20 means the insurer pays 80% and the insured pays 20% of covered expenses after the deductible."
+  },
+  {
+    section: "Coinsurance & Stop-Loss",
+    q: "The stop-loss provision does NOT include:",
+    opts: ["Deductible amounts","Coinsurance payments","Copayments","Premiums and charges exceeding UCR"],
+    ans: 3,
+    exp: "Stop-loss does NOT include premiums, charges exceeding UCR, or non-covered services — only deductibles, coinsurance, and copays."
+  },
+  {
+    section: "Coinsurance & Stop-Loss",
+    q: "For 2025, the individual out-of-pocket maximum is:",
+    opts: ["$5,000","$7,500","$9,200","$12,000"],
+    ans: 2,
+    exp: "The 2025 out-of-pocket maximum is $9,200 for individuals and $18,400 for families."
+  },
+  {
+    section: "Coinsurance & Stop-Loss",
+    q: "To qualify as insurance, the insurer must pay at least what percentage of covered expenses?",
+    opts: ["25%","50%","60%","75%"],
+    ans: 1,
+    exp: "An insurer must pay at least 50% to qualify as insurance."
+  },
+  {
+    section: "ACA Essential Health Benefits",
+    q: "How many essential health benefits does the ACA require?",
+    opts: ["5","8","10","12"],
+    ans: 2,
+    exp: "The ACA requires 10 essential health benefits, with no lifetime or annual caps on these benefits."
+  },
+  {
+    section: "ACA Essential Health Benefits",
+    q: "The ACA Bronze plan has an actuarial value of:",
+    opts: ["50%","60%","70%","80%"],
+    ans: 1,
+    exp: "Bronze: 60%, Silver: 70%, Gold: 80%, Platinum: 90%. Bronze has the lowest premium but highest out-of-pocket costs."
+  },
+  {
+    section: "ACA Essential Health Benefits",
+    q: "Under the ACA, preventive services must be covered at:",
+    opts: ["80% after deductible","90% after copay","100% with no cost-sharing","50% with coinsurance"],
+    ans: 2,
+    exp: "The ACA requires preventive services to be covered at 100% with no cost-sharing (no deductible, copay, or coinsurance)."
+  },
+  {
+    section: "ACA Essential Health Benefits",
+    q: "The ACA requires dependent coverage through age:",
+    opts: ["21","24","26","30"],
+    ans: 2,
+    exp: "The ACA requires plans to cover dependents through age 26, regardless of student status or marital status."
+  },
+  {
+    section: "ACA Essential Health Benefits",
+    q: "The ACA employer mandate applies to employers with:",
+    opts: ["10+ employees","25+ employees","50+ full-time equivalent employees","100+ employees"],
+    ans: 2,
+    exp: "Employers with 50 or more full-time equivalent employees must offer coverage or face a shared responsibility payment."
+  },
+  {
+    section: "Tax-Advantaged Health Accounts",
+    q: "An HSA requires the individual to have:",
+    opts: ["Any health insurance plan","A qualifying high-deductible health plan (HDHP)","An employer-sponsored plan","Medicare coverage"],
+    ans: 1,
+    exp: "HSAs require enrollment in a qualifying HDHP. Contributions are tax-deductible and withdrawals for qualified expenses are tax-free."
+  },
+  {
+    section: "Tax-Advantaged Health Accounts",
+    q: "The 2025 HSA contribution limit for an individual is:",
+    opts: ["$3,200","$4,300","$7,000","$8,550"],
+    ans: 1,
+    exp: "2025 HSA limits: $4,300 individual, $8,550 family, with an additional $1,000 catch-up for ages 55-65."
+  },
+  {
+    section: "Tax-Advantaged Health Accounts",
+    q: "Which health account is NOT portable (funds stay with the employer)?",
+    opts: ["HSA","HRA","FSA","Archer MSA"],
+    ans: 1,
+    exp: "HRAs are not portable — funds stay with the employer when the employee leaves. HSAs are portable and owned by the individual."
+  },
+  {
+    section: "Tax-Advantaged Health Accounts",
+    q: "FSAs operate under a general rule of:",
+    opts: ["Unlimited rollover","Use it or lose it","Employer funding only","Tax-free withdrawals for any purpose"],
+    ans: 1,
+    exp: "FSAs generally operate on a use-it-or-lose-it basis, though a limited $640 rollover is allowed in 2025."
+  },
+  {
+    section: "Tax-Advantaged Health Accounts",
+    q: "The penalty for non-qualified HSA withdrawals is:",
+    opts: ["10%","15%","20%","25%"],
+    ans: 2,
+    exp: "Non-qualified HSA withdrawals are subject to a 20% penalty plus ordinary income tax."
+  },
+  {
+    section: "Tax-Advantaged Health Accounts",
+    q: "Archer MSAs are available to:",
+    opts: ["Any employer","Large employers only","Small employers (50 or fewer) and self-employed","Government employees"],
+    ans: 2,
+    exp: "Archer MSAs are for small employers (50 or fewer employees) and self-employed individuals — grandfathered, no new accounts since 2008."
+  },
+  {
+    section: "HDHPs & CDHPs",
+    q: "The 2025 minimum HDHP deductible for an individual is:",
+    opts: ["$1,000","$1,400","$1,650","$2,000"],
+    ans: 2,
+    exp: "2025 HDHP minimum deductibles: $1,650 individual, $3,300 family."
+  },
+  {
+    section: "HDHPs & CDHPs",
+    q: "A consumer-driven health plan (CDHP) consists of three elements:",
+    opts: ["HMO, PPO, and POS features","Tax-advantaged savings, corridor/integrated deductible, and HDHP","Basic, surgical, and physician coverage","Coinsurance, copay, and deductible"],
+    ans: 1,
+    exp: "CDHPs combine a tax-advantaged savings vehicle, a corridor or integrated deductible, and an HDHP."
+  },
+  {
+    section: "HIPAA & Tax Treatment",
+    q: "Under HIPAA, the look-back period for pre-existing conditions is:",
+    opts: ["3 months","6 months","12 months","18 months"],
+    ans: 1,
+    exp: "HIPAA defines pre-existing conditions with a 6-month look-back period."
+  },
+  {
+    section: "HIPAA & Tax Treatment",
+    q: "Under HIPAA, the maximum exclusion period for pre-existing conditions in group plans is:",
+    opts: ["6 months","12 months (18 for late enrollees)","24 months","36 months"],
+    ans: 1,
+    exp: "HIPAA limits exclusion periods to 12 months (18 months for late enrollees) in group plans."
+  },
+  {
+    section: "HIPAA & Tax Treatment",
+    q: "Self-employed individuals can deduct what percentage of their health insurance premiums?",
+    opts: ["50%","75%","100%","Only amounts exceeding 7.5% of AGI"],
+    ans: 2,
+    exp: "Self-employed individuals can deduct 100% of their health insurance premiums as a business expense."
+  },
+  {
+    section: "HIPAA & Tax Treatment",
+    q: "Medical expense insurance benefits received are:",
+    opts: ["Taxable as ordinary income","Subject to capital gains tax","Not taxable","Taxable above $50,000"],
+    ans: 2,
+    exp: "Benefits received from medical expense insurance are not taxable to the recipient."
+  },
+];
+
+// ── Quiz Engine ──
+let answered = {};
+let submitted = false;
+let score = 0;
+
+function buildQuiz() {
+  answered = {};
+  submitted = false;
+  score = 0;
+  const area = document.getElementById('quiz-area');
+  let html = `<div class="quiz-header"><div class="quiz-meta">${questions.length} Questions</div><div class="score-badge" id="score-live">0/${questions.length} answered</div></div>`;
+  let lastSection = '';
+
+  questions.forEach((q, i) => {
+    if (q.section !== lastSection) {
+      html += `<div class="section-divider">${q.section}</div>`;
+      lastSection = q.section;
+    }
+    html += `<div class="q-card" id="qcard-${i}">
+      <div class="q-num">Question ${i + 1}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="options">`;
+    const letters = ['A','B','C','D'];
+    q.opts.forEach((opt, j) => {
+      html += `<div class="opt" id="opt-${i}-${j}" onclick="selectAnswer(${i},${j})">
+        <span class="opt-letter">${letters[j]}</span><span>${opt}</span>
+      </div>`;
+    });
+    html += `</div><div class="explanation" id="exp-${i}">${q.exp}</div></div>`;
+  });
+
+  html += `<div style="text-align:center; margin-top:32px;">
+    <button class="btn btn-primary" onclick="submitQuiz()" id="submit-btn">Submit & Score</button>
+  </div><div id="results-area"></div>`;
+  area.innerHTML = html;
+}
+
+function selectAnswer(qIdx, optIdx) {
+  if (submitted) return;
+  answered[qIdx] = optIdx;
+  questions[qIdx].opts.forEach((_, j) => {
+    const el = document.getElementById(`opt-${qIdx}-${j}`);
+    el.style.borderColor = j === optIdx ? '#3b82f6' : '';
+    el.style.background  = j === optIdx ? '#1e3a5f' : '';
+    el.style.color       = j === optIdx ? '#e2e8f0' : '';
+  });
+  updateLiveScore();
+}
+
+function updateLiveScore() {
+  let correct = 0;
+  Object.keys(answered).forEach(i => { if (answered[i] === questions[i].ans) correct++; });
+  document.getElementById('score-live').textContent = `${correct}/${Object.keys(answered).length} answered`;
+}
+
+function submitQuiz() {
+  submitted = true;
+  score = 0;
+  questions.forEach((q, i) => {
+    q.opts.forEach((_, j) => {
+      const el = document.getElementById(`opt-${i}-${j}`);
+      el.classList.add('disabled');
+      if (j === q.ans) {
+        el.classList.add('correct');
+      } else if (answered[i] === j) {
+        el.classList.add('wrong');
+      }
+    });
+    document.getElementById(`exp-${i}`).classList.add('show');
+    if (answered[i] === q.ans) score++;
+  });
+
+  const pct = Math.round((score / questions.length) * 100);
+  let msg, color;
+  if (pct >= 90)      { msg = "Excellent! You're exam-ready on this chapter."; color = "#4ade80"; }
+  else if (pct >= 70) { msg = "Above passing threshold. Review missed questions."; color = "#facc15"; }
+  else                { msg = "Below passing threshold. Review and retry!"; color = "#f87171"; }
+
+  document.getElementById('score-live').textContent = `Score: ${score}/${questions.length} (${pct}%)`;
+  document.getElementById('submit-btn').outerHTML = `<button class="btn btn-ghost" onclick="buildQuiz()">Retake Quiz</button>`;
+  document.getElementById('results-area').innerHTML = `
+    <div class="quiz-results">
+      <div class="score-big" style="color:${color}">${pct}%</div>
+      <div class="score-sub">${score} correct out of ${questions.length}</div>
+      <div class="score-msg" style="color:${color}">${msg}</div>
+      <div style="margin-top:8px;font-size:0.85rem;color:#64748b;">Pass threshold: 70% · Scroll up to review explanations</div>
+    </div>`;
+  window.scrollTo({ top: document.getElementById('results-area').offsetTop - 80, behavior: 'smooth' });
+}
+
+function showTab(t) {
+  document.getElementById('tab-flashcards').style.display = t === 'flashcards' ? '' : 'none';
+  document.getElementById('tab-quiz').style.display       = t === 'quiz' ? '' : 'none';
+  document.querySelectorAll('.tab').forEach((el, i) => {
+    el.classList.toggle('active', (i === 0 && t === 'flashcards') || (i === 1 && t === 'quiz'));
+  });
+  if (t === 'quiz' && !document.querySelector('.q-card')) buildQuiz();
+}
+</script>
+</body>
+</html>
