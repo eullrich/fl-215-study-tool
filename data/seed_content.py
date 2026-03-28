@@ -29,6 +29,7 @@ CHAPTERS = {
     15: "Medical Expense Insurance, ACA & Tax-Advantaged Accounts",
     16: "Disability Income Insurance",
     17: "Medicare, Medigap & Long-Term Care",
+    18: "Health Insurance Policy Provisions",
 }
 
 

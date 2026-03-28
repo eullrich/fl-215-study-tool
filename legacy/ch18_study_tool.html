@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FL 2-15 Exam | Chapter 18 Study Tool</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+  .header { background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%); padding: 24px 32px; border-bottom: 1px solid #1e40af44; }
+  .header h1 { font-size: 1.5rem; font-weight: 700; color: #60a5fa; letter-spacing: -0.02em; }
+  .header p { font-size: 0.875rem; color: #94a3b8; margin-top: 4px; }
+  .tabs { display: flex; gap: 0; padding: 20px 32px 0; border-bottom: 1px solid #1e293b; }
+  .tab { padding: 10px 24px; border-radius: 8px 8px 0 0; cursor: pointer; font-size: 0.875rem; font-weight: 600; border: 1px solid transparent; border-bottom: none; transition: all 0.2s; color: #64748b; }
+  .tab.active { background: #1e293b; color: #60a5fa; border-color: #1e40af44; }
+  .tab:hover:not(.active) { color: #94a3b8; }
+  .content { padding: 32px; max-width: 860px; margin: 0 auto; }
+  .fc-container { display: flex; flex-direction: column; align-items: center; gap: 24px; }
+  .fc-progress { font-size: 0.8rem; color: #64748b; letter-spacing: 0.05em; text-transform: uppercase; }
+  .fc-card-wrap { width: 100%; max-width: 640px; perspective: 1200px; cursor: pointer; user-select: none; }
+  .fc-card { position: relative; width: 100%; height: 220px; transition: transform 0.55s cubic-bezier(.4,2,.6,1); transform-style: preserve-3d; }
+  .fc-card.flipped { transform: rotateY(180deg); }
+  .fc-face { position: absolute; inset: 0; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 28px 36px; text-align: center; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+  .fc-front { background: linear-gradient(135deg, #1e3a5f, #1e293b); border: 1px solid #2563eb44; box-shadow: 0 8px 32px #0004; }
+  .fc-back  { background: linear-gradient(135deg, #14532d, #1e293b); border: 1px solid #16a34a44; box-shadow: 0 8px 32px #0004; transform: rotateY(180deg); }
+  .fc-label { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px; opacity: 0.5; }
+  .fc-text  { font-size: 1.15rem; font-weight: 600; line-height: 1.5; color: #f1f5f9; }
+  .fc-hint  { font-size: 0.75rem; color: #64748b; margin-top: 14px; }
+  .fc-controls { display: flex; gap: 12px; align-items: center; }
+  .btn { padding: 10px 22px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 600; transition: all 0.15s; }
+  .btn-primary { background: #2563eb; color: #fff; }
+  .btn-primary:hover { background: #1d4ed8; }
+  .btn-ghost { background: #1e293b; color: #94a3b8; border: 1px solid #334155; }
+  .btn-ghost:hover { background: #334155; color: #e2e8f0; }
+  .btn-sm { padding: 7px 16px; font-size: 0.8rem; }
+  .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+  .quiz-meta { font-size: 0.8rem; color: #64748b; }
+  .score-badge { background: #1e293b; border: 1px solid #334155; border-radius: 999px; padding: 4px 14px; font-size: 0.8rem; font-weight: 700; color: #94a3b8; }
+  .q-card { background: #1e293b; border: 1px solid #334155; border-radius: 14px; padding: 28px; margin-bottom: 20px; }
+  .q-num { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #64748b; margin-bottom: 10px; }
+  .q-text { font-size: 1rem; font-weight: 600; color: #f1f5f9; line-height: 1.55; margin-bottom: 20px; }
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .opt { padding: 12px 18px; border-radius: 9px; border: 1.5px solid #334155; background: #0f172a; cursor: pointer; font-size: 0.9rem; color: #cbd5e1; transition: all 0.15s; display: flex; align-items: flex-start; gap: 10px; }
+  .opt:hover:not(.disabled) { border-color: #3b82f6; color: #e2e8f0; background: #1e3a5f; }
+  .opt.correct { border-color: #22c55e; background: #14532d22; color: #4ade80; }
+  .opt.wrong   { border-color: #ef4444; background: #7f1d1d22; color: #f87171; }
+  .opt.disabled { cursor: default; pointer-events: none; }
+  .opt-letter { font-weight: 700; opacity: 0.5; min-width: 18px; }
+  .explanation { margin-top: 14px; padding: 12px 16px; border-radius: 8px; background: #0f172a; border-left: 3px solid #3b82f6; font-size: 0.85rem; color: #94a3b8; line-height: 1.5; display: none; }
+  .explanation.show { display: block; }
+  .quiz-results { text-align: center; padding: 40px 20px; }
+  .score-big { font-size: 4rem; font-weight: 800; color: #60a5fa; line-height: 1; }
+  .score-sub { font-size: 1rem; color: #64748b; margin-top: 8px; }
+  .score-msg { font-size: 1.1rem; font-weight: 600; margin-top: 16px; }
+  .section-divider { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #3b82f6; background: #1e3a5f22; border: 1px solid #1e40af33; border-radius: 6px; padding: 5px 14px; display: inline-block; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>FL 2-15 Exam Prep</h1>
+  <p>Chapter 18 — Health Insurance Policy Provisions</p>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('flashcards')">Flashcards</div>
+  <div class="tab" onclick="showTab('quiz')">Practice Test</div>
+</div>
+
+<div id="tab-flashcards" class="content">
+  <div class="fc-container">
+    <div class="fc-progress" id="fc-progress">Card 1 of 1</div>
+    <div class="fc-card-wrap" onclick="flipCard()">
+      <div class="fc-card" id="fc-card">
+        <div class="fc-face fc-front"><div class="fc-label">Term</div><div class="fc-text" id="fc-front-text"></div><div class="fc-hint">click to reveal definition</div></div>
+        <div class="fc-face fc-back"><div class="fc-label">Definition</div><div class="fc-text" id="fc-back-text"></div></div>
+      </div>
+    </div>
+    <div class="fc-controls">
+      <button class="btn btn-ghost btn-sm" onclick="prevCard()">Prev</button>
+      <button class="btn btn-primary" onclick="nextCard()">Next</button>
+      <button class="btn btn-ghost btn-sm" onclick="shuffleCards()">Shuffle</button>
+    </div>
+  </div>
+</div>
+
+<div id="tab-quiz" class="content" style="display:none;"><div id="quiz-area"></div></div>
+
+<script>
+const cards = [
+
+  // ── LO 1: Mandatory Provisions ──
+  { s: "LO1 — Mandatory Provisions", q: "Mandatory provisions — who do they benefit?", a: "Mandatory provisions generally benefit the INSURED. There are 12 mandatory uniform health insurance provisions required by the NAIC model law." },
+  { s: "LO1 — Mandatory Provisions", q: "Entire Contract Clause", a: "Defines the full agreement: POLICY FORM + SIGNED APPLICATION + ATTACHMENTS. Nothing outside these documents is part of the contract." },
+  { s: "LO1 — Mandatory Provisions", q: "Time Limit on Certain Defenses", a: "Makes the policy INCONTESTABLE after a specified period (typically 2-3 YEARS). After this period, the insurer cannot void the policy for misstatements." },
+  { s: "LO1 — Mandatory Provisions", q: "Grace Period (Health Insurance)", a: "Allows delayed premium payment: 7 DAYS for weekly, 10 DAYS for monthly, 31 DAYS for other frequencies. Coverage continues during the grace period." },
+  { s: "LO1 — Mandatory Provisions", q: "Reinstatement", a: "Permits policy RESTORATION after lapse. Includes a 10-DAY PROBATIONARY PERIOD for sickness coverage (accidents covered immediately upon reinstatement)." },
+  { s: "LO1 — Mandatory Provisions", q: "Notice of Claim", a: "Insured must notify insurer within 20 DAYS of loss, or as soon as REASONABLY POSSIBLE." },
+  { s: "LO1 — Mandatory Provisions", q: "Claim Forms", a: "Insurer must provide claim forms within 15 DAYS of receiving notice of claim." },
+  { s: "LO1 — Mandatory Provisions", q: "Proof of Loss", a: "Must be submitted within 90 DAYS of loss. Extended to up to ONE YEAR if legally incapacitated." },
+  { s: "LO1 — Mandatory Provisions", q: "Time Payment of Claims", a: "Requires IMMEDIATE payment after proof of loss is received. MONTHLY minimum payments for disability claims." },
+  { s: "LO1 — Mandatory Provisions", q: "Physical Exam and Autopsy", a: "Gives the insurer the right to require a medical examination at the INSURER'S EXPENSE." },
+  { s: "LO1 — Mandatory Provisions", q: "Legal Actions", a: "NO legal action until 60 DAYS after proof of loss. Must COMMENCE within 3 YEARS of proof of loss." },
+  { s: "LO1 — Mandatory Provisions", q: "Key Mandatory Timeframes", a: "Notice of claim: 20 DAYS. Claim forms: 15 DAYS. Proof of loss: 90 DAYS. Legal action: after 60 days, within 3 YEARS. Grace: 7/10/31 days." },
+
+  // ── LO 2: Optional Provisions ──
+  { s: "LO2 — Optional Provisions", q: "Optional provisions — who do they benefit?", a: "Optional provisions generally benefit the INSURER. There are 11 optional uniform provisions." },
+  { s: "LO2 — Optional Provisions", q: "Change of Occupation (Optional)", a: "ADJUSTS benefits/premiums if the insured changes to a MORE or LESS hazardous occupation." },
+  { s: "LO2 — Optional Provisions", q: "Misstatement of Age (Optional)", a: "ADJUSTS benefits to reflect the CORRECT age-based premium. Does not void the policy." },
+  { s: "LO2 — Optional Provisions", q: "Other Insurance with This Insurer (Optional)", a: "Prevents DUPLICATE COVERAGE with the SAME insurer. Limits total benefits from one company." },
+  { s: "LO2 — Optional Provisions", q: "Insurance with Other Insurers (Optional)", a: "Establishes PROPORTIONATE PAYMENT when there is duplicate coverage with DIFFERENT insurers." },
+  { s: "LO2 — Optional Provisions", q: "Relation of Earnings to Insurance (Optional)", a: "Prevents DISABILITY BENEFITS from exceeding LOST INCOME. Ensures the insured cannot profit from disability." },
+  { s: "LO2 — Optional Provisions", q: "Illegal Occupation (Optional)", a: "DENIES claims for injuries sustained during ILLEGAL activities." },
+  { s: "LO2 — Optional Provisions", q: "Intoxicants and Narcotics (Optional)", a: "EXCLUDES coverage for losses occurring while UNDER THE INFLUENCE of drugs or alcohol." },
+  { s: "LO2 — Optional Provisions", q: "Cancellation (Optional)", a: "Permits insurer to TERMINATE the policy with FIVE-DAY notice. Prohibited in most states." },
+
+  // ── LO 3: Renewability Provisions ──
+  { s: "LO3 — Renewability", q: "Noncancelable", a: "CANNOT be canceled AND premiums CANNOT increase as long as premiums are paid. DOUBLE GUARANTEE — most favorable to insured. Most expensive." },
+  { s: "LO3 — Renewability", q: "Guaranteed Renewable", a: "CANNOT be canceled, but premiums CAN increase for the ENTIRE CLASS (not individually). Second most favorable." },
+  { s: "LO3 — Renewability", q: "Conditionally Renewable", a: "Can be TERMINATED under SPECIFIC CONDITIONS stated in the policy (e.g., retirement, age limit)." },
+  { s: "LO3 — Renewability", q: "Optionally Renewable", a: "NO guarantee beyond the current term. Insurer can choose NOT to renew at each renewal date." },
+  { s: "LO3 — Renewability", q: "Cancelable", a: "Insurer can TERMINATE at any time with notice. LEAST favorable to the insured." },
+  { s: "LO3 — Renewability", q: "Renewability — Most to Least Favorable", a: "NONCANCELABLE (can't cancel, can't raise rates) > GUARANTEED RENEWABLE (can't cancel, can raise class rates) > CONDITIONALLY > OPTIONALLY > CANCELABLE." },
+  { s: "LO3 — Renewability", q: "Noncancelable vs. Guaranteed Renewable", a: "NONCANCELABLE: premiums LOCKED — cannot increase. GUARANTEED RENEWABLE: premiums CAN increase for the entire class. Both cannot be canceled." },
+
+  // ── LO 4: Exclusions & Limitations ──
+  { s: "LO4 — Exclusions", q: "Common Health Insurance Exclusions", a: "WAR, SELF-INFLICTED injuries, AVIATION (crew), MILITARY service, FOREIGN travel, SUICIDE, DRUG use, RIOT/FELONY injuries, WORKERS' COMP covered, COSMETIC surgery, EXPERIMENTAL procedures." },
+  { s: "LO4 — Exclusions", q: "Probationary Period (Health)", a: "Delays coverage for ILLNESS (but NOT accidents). A one-time waiting period at policy inception. Different from elimination period (which applies per claim in disability)." },
+  { s: "LO4 — Exclusions", q: "Impairment Rider", a: "RESTRICTS coverage for a SPECIFIC pre-existing condition. May apply for a period of years or LIFE OF THE POLICY. Must be explained to the policyholder at delivery." },
+
+  // ── LO 5: Pre-Existing Conditions ──
+  { s: "LO5 — Pre-Existing", q: "Pre-Existing Condition Provision", a: "EXCLUDES coverage for conditions existing BEFORE the policy's effective date. Waiting periods typically limited to ONE YEAR. Subject to the time limit on certain defenses provision." },
+  { s: "LO5 — Pre-Existing", q: "Insurer options for disclosed pre-existing conditions", a: "(1) DENY the application. (2) Charge a HIGHER PREMIUM. (3) PERMANENTLY EXCLUDE the condition. (4) COVER the condition from day one." },
+
+  // ── LO 6: Additional Provisions ──
+  { s: "LO6 — Additional Provisions", q: "Coordination of Benefits (COB)", a: "Prevents DUPLICATE PAYMENTS when covered by MULTIPLE plans. Ensures the insured cannot profit from having multiple policies." },
+  { s: "LO6 — Additional Provisions", q: "Subrogation", a: "Allows the INSURER to pursue THIRD PARTIES responsible for the loss. Insurer steps into the insured's shoes to recover payments from the at-fault party." },
+  { s: "LO6 — Additional Provisions", q: "Waiver of Premium", a: "WAIVES premiums after a SPECIFIED PERIOD of disability. The policy remains in force without premium payments while disabled." },
+  { s: "LO6 — Additional Provisions", q: "Military Suspense Provision", a: "TEMPORARILY SUSPENDS coverage during ACTIVE MILITARY service. Coverage resumes when service ends." },
+  { s: "LO6 — Additional Provisions", q: "No Loss/No Gain Provision", a: "Prevents PROFITING from insurance — supports the INDEMNITY PRINCIPLE. The insured should be restored to pre-loss position, not enriched." },
+
+  // ── LO 7: Beneficiary Designations ──
+  { s: "LO7 — Beneficiaries", q: "Revocable vs. Irrevocable Beneficiary (Health)", a: "REVOCABLE: can be changed WITHOUT the beneficiary's permission. IRREVOCABLE: requires the beneficiary's WRITTEN CONSENT to change." },
+  { s: "LO7 — Beneficiaries", q: "Order of Succession", a: "PRIMARY: first in line. SECONDARY (contingent): receives if primary predeceases. TERTIARY: third in line if both primary and secondary die first." },
+  { s: "LO7 — Beneficiaries", q: "Uniform Simultaneous Death Act (Health)", a: "If insured and beneficiary die simultaneously, the INSURED is considered to have SURVIVED (died last). Proceeds go to contingent beneficiary." },
+  { s: "LO7 — Beneficiaries", q: "Common Disaster Provision", a: "Requires the primary beneficiary to SURVIVE the insured by a specified period (14-30 DAYS). Protects contingent beneficiaries." },
+
+  // ── LO 8: Indemnity Principle ──
+  { s: "LO8 — Indemnity", q: "Indemnity Principle (Health Insurance)", a: "Restores the insured to their PRE-LOSS FINANCIAL POSITION. PREVENTS profiting from insurance. Supported by COB, subrogation, and no loss/no gain provisions. Benefits limited to ACTUAL EXPENSES." },
+];
+
+let currentIdx = 0;
+let flipped = false;
+let shuffled = [...cards];
+
+function renderCard() {
+  const c = shuffled[currentIdx];
+  document.getElementById('fc-front-text').textContent = c.q;
+  document.getElementById('fc-back-text').textContent  = c.a;
+  document.getElementById('fc-progress').textContent = `Card ${currentIdx + 1} of ${shuffled.length}`;
+  document.getElementById('fc-card').classList.remove('flipped');
+  flipped = false;
+}
+function flipCard() { flipped = !flipped; document.getElementById('fc-card').classList.toggle('flipped', flipped); }
+function nextCard() { currentIdx = currentIdx < shuffled.length - 1 ? currentIdx + 1 : 0; renderCard(); }
+function prevCard() { currentIdx = currentIdx > 0 ? currentIdx - 1 : shuffled.length - 1; renderCard(); }
+function shuffleCards() { shuffled = [...cards].sort(() => Math.random() - 0.5); currentIdx = 0; renderCard(); }
+renderCard();
+
+const questions = [
+  { section: "Mandatory Provisions", q: "Mandatory health insurance provisions generally benefit:", opts: ["The insurer","The insured","The agent","The state"], ans: 1, exp: "Mandatory provisions generally benefit the insured — they establish minimum protections." },
+  { section: "Mandatory Provisions", q: "The entire contract clause includes:", opts: ["Only the policy form","The policy form, signed application, and attachments","Only verbal agreements","The agent's recommendations"], ans: 1, exp: "The entire contract is the policy form + signed application + attachments. Nothing outside these documents is part of the contract." },
+  { section: "Mandatory Provisions", q: "The grace period for monthly premium policies is:", opts: ["7 days","10 days","15 days","31 days"], ans: 1, exp: "Grace periods: 7 days for weekly, 10 days for monthly, 31 days for other (quarterly, semi-annual, annual)." },
+  { section: "Mandatory Provisions", q: "Notice of claim must be given within:", opts: ["10 days","15 days","20 days","30 days"], ans: 2, exp: "The insured must notify the insurer within 20 days of loss, or as soon as reasonably possible." },
+  { section: "Mandatory Provisions", q: "The insurer must provide claim forms within:", opts: ["10 days","15 days","20 days","30 days"], ans: 1, exp: "The insurer must provide claim forms within 15 days of receiving notice of claim." },
+  { section: "Mandatory Provisions", q: "Proof of loss must be submitted within:", opts: ["30 days","60 days","90 days","120 days"], ans: 2, exp: "Proof of loss must be submitted within 90 days of loss (up to one year if legally incapacitated)." },
+  { section: "Mandatory Provisions", q: "No legal action can be taken until _____ days after proof of loss.", opts: ["30","60","90","120"], ans: 1, exp: "No legal action until 60 days after proof of loss, and must commence within 3 years." },
+  { section: "Mandatory Provisions", q: "Upon reinstatement, the probationary period for sickness coverage is:", opts: ["5 days","10 days","15 days","30 days"], ans: 1, exp: "Reinstatement includes a 10-day probationary period for sickness. Accidents are covered immediately." },
+  { section: "Mandatory Provisions", q: "The time limit on certain defenses makes a policy incontestable after:", opts: ["1 year","2-3 years","5 years","10 years"], ans: 1, exp: "The time limit on certain defenses makes the policy incontestable after typically 2-3 years." },
+  { section: "Mandatory Provisions", q: "Physical examination and autopsy are conducted at whose expense?", opts: ["The insured's","The beneficiary's","The insurer's","The state's"], ans: 2, exp: "The insurer has the right to require examination at its own expense." },
+  { section: "Optional Provisions", q: "Optional health insurance provisions generally benefit:", opts: ["The insured","The insurer","Both equally","The state"], ans: 1, exp: "Optional provisions generally benefit the insurer — they protect against fraud, overinsurance, and moral hazard." },
+  { section: "Optional Provisions", q: "The misstatement of age provision:", opts: ["Voids the policy","Adjusts benefits to reflect the correct age-based premium","Cancels the policy immediately","Has no effect"], ans: 1, exp: "Misstatement of age adjusts benefits to reflect what the correct premium would have purchased — it does not void the policy." },
+  { section: "Optional Provisions", q: "The relation of earnings to insurance provision prevents:", opts: ["Duplicate coverage","Disability benefits from exceeding lost income","Policy cancellation","Premium increases"], ans: 1, exp: "This provision prevents disability benefits from exceeding lost income — ensuring the insured cannot profit from disability." },
+  { section: "Optional Provisions", q: "The illegal occupation provision:", opts: ["Increases premiums for dangerous jobs","Denies claims for injuries during illegal activities","Requires disclosure of occupation","Adjusts benefits based on occupation"], ans: 1, exp: "The illegal occupation provision denies claims for injuries sustained during illegal activities." },
+  { section: "Optional Provisions", q: "The cancellation provision permits termination with:", opts: ["No notice","Five-day notice","10-day notice","30-day notice"], ans: 1, exp: "The cancellation provision permits termination with five-day notice, though it is prohibited in most states." },
+  { section: "Renewability Provisions", q: "Which renewability type provides a double guarantee?", opts: ["Guaranteed renewable","Conditionally renewable","Noncancelable","Optionally renewable"], ans: 2, exp: "Noncancelable provides a double guarantee: the insurer can neither terminate coverage NOR increase premiums." },
+  { section: "Renewability Provisions", q: "Guaranteed renewable means the insurer:", opts: ["Cannot cancel or raise premiums","Cannot cancel but can raise premiums for the entire class","Can cancel with notice","Can raise individual premiums"], ans: 1, exp: "Guaranteed renewable: cannot cancel, but CAN increase premiums for the entire class (not individually)." },
+  { section: "Renewability Provisions", q: "Which renewability type is MOST favorable to the insured?", opts: ["Guaranteed renewable","Optionally renewable","Noncancelable","Conditionally renewable"], ans: 2, exp: "Noncancelable is most favorable — premiums are locked and the policy cannot be canceled. It is also the most expensive." },
+  { section: "Renewability Provisions", q: "Conditionally renewable policies can be terminated:", opts: ["At any time","Under specific conditions stated in the policy","Only at the insured's request","Only by court order"], ans: 1, exp: "Conditionally renewable policies can be terminated under specific conditions stated in the policy (e.g., reaching a certain age)." },
+  { section: "Exclusions & Limitations", q: "A probationary period in health insurance delays coverage for:", opts: ["Accidents only","Illness only (not accidents)","Both accidents and illness","Neither accidents nor illness"], ans: 1, exp: "The probationary period delays coverage for illness but NOT accidents. It is a one-time waiting period at policy inception." },
+  { section: "Exclusions & Limitations", q: "An impairment rider:", opts: ["Increases the death benefit","Restricts coverage for a specific pre-existing condition","Waives all premiums","Adds coverage for experimental treatments"], ans: 1, exp: "An impairment rider restricts coverage for a specific pre-existing condition and must be explained at policy delivery." },
+  { section: "Pre-Existing Conditions", q: "Waiting periods for pre-existing conditions are typically limited to:", opts: ["6 months","1 year","2 years","5 years"], ans: 1, exp: "Pre-existing condition waiting periods are typically limited to one year." },
+  { section: "Pre-Existing Conditions", q: "When a pre-existing condition is disclosed, the insurer can do all EXCEPT:", opts: ["Deny the application","Charge a higher premium","Permanently exclude the condition","Retroactively cancel the policy without notice"], ans: 3, exp: "The insurer can deny, charge more, exclude the condition, or cover it from day one — but cannot retroactively cancel without proper grounds." },
+  { section: "Additional Provisions", q: "Coordination of Benefits (COB) prevents:", opts: ["Policy cancellation","Duplicate payments from multiple plans","Premium increases","Beneficiary changes"], ans: 1, exp: "COB prevents duplicate payments when the insured is covered by multiple plans — supporting the indemnity principle." },
+  { section: "Additional Provisions", q: "Subrogation allows the insurer to:", opts: ["Cancel the policy","Pursue third parties responsible for the loss","Increase premiums","Deny all claims"], ans: 1, exp: "Subrogation allows the insurer to step into the insured's shoes and recover payments from the at-fault third party." },
+  { section: "Additional Provisions", q: "The waiver of premium provision:", opts: ["Cancels the policy during disability","Waives premiums after a specified period of disability","Increases premiums during disability","Requires premium payments during disability"], ans: 1, exp: "Waiver of premium waives premiums after a specified period of disability — the policy stays in force without payments." },
+  { section: "Beneficiary Designations", q: "Under the Uniform Simultaneous Death Act, if the insured and beneficiary die together:", opts: ["The beneficiary is assumed to have survived","The policy is voided","The insured is considered to have survived","Benefits are split equally"], ans: 2, exp: "The insured is considered to have survived (died last) — proceeds go to the contingent beneficiary or estate." },
+  { section: "Indemnity Principle", q: "The indemnity principle in health insurance:", opts: ["Allows profiting from insurance claims","Restores the insured to their pre-loss financial position","Guarantees unlimited benefits","Eliminates all deductibles"], ans: 1, exp: "The indemnity principle restores the insured to pre-loss position — preventing profit from insurance." },
+];
+
+let answered = {};
+let submitted = false;
+let score = 0;
+
+function buildQuiz() {
+  answered = {}; submitted = false; score = 0;
+  const area = document.getElementById('quiz-area');
+  let html = `<div class="quiz-header"><div class="quiz-meta">${questions.length} Questions</div><div class="score-badge" id="score-live">0/${questions.length} answered</div></div>`;
+  let lastSection = '';
+  questions.forEach((q, i) => {
+    if (q.section !== lastSection) { html += `<div class="section-divider">${q.section}</div>`; lastSection = q.section; }
+    html += `<div class="q-card" id="qcard-${i}"><div class="q-num">Question ${i + 1}</div><div class="q-text">${q.q}</div><div class="options">`;
+    ['A','B','C','D'].forEach((l, j) => { html += `<div class="opt" id="opt-${i}-${j}" onclick="selectAnswer(${i},${j})"><span class="opt-letter">${l}</span><span>${q.opts[j]}</span></div>`; });
+    html += `</div><div class="explanation" id="exp-${i}">${q.exp}</div></div>`;
+  });
+  html += `<div style="text-align:center; margin-top:32px;"><button class="btn btn-primary" onclick="submitQuiz()" id="submit-btn">Submit & Score</button></div><div id="results-area"></div>`;
+  area.innerHTML = html;
+}
+
+function selectAnswer(qIdx, optIdx) {
+  if (submitted) return;
+  answered[qIdx] = optIdx;
+  questions[qIdx].opts.forEach((_, j) => { const el = document.getElementById(`opt-${qIdx}-${j}`); el.style.borderColor = j === optIdx ? '#3b82f6' : ''; el.style.background = j === optIdx ? '#1e3a5f' : ''; el.style.color = j === optIdx ? '#e2e8f0' : ''; });
+  updateLiveScore();
+}
+
+function updateLiveScore() {
+  let correct = 0;
+  Object.keys(answered).forEach(i => { if (answered[i] === questions[i].ans) correct++; });
+  document.getElementById('score-live').textContent = `${correct}/${Object.keys(answered).length} answered`;
+}
+
+function submitQuiz() {
+  submitted = true; score = 0;
+  questions.forEach((q, i) => {
+    q.opts.forEach((_, j) => { const el = document.getElementById(`opt-${i}-${j}`); el.classList.add('disabled'); if (j === q.ans) el.classList.add('correct'); else if (answered[i] === j) el.classList.add('wrong'); });
+    document.getElementById(`exp-${i}`).classList.add('show');
+    if (answered[i] === q.ans) score++;
+  });
+  const pct = Math.round((score / questions.length) * 100);
+  let msg, color;
+  if (pct >= 90) { msg = "Excellent! You're exam-ready on this chapter."; color = "#4ade80"; }
+  else if (pct >= 70) { msg = "Above passing threshold. Review missed questions."; color = "#facc15"; }
+  else { msg = "Below passing threshold. Review and retry!"; color = "#f87171"; }
+  document.getElementById('score-live').textContent = `Score: ${score}/${questions.length} (${pct}%)`;
+  document.getElementById('submit-btn').outerHTML = `<button class="btn btn-ghost" onclick="buildQuiz()">Retake Quiz</button>`;
+  document.getElementById('results-area').innerHTML = `<div class="quiz-results"><div class="score-big" style="color:${color}">${pct}%</div><div class="score-sub">${score} correct out of ${questions.length}</div><div class="score-msg" style="color:${color}">${msg}</div><div style="margin-top:8px;font-size:0.85rem;color:#64748b;">Pass threshold: 70%</div></div>`;
+  window.scrollTo({ top: document.getElementById('results-area').offsetTop - 80, behavior: 'smooth' });
+}
+
+function showTab(t) {
+  document.getElementById('tab-flashcards').style.display = t === 'flashcards' ? '' : 'none';
+  document.getElementById('tab-quiz').style.display = t === 'quiz' ? '' : 'none';
+  document.querySelectorAll('.tab').forEach((el, i) => { el.classList.toggle('active', (i === 0 && t === 'flashcards') || (i === 1 && t === 'quiz')); });
+  if (t === 'quiz' && !document.querySelector('.q-card')) buildQuiz();
+}
+</script>
+</body>
+</html>
